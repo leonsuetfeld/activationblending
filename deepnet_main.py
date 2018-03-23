@@ -69,7 +69,7 @@ if __name__ == '__main__':
 		counter = task.Counter()
 		timer = task.SessionTimer()
 		Network = net.Network(NetSettings, Paths, namescope='Network')
-		task.train(TaskSettings, Paths, Network, training_handler, validation_handler, counter, timer, rec, args)
+		task.train(TaskSettings, Paths, Network, training_handler, validation_handler, test_handler, counter, timer, rec, args)
 		# task.test(TaskSettings, Paths, Network, test_handler)
 
 	# analysis

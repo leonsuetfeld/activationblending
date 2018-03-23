@@ -343,6 +343,11 @@ class PerformanceRecorder(object):
 		self.val_apc_hist = []
 		self.val_af_weights_hist = []
 		self.val_mb_n_hist = []
+		# test
+		self.test_loss_hist = []
+		self.test_top1_hist = []
+		self.test_apc_hist = []
+		self.test_mb_n_hist = []
 		# top score
 		self.is_last_val_top_score = False
 		# time keeping
@@ -364,6 +369,12 @@ class PerformanceRecorder(object):
 		self.is_last_val_top_score = False
 		if top1 == np.max(np.array(self.val_top1_hist)):
 			self.is_last_val_top_score = True
+			
+	def feed_test_performance(self, mb_n, loss, top1, apc):
+		self.test_loss_hist.append(loss)
+		self.test_top1_hist.append(top1)
+		self.test_apc_hist.append(apc)
+		self.test_mb_n_hist.append(mb_n)
 
 	def top_score(self, current_mb):
 		return self.is_last_val_top_score
@@ -398,12 +409,17 @@ class PerformanceRecorder(object):
 			self.train_loss_hist = performance_dict['train_loss_hist']
 			self.train_top1_hist = performance_dict['train_top1_hist']
 			self.train_mb_n_hist = performance_dict['train_mb_n_hist']
-			# validatin performance
+			# validation performance
 			self.val_loss_hist = performance_dict['val_loss_hist']
 			self.val_top1_hist = performance_dict['val_top1_hist']
 			self.val_apc_hist = performance_dict['val_apc_hist']
 			self.val_af_weights_hist = performance_dict['val_af_weights_hist']
 			self.val_mb_n_hist = performance_dict['val_mb_n_hist']
+			# test performance
+			self.test_loss_hist = performance_dict['test_loss']
+			self.test_top1_hist = performance_dict['test_top1']
+			self.test_apc_hist = performance_dict['test_apc']
+			self.test_mb_n_hist = performance_dict['test_mb_n_hist']
 			# time
 			self.previous_runtime = performance_dict['runtime']
 			# return
@@ -428,6 +444,11 @@ class PerformanceRecorder(object):
 		performance_dict['val_apc_hist'] = self.val_apc_hist
 		performance_dict['val_af_weights_hist'] = self.val_af_weights_hist
 		performance_dict['val_mb_n_hist'] = self.val_mb_n_hist
+		# test performance
+		performance_dict['test_loss'] = self.test_loss_hist
+		performance_dict['test_top1'] = self.test_top1_hist
+		performance_dict['test_apc'] = self.test_apc_hist
+		performance_dict['test_mb_n_hist'] = self.test_mb_n_hist
 		# time
 		performance_dict['runtime'] = (time.time()-self.init_time)+self.previous_runtime
 		# save dict
@@ -491,7 +512,7 @@ class SessionTimer(object):
 # ### MAIN FUNCTIONS ###########################################################
 # ##############################################################################
 
-def train(TaskSettings, Paths, Network, training_handler, validation_handler, counter, timer, rec, args, plot_learning_curves=False):
+def train(TaskSettings, Paths, Network, training_handler, validation_handler, test_handler, counter, timer, rec, args, plot_learning_curves=False):
 
 	assert TaskSettings.training_schedule in ['random', 'epochs'], 'requested training schedule unknown.'
 	print('')
@@ -620,6 +641,9 @@ def train(TaskSettings, Paths, Network, training_handler, validation_handler, co
 				if rec.top_score(counter.mb_count_total):
 					save_model(TaskSettings, Paths, Network, sess, saver, counter, rec, delete_previous=True)
 
+		# TEST AFTER TRAINING IS COMPLETE
+		test(sess, Network, test_handler, counter, rec)
+
 		# AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
 		timer.set_session_end_time()
 		print('=================================================================================================================================================================================================')
@@ -727,40 +751,36 @@ def validate(sess, Network, training_handler, counter, timer, rec, print_val_apc
 	timer.feed_val_duration(time.time()-time_val_start)
 
 # WORK IN PROGRESS START
-def test(sess, Network, training_handler, counter, timer, rec, print_val_apc=False):
-	# VALIDATION START
-	time_val_start = time.time()
-	training_handler.reset_val()
+def test(sess, Network, test_handler, counter, rec, print_test_apc=False):
+	# TEST START
+	test_handler.reset_test()
 	# MINIBATCH HANDLING
 	loss_store = []
 	top1_store = []
-	val_confusion_matrix = np.zeros((10,10))
-	val_count_vector = np.zeros((10,1))
-	while training_handler.val_mb_counter < training_handler.n_val_minibatches:
+	test_confusion_matrix = np.zeros((10,10))
+	test_count_vector = np.zeros((10,1))
+	while test_handler.test_mb_counter < test_handler.n_test_minibatches:
 		# LOAD VARIABLES & RUN SESSION
-		val_imageBatch, val_labelBatch = training_handler.create_next_val_minibatch()
-		loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: val_imageBatch, Network.Y: val_labelBatch, Network.SGD_lr: 0., Network.dropout_keep_prob: 1.0})
+		test_imageBatch, test_labelBatch = test_handler.create_next_test_minibatch()
+		loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: test_imageBatch, Network.Y: test_labelBatch, Network.SGD_lr: 0., Network.dropout_keep_prob: 1.0})
 		# STORE PERFORMANCE
 		loss_store.append(loss)
 		top1_store.append(top1)
 		max_logits = np.argmax(logits, axis=1)
-		for entry in range(len(val_labelBatch)):
-			val_confusion_matrix[int(val_labelBatch[entry]), max_logits[entry]] += 1.
-			val_count_vector[int(val_labelBatch[entry])] += 1.
+		for entry in range(len(test_labelBatch)):
+			test_confusion_matrix[int(test_labelBatch[entry]), max_logits[entry]] += 1.
+			test_count_vector[int(test_labelBatch[entry])] += 1.
 	# GET MEAN PERFORMANCE OVER VALIDATION MINIBATCHES
-	val_loss = np.mean(loss_store)
-	val_top1 = np.mean(top1_store)
-	val_apc = np.zeros((10,))
+	test_loss = np.mean(loss_store)
+	test_top1 = np.mean(top1_store)
+	test_apc = np.zeros((10,))
 	for i in range(10):
-		val_apc[i] = np.array(val_confusion_matrix[i,i]/val_count_vector[i])[0]
-	if print_val_apc:
-		print('[MESSAGE] accuracy per class (v): {1: %.3f |' %val_apc[0] + ' 2: %.3f |' %val_apc[1] + ' 3: %.3f |' %val_apc[2] + ' 4: %.3f |' %val_apc[3] + ' 5: %.3f |' %val_apc[4] +
-												' 6: %.3f |' %val_apc[5] + ' 7: %.3f |' %val_apc[6] + ' 8: %.3f |' %val_apc[7] + ' 9: %.3f |' %val_apc[8] + ' 10: %.3f}' %val_apc[9])
-	# GET AF WEIGHTS
-	af_weights_dict = Network.get_af_weights_dict(sess)
+		test_apc[i] = np.array(test_confusion_matrix[i,i]/test_count_vector[i])[0]
+	if print_test_apc:
+		print('[MESSAGE] accuracy per class (v): {1: %.3f |' %test_apc[0] + ' 2: %.3f |' %test_apc[1] + ' 3: %.3f |' %test_apc[2] + ' 4: %.3f |' %test_apc[3] + ' 5: %.3f |' %test_apc[4] +
+												' 6: %.3f |' %test_apc[5] + ' 7: %.3f |' %test_apc[6] + ' 8: %.3f |' %test_apc[7] + ' 9: %.3f |' %test_apc[8] + ' 10: %.3f}' %test_apc[9])
 	# STORE RESULTS
-	rec.feed_val_performance(counter.mb_count_total, val_loss, val_top1, val_apc, af_weights_dict)
-	timer.feed_val_duration(time.time()-time_val_start)
+	rec.feed_test_performance(counter.mb_count_total, test_loss, test_top1, test_apc)
 # WORK IN PROGRESS END
 
 def test_saved_model(TaskSettings, Paths, Network, test_handler, print_results=False, print_messages=True):
