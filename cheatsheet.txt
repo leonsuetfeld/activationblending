@@ -1,0 +1,185 @@
+# ##############################################################################
+# ### EXPORT PATHS BEFORE CODE EXECUTION #######################################
+# ##############################################################################
+
+ssh righty
+cd /net/store/ni/users/lsuetfel/projectfolder
+
+source venvtfgpu/bin/activate
+source python3venvcpu/bin/activate
+
+export THEANO_FLAGS=floatX=float32,device=gpu0,lib.cnmem=0.8
+export CUDNN_HOME=/net/store/ni/users/lsuetfel/squeezeMI/cuda 				# cuda 5.1 (new dl)
+export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$CUDNN_HOME/lib64" 			# Holger's suggestion
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDNN_HOME/lib64" 				# Holger's suggestion
+
+										# to disable display output (matplotlib); alternative to set current (local) display as output display: DISPLAY=:0.0
+
+python3 codename.py
+
+# ##############################################################################
+# ### USING GITHUB #############################################################
+# ##############################################################################
+
+1) SETUP: make existing folder into git repository
+
+[create empty repositiry, e.g., 'myrepository' on github.com without a readme]
+cd go/to/project/path
+git init
+git config --global user.name "John Doe"
+git config --global user.email johndoe@example.com
+git remote add origin https://github.com/username/myrepository.git
+git remote -v 																																	# see 'remote' settings
+touch .gitignore 																																# creates empty .gitignore file. put in folders and files to ignore, one per line [all files in the repository folder should either be added or listed in .gitignore]
+
+2) SETUP: join existing repository
+
+[go to github.com and clone the repo to your local hard drive]
+[ask repo creator to invite your username as a collaborator]
+
+3) USE
+
+git add filename.py 																														# add file to repository
+git mv old_filename.py new_filename 																						# rename file
+git rm filename.py 																															# delete file (from local hard disk)
+git commit -a -m "commit message"																								# commit all changes in previouslz added files
+git push -u origin master																												# push all new commits (i.e., sync with online repo)
+git pull																																				# pulls newest version from
+
+4) MERGE
+
+[pushes are inhibited if last state before commit is not the current state in the online repo]
+[instead, one needs to pull first]
+[if changes were made in different files, git suggests auto merge and uses the newest version of each file]
+[if changes were made to the same file, all changes from both sides are put into the same file]
+[this should then be manually merged, saved, added again (add filename.py), committed and pushed]
+
+# ##############################################################################
+# ### GRID ENGINE COMMANDS #####################################################
+# ##############################################################################
+
+qconf -sc                     # show all available parameters for the grid engine computer selection
+
+qhost -l cuda_capability=300  # For example, to list PCs with cuda capability at least 3.0:
+qhost -l cuda_driver=8000     # or for PCs with Cuda 8.0 run:
+qhost -F                      # To get a list of all ressource types in the grid of all PCs:
+qhost -F > filename.txt       # to save all hosts and their info in a text file in the current working directory
+
+qsub gridjob.sh               # To submit job to the grid (cf https://doc.ikw.uni-osnabrueck.de/static-tags/grid-computing):
+
+qstat -u '*'                  # show all jobs currently running in the grid
+qstat -j <jobid> | grep voxel # find out why job is not running on voxel
+
+qdel -u lsuetfel              # delete all jobs by user lsuetfel
+qdel jobid                    # delete job via id
+qdel {jobid_1..jobid_n}       # deletes all jobs with ids from 1 to n, excluding those by other users
+
+# ##############################################################################
+# ### MISC #####################################################################
+# ##############################################################################
+
+# To start Ipython:
+python -c 'import IPython; IPython.terminal.ipapp.launch_new_instance()'
+
+# or to make this permanent add the following to the .bashrc file in home directory:
+alias ipy="python -c 'import IPython; IPython.terminal.ipapp.launch_new_instance()'"
+
+# To start Jupyter notebook:
+jupyter notebook
+
+# GPU info (including currently running jobs)
+nvidia-smi
+
+# task manager info (for a local computer)
+atop
+
+# copy a file to a remote computer
+scp lsuetfel@gate.ikw.uni-osnabrueck.de:/net/store/ni/users/lsuetfel/... /Users/info/...
+
+# ssh remote login to uni computers from mac
+ssh lsuetfel@gate.ikw.uni-osnabrueck.de
+
+# ssh remote login to specific computer
+ssh righty
+
+# ssh configuration to shortcut
+in ~/.ssh/config (on either mac or uni computer)
+---------
+Host gate
+	Hostname gate.ikw.uni-osnabrueck.de
+	User lsuetfel
+---------
+scp gate:/net/store/ni/...
+ssh gate
+
+# create empty file
+touch abc.txt
+
+# delete file
+del abc.txt
+
+# check user rights for newly created files
+umask
+
+# change user rights for newly created files (gives write rights to the group)
+umask 0002
+
+# change user rights for existing files/ folders => -R for all files in current folder, g ~ group, +w ~add write rights, -w take write rights away
+chmod -R g+w
+
+# change user group who is granted read/ write rights when group write rights are active
+chgrp -R ustudent foldername/
+chgrp -R ni foldername/
+
+# set sticky bit: transfer user group (chgrp) from folder to all newly created/ added files in this folder
+chmod g+s
+
+# ##############################################################################
+# ### TENSORBOARD ##############################################################
+# ##############################################################################
+
+# start TensorBoard
+tensorboard --logdir=path
+# e.g. tensorboard --logdir=summary/
+
+# this reroutes rightys local 6006 to the current machines local 16006 (execute this in 2nd terminal)
+ssh -L 16006:127.0.0.1:6006 lsuetfel@righty
+
+# then access TensorBoard via
+localhost:16006"
+
+# ##############################################################################
+# ### SETTING UP A VIRTUAL ENV #################################################
+# ##############################################################################
+
+cd /net/store/ni/users/lsuetfel/projectfolder             # go to folder for venv
+virtualenv -p python3 --system-site-packages venvtfgpu  	# create venv
+virtualenv -p python3 --system-site-packages venvtfcpu  	# create venv for cpu usage
+source venvtfgpu/bin/activate                           	# activate venv
+source venvtfcpu/bin/activate                           	# activate venv for cpu
+
+# Install or update some other libraries if needed:
+pip3 install --upgrade wheel
+pip3 install --upgrade pip
+pip3 install --upgrade setuptools
+pip3 install --upgrade opencv-python
+pip3 install --upgrade ipython
+pip3 install --upgrade tensorflow-gpu
+pip3 install --upgrade jupyter
+pip3 install --upgrade cython
+pip3 install --upgrade numpy
+pip3 install --upgrade scipy
+pip3 install --upgrade keras
+pip3 install --upgrade scikit-learn
+pip3 install --upgrade pydot-ng
+pip3 install --upgrade sympy
+pip3 install --upgrade nose
+pip3 install --upgrade pillow
+pip3 install --upgrade pandas
+pip3 install --upgrade patsy
+pip3 install --upgrade statsmodels
+pip3 install --upgrade plotly
+pip3 install --upgrade psutil
+
+pip3 install --upgrade h5py // currently throws an annoying warning
+pip3 install --upgrade matplotlib // currently breaks the whole venv
