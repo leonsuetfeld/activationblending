@@ -51,12 +51,12 @@ if __name__ == '__main__':
 			args['swish_beta_trainable'][0] = True
 		elif args['swish_beta_trainable'][0] == 'False':
 			args['swish_beta_trainable'][0] = False
-	
+
 	if args['task'][0] == 'cifar10':
 		import deepnet_task_cifar10 as task
 	elif args['task'][0] == 'cifar100':
 		import deepnet_task_cifar100 as task
-		
+
 	# training
 	if args['mode'][0] in ['train', 'training', '']:
 		NetSettings = net.NetSettings(args)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
 		timer = task.SessionTimer()
 		Network = net.Network(NetSettings, Paths, namescope='Network')
 		task.train(TaskSettings, Paths, Network, training_handler, validation_handler, counter, timer, rec, args)
-		task.test(TaskSettings, Paths, Network, test_handler)
+		# task.test(TaskSettings, Paths, Network, test_handler)
 
 	# analysis
 	if args['mode'][0] in ['analysis']:
@@ -86,4 +86,4 @@ if __name__ == '__main__':
 		test_handler = task.TestHandler(TaskSettings, Paths)
 		timer = task.SessionTimer()
 		Network = net.Network(NetSettings, Paths, namescope='Network')
-		task.test(TaskSettings, Paths, Network, test_handler)
+		task.test_saved_model(TaskSettings, Paths, Network, test_handler)
