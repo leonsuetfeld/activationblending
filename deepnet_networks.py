@@ -103,10 +103,8 @@ class Network(object):
 			self.logits = self.sfnet(namescope='sfnet')
 		elif self.NetSettings.network_spec == 'smcn':
 			self.logits = self.smcn(namescope='smcn')
-		elif self.NetSettings.network_spec == 'smcnMax':
-			self.logits = self.smcnMax(namescope='smcnMax')
-		elif self.NetSettings.network_spec == 'smcnMaxLrn':
-			self.logits = self.smcnMaxLrn(namescope='smcnMaxLrn')
+		elif self.NetSettings.network_spec == 'smcnLin':
+			self.logits = self.smcnLin(namescope='smcnLin')
 		elif self.NetSettings.network_spec == 'squeezenet':
 			self.logits = self.squeezenet(namescope='squeezenet')
 		elif self.NetSettings.network_spec == 'densenet':

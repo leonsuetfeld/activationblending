@@ -20,7 +20,7 @@ if __name__ == '__main__':
 	# parse input arguments
 	parser = argparse.ArgumentParser(description='Run network session.')
 	parser.add_argument('-task', metavar='TASK', default=None, type=str, nargs=1, help='chosen task (mandatory) - imagenet, cifar10, cifar100')
-	parser.add_argument('-network', metavar='NETWORK', default=None, type=str, nargs=1, help='chosen network (mandatory) - squeezeMI, SMCN.')
+	parser.add_argument('-network', metavar='NETWORK', default=None, type=str, nargs=1, help='chosen network (mandatory) - squeezenet, SMCN.')
 	parser.add_argument('-mode', metavar='MODE', default=None, type=str, nargs=1, help='mode of the network as str (optional) - training, filters, activations or dreams.')
 	parser.add_argument('-n_minibatches', metavar='NMINIBATCHES', default=None, type=int, nargs=1, help='number of minibatches in run (mandatory for training)')
 	parser.add_argument('-experiment_name', metavar='EXPERIMENTNAME', default=None, type=str, nargs=1, help='experiment_name as str (mandatory)')
@@ -53,6 +53,12 @@ if __name__ == '__main__':
 			args['swish_beta_trainable'][0] = True
 		elif args['swish_beta_trainable'][0] == 'False':
 			args['swish_beta_trainable'][0] = False
+	if  args['create_val_set'] is not None:
+		assert args['create_val_set'][0] in ['True','False'], 'create_val_set must be set to \'True\' or \'False\'.'
+		if args['create_val_set'][0] == 'True':
+			args['create_val_set'][0] = True
+		elif args['create_val_set'][0] == 'False':
+			args['create_val_set'][0] = False
 
 	if args['task'][0] == 'cifar10':
 		import deepnet_task_cifar10 as task

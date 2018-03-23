@@ -64,7 +64,7 @@ class TaskSettings(object):
 				self.n_minibatches = args['n_minibatches'][0]
 				self.training_schedule = args['training_schedule'][0]
 				self.create_val_set = args['create_val_set'][0] # True
-				self.val_set_fraction = args['val_set_fraction'][0] # 0.05
+				self.val_set_fraction = float(args['val_set_fraction'][0]) # 0.05
 				self.val_to_val_mbs = 20
 				self.restore_model = True
 				if args['blend_trainable'][0] or args['swish_beta_trainable'][0]:
@@ -111,7 +111,7 @@ class Paths(object):
 		self.test_batches = './1_data_cifar100/test_batches/'
 		self.sample_images = './1_data_cifar100/samples/'
 		# save paths (experiment level)
-		self.exp_folder = './2_output_cifar100/'+str(TaskSettings.experiment_name)+'/'
+		self.exp_folder = './2_output_cifar/'+str(TaskSettings.experiment_name)+'/'
 		self.af_weights = self.exp_folder+'_af_weights/' 												# corresponds to TaskSettings.save_af_weights
 		self.analysis = self.exp_folder+'_analysis/'													# path for analysis files, not used during training
 		self.performance_sub = 'performance/'
@@ -162,6 +162,10 @@ class TrainingHandler(object):
 		self.n_total_samples = int(len(self.dataset_labels))
 		self.n_training_samples = self.n_total_samples
 		self.n_validation_samples = 0
+		self.validation_images = []
+		self.validation_labels = []
+		self.training_images = self.dataset_images[:]
+		self.training_labels = self.dataset_labels[:]
 		if self.TaskSettings.create_val_set:
 			# determine train/ val split: make n_validation_samples multiple of minibatch_size
 			self.n_validation_samples = np.round(self.n_total_samples*self.TaskSettings.val_set_fraction)
@@ -171,11 +175,11 @@ class TrainingHandler(object):
 				self.n_validation_samples += self.TaskSettings.minibatch_size
 			self.n_training_samples = int(self.n_total_samples - self.n_validation_samples)
 			self.n_validation_samples = int(self.n_validation_samples)
-		# split dataset
-		self.validation_images = self.dataset_images[:self.n_validation_samples]
-		self.validation_labels = self.dataset_labels[:self.n_validation_samples]
-		self.training_images = self.dataset_images[self.n_validation_samples:]
-		self.training_labels = self.dataset_labels[self.n_validation_samples:]
+			# split dataset
+			self.validation_images = self.dataset_images[:self.n_validation_samples]
+			self.validation_labels = self.dataset_labels[:self.n_validation_samples]
+			self.training_images = self.dataset_images[self.n_validation_samples:]
+			self.training_labels = self.dataset_labels[self.n_validation_samples:]
 
 	def save_run_datasets(self, print_messages=False):
 	# saves the current spec_name/runs datasets to a file to allow for an uncontaminated resume after restart of run, should only be called once at the beginning of a session
@@ -290,7 +294,6 @@ class TestHandler(object):
 		self.n_test_samples = int(len(self.test_images))
 		self.n_test_minibatches = int(np.floor(self.n_test_samples/TaskSettings.minibatch_size))
 		self.test_mb_counter = 0
-
 		self.print_overview()
 
 	def load_test_data(self):
@@ -582,7 +585,8 @@ def train(TaskSettings, Paths, Network, training_handler, validation_handler, te
 		if (TaskSettings.save_args_to_txt == 'always') or (TaskSettings.save_args_to_txt == 'once' and TaskSettings.run == 1):
 			args_to_txt(args, Paths)
 
-		validate(sess, Network, training_handler, counter, timer, rec)
+		if TaskSettings.create_val_set:
+			validate(sess, Network, training_handler, counter, timer, rec)
 		for mb in range(n_minibatches_remaining):
 
 			# MB START
@@ -622,40 +626,56 @@ def train(TaskSettings, Paths, Network, training_handler, validation_handler, te
 			mb_duration = time.time()-time_mb_start
 			timer.feed_mb_duration(mb, mb_duration)
 			t_mb_remaining = ((TaskSettings.n_minibatches-mb)*timer.get_mean_mb_duration(window_length=100))/60.
-			t_val_remaining = ((TaskSettings.n_minibatches-mb)*timer.get_mean_val_duration(window_length=100))/60./TaskSettings.val_to_val_mbs
-			t_remaining = t_mb_remaining + t_val_remaining
+			if TaskSettings.create_val_set:
+				t_val_remaining = ((TaskSettings.n_minibatches-mb)*timer.get_mean_val_duration(window_length=100))/60./TaskSettings.val_to_val_mbs
+				t_remaining = t_mb_remaining + t_val_remaining
+			else:
+				t_remaining = t_mb_remaining
 			rec.feed_train_performance(counter.mb_count_total, loss, top1)
 
 			# RUN VALIDATION AND PRINT
-			if (mb+1)%TaskSettings.val_to_val_mbs == 0 or mb+1 == TaskSettings.n_minibatches:
-				validate(sess, Network, training_handler, counter, timer, rec)
-				print('['+str(TaskSettings.spec_name)+', run '+str(TaskSettings.run).zfill(2)+'] mb '+str(counter.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
-					  ' | l(t) %05.3f [%05.3f]' %(rec.train_loss_hist[-1], rec.get_running_average(measure='t-loss', window_length=50)) +
-					  ' | acc(t) %05.3f [%05.3f]' %(rec.train_top1_hist[-1], rec.get_running_average(measure='t-acc', window_length=50)) +
-						  ' | l(v) %05.3f [%05.3f]' %(rec.val_loss_hist[-1], rec.get_running_average(measure='v-loss', window_length=3)) +
-						  ' | acc(v) %05.3f [%05.3f]' %(rec.val_top1_hist[-1], rec.get_running_average(measure='v-acc', window_length=3)) +
-					  ' | t_mb %05.3f s' %(timer.mb_duration_list[-1]) +
-					  ' | t_v %05.3f s' %(timer.val_duration_list[-1]) +
-					  ' | t_tot %05.2f min' %((time.time()-timer.session_start_time)/60.) +
-					  ' | t_rem %05.2f min' %(t_remaining))
-				if rec.top_score(counter.mb_count_total):
-					save_model(TaskSettings, Paths, Network, sess, saver, counter, rec, delete_previous=True)
+			if TaskSettings.create_val_set:
+				if (mb+1)%TaskSettings.val_to_val_mbs == 0 or mb+1 == TaskSettings.n_minibatches:
+					validate(sess, Network, training_handler, counter, timer, rec)
+					print('['+str(TaskSettings.spec_name)+', run '+str(TaskSettings.run).zfill(2)+'] mb '+str(counter.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
+						  ' | l(t) %05.3f [%05.3f]' %(rec.train_loss_hist[-1], rec.get_running_average(measure='t-loss', window_length=50)) +
+						  ' | acc(t) %05.3f [%05.3f]' %(rec.train_top1_hist[-1], rec.get_running_average(measure='t-acc', window_length=50)) +
+							  ' | l(v) %05.3f [%05.3f]' %(rec.val_loss_hist[-1], rec.get_running_average(measure='v-loss', window_length=3)) +
+							  ' | acc(v) %05.3f [%05.3f]' %(rec.val_top1_hist[-1], rec.get_running_average(measure='v-acc', window_length=3)) +
+						  ' | t_mb %05.3f s' %(timer.mb_duration_list[-1]) +
+						  ' | t_v %05.3f s' %(timer.val_duration_list[-1]) +
+						  ' | t_tot %05.2f min' %((time.time()-timer.session_start_time)/60.) +
+						  ' | t_rem %05.2f min' %(t_remaining))
+					if rec.top_score(counter.mb_count_total):
+						save_model(TaskSettings, Paths, Network, sess, saver, counter, rec, delete_previous=True)
+			else:
+				if (mb+1)%TaskSettings.val_to_val_mbs == 0 or mb+1 == TaskSettings.n_minibatches:
+					print('['+str(TaskSettings.spec_name)+', run '+str(TaskSettings.run).zfill(2)+'] mb '+str(counter.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
+						  ' | l(t) %05.3f [%05.3f]' %(rec.train_loss_hist[-1], rec.get_running_average(measure='t-loss', window_length=50)) +
+						  ' | acc(t) %05.3f [%05.3f]' %(rec.train_top1_hist[-1], rec.get_running_average(measure='t-acc', window_length=50)) +
+						  ' | t_mb %05.3f s' %(timer.mb_duration_list[-1]) +
+						  ' | t_tot %05.2f min' %((time.time()-timer.session_start_time)/60.) +
+						  ' | t_rem %05.2f min' %(t_remaining))
+					if rec.top_score(counter.mb_count_total):
+						save_model(TaskSettings, Paths, Network, sess, saver, counter, rec, delete_previous=True)
 
 		# AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
 		timer.set_session_end_time()
 		print('=================================================================================================================================================================================================')
-		print('=== TRAINING FINISHED -- MAX VALIDATION ACCURACY: %.3f -- TOTAL TIME: %04.2f MIN ================================================================================================================' %(np.max(rec.val_top1_hist), (timer.session_duration/60.)))
+		if TaskSettings.create_val_set:
+			print('=== TRAINING FINISHED -- MAX VALIDATION ACCURACY: %.3f -- TOTAL TIME: %04.2f MIN ================================================================================================================' %(np.max(rec.val_top1_hist), (timer.session_duration/60.)))
+		else:
+			print('=== TRAINING FINISHED -- TOTAL TIME: %04.2f MIN ===================================================================================================================================================' %(timer.session_duration/60.))
 		print('=================================================================================================================================================================================================')
 
 		# TEST AFTER TRAINING IS COMPLETE
 		test_acc, test_loss = test(sess, Network, test_handler, counter, rec)
-		print('=== TESTING FINISHED -- ACCURACY: %.3f =========================================================================================================================================' %(test_acc)
+		print('=== TESTING FINISHED -- ACCURACY: %.3f =========================================================================================================================================================' %(test_acc))
 		print('=================================================================================================================================================================================================')
 
 		# SAVING STUFF
 		if counter.mb_count_total == TaskSettings.n_minibatches:
 			save_model(TaskSettings, Paths, Network, sess, saver, counter, rec, delete_previous=False)
-			print('=================================================================================================================================================================================================')
 			if plot_learning_curves:
 				visualize_performance(TaskSettings, Paths)
 	print('')

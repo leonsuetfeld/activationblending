@@ -53,7 +53,7 @@ def analysis(TaskSettings, Paths):
 		mean_run_max_list.append(mean_run_max)
 		var_run_max_list.append(var_run_max)
 	print('=================================================================================================================================================================================================')
-	# PLOTTING
+	# BIG FINAL PLOT
 	n_mb_total = int(np.max(mb_list[0]))
 	fig = plt.figure(figsize=(10,10))
 	ax = fig.add_subplot(1,1,1)

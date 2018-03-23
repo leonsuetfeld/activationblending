@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -N SBF_5a
+#$ -N SBF_5d
 #$ -wd /net/store/ni/users/lsuetfel/activations/
 ##$ -cwd
 #$ -l h_rt=01:20:00 ## carefull with blend runs taking up to 30 mins on a Titan X (Pascal)
@@ -23,7 +23,7 @@
 UVENV="source venvtfgpu/bin/activate"
 UAPP="python3"
 UCWD="/net/store/ni/users/lsuetfel/activations/"
-UMCR="deepnet_supervisor_SBF_5a.py"
+UMCR="deepnet_supervisor_SBF_5d.py"
 
 # write header for return files
 echo "*** Start of job ***"
