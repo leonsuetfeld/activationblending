@@ -32,7 +32,7 @@ import subprocess
 ################################################################################
 """
 
-TASK_ID = int(sys.argv[1]) # + 900 !!! SET UP WHERE TO START
+TASK_ID = int(sys.argv[1])
 
 # path_to_main = '/net/store/ni/users/lsuetfel/squeezeMI/'
 
@@ -41,10 +41,10 @@ if TASK_ID < 101:
 	RUN = TASK_ID-0
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'adaptive_relu' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -52,6 +52,8 @@ if TASK_ID < 101:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_relu' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(True) + \
@@ -60,14 +62,14 @@ if TASK_ID < 101:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-if TASK_ID < 201:
+elif TASK_ID < 201:
 	RUN = TASK_ID-100
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'adaptive_selu' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -75,6 +77,8 @@ if TASK_ID < 201:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_selu' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(True) + \
@@ -83,14 +87,14 @@ if TASK_ID < 201:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-if TASK_ID < 301:
+elif TASK_ID < 301:
 	RUN = TASK_ID-200
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'adaptive_elu' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -98,6 +102,8 @@ if TASK_ID < 301:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_jelu' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(True) + \
@@ -106,37 +112,14 @@ if TASK_ID < 301:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 401:
+elelif TASK_ID < 401:
 	RUN = TASK_ID-300
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
-			  " -spec_name="        	+ 'blend3_unrest' + \
-			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
-			  " -network="          	+ 'smcn' + \
-			  " -mode="             	+ 'training' + \
-			  " -n_minibatches="    	+ str(10000) + \
-			  " -minibatch_size="   	+ str(256) + \
-			  " -optimizer="            + 'Adam' + \
-			  " -lr="               	+ str(0.001) + \
-			  " -training_schedule="	+ 'epochs' + \
-			  " -af_set="           	+ '3_blend3' +\
-			  " -af_weights_init="  	+ 'default' + \
-			  " -blend_trainable="  	+ str(True) + \
-			  " -blend_mode="       	+ 'unrestricted' + \
-			  " -swish_beta_trainable=" + str(False)
-	subprocess.run(command, shell=True)
-
-################################################################################
-elif TASK_ID < 501:
-	RUN = TASK_ID-400
-	os.system("nvidia-smi")
-	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'blend5_unrest' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -144,6 +127,8 @@ elif TASK_ID < 501:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '5_blend5_swish' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(True) + \
@@ -152,14 +137,14 @@ elif TASK_ID < 501:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 601:
-	RUN = TASK_ID-500
+elelif TASK_ID < 501:
+	RUN = TASK_ID-400
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'relu' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -167,6 +152,8 @@ elif TASK_ID < 601:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_relu' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(False) + \
@@ -175,14 +162,14 @@ elif TASK_ID < 601:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 701:
-	RUN = TASK_ID-600
+elelif TASK_ID < 601:
+	RUN = TASK_ID-500
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'selu' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -190,6 +177,8 @@ elif TASK_ID < 701:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_selu' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(False) + \
@@ -198,14 +187,14 @@ elif TASK_ID < 701:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 801:
-	RUN = TASK_ID-700
+elelif TASK_ID < 701:
+	RUN = TASK_ID-600
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'elu' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -213,6 +202,8 @@ elif TASK_ID < 801:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_jelu' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(False) + \
@@ -221,14 +212,14 @@ elif TASK_ID < 801:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 901:
-	RUN = TASK_ID-800
+elelif TASK_ID < 801:
+	RUN = TASK_ID-700
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'linu' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -236,6 +227,8 @@ elif TASK_ID < 901:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_linu' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(False) + \
@@ -244,14 +237,14 @@ elif TASK_ID < 901:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 1001:
-	RUN = TASK_ID-900
+elelif TASK_ID < 901:
+	RUN = TASK_ID-800
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'tanh' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -259,6 +252,8 @@ elif TASK_ID < 1001:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_tanh' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(False) + \
@@ -267,14 +262,14 @@ elif TASK_ID < 1001:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 1101:
-	RUN = TASK_ID-1000
+elelif TASK_ID < 1001:
+	RUN = TASK_ID-900
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'adaptive_tanh' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -282,6 +277,8 @@ elif TASK_ID < 1101:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_tanh' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(True) + \
@@ -290,14 +287,14 @@ elif TASK_ID < 1101:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 1201:
-	RUN = TASK_ID-1100
+elelif TASK_ID < 1101:
+	RUN = TASK_ID-1000
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'swish' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -305,6 +302,8 @@ elif TASK_ID < 1201:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_jswish' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(False) + \
@@ -313,14 +312,14 @@ elif TASK_ID < 1201:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 1301:
-	RUN = TASK_ID-1200
+elelif TASK_ID < 1201:
+	RUN = TASK_ID-1100
 	os.system("nvidia-smi")
 	command = "python3 "          		+ 'deepnet_main.py' + \
-			  " -experiment_name="  	+ 'SBF_4a' + \
+			  " -experiment_name="  	+ 'SBF_5a' + \
 			  " -spec_name="        	+ 'adaptive_swish' + \
 			  " -run="              	+ str(RUN) + \
-			  " -task="             	+ 'cifar10' + \
+			  " -task="             	+ 'cifar100' + \
 			  " -network="          	+ 'smcn' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -328,6 +327,8 @@ elif TASK_ID < 1301:
 			  " -optimizer="            + 'Adam' + \
 			  " -lr="               	+ str(0.001) + \
 			  " -training_schedule="	+ 'epochs' + \
+			  " -create_val_set="		+ str(False) + \
+			  " -val_set_fraction="		+ str(0.05) + \
 			  " -af_set="           	+ '1_jswish' +\
 			  " -af_weights_init="  	+ 'default' + \
 			  " -blend_trainable="  	+ str(True) + \
