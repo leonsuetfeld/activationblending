@@ -6,14 +6,14 @@ ssh righty
 cd /net/store/ni/users/lsuetfel/projectfolder
 
 source venvtfgpu/bin/activate
-source python3venvcpu/bin/activate
+source venvtfcpu/bin/activate
 
 export THEANO_FLAGS=floatX=float32,device=gpu0,lib.cnmem=0.8
 export CUDNN_HOME=/net/store/ni/users/lsuetfel/squeezeMI/cuda 				# cuda 5.1 (new dl)
 export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$CUDNN_HOME/lib64" 			# Holger's suggestion
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDNN_HOME/lib64" 				# Holger's suggestion
 
-										# to disable display output (matplotlib); alternative to set current (local) display as output display: DISPLAY=:0.0
+unset DISPLAY										# to disable display output (matplotlib); alternative to set current (local) display as output display: DISPLAY=:0.0
 
 python3 codename.py
 

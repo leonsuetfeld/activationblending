@@ -32,7 +32,9 @@ import subprocess
 ################################################################################
 """
 
-TASK_ID = int(sys.argv[1]) # + 900 !!! SET UP WHERE TO START
+# TASK_ID = int(sys.argv[1]) # + 900 !!! SET UP WHERE TO START
+
+TASK_ID = 1
 
 # path_to_main = '/net/store/ni/users/lsuetfel/squeezeMI/'
 
