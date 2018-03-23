@@ -726,7 +726,44 @@ def validate(sess, Network, training_handler, counter, timer, rec, print_val_apc
 	rec.feed_val_performance(counter.mb_count_total, val_loss, val_top1, val_apc, af_weights_dict)
 	timer.feed_val_duration(time.time()-time_val_start)
 
-def test(TaskSettings, Paths, Network, test_handler, print_results=False, print_messages=True):
+# WORK IN PROGRESS START
+def test(sess, Network, training_handler, counter, timer, rec, print_val_apc=False):
+	# VALIDATION START
+	time_val_start = time.time()
+	training_handler.reset_val()
+	# MINIBATCH HANDLING
+	loss_store = []
+	top1_store = []
+	val_confusion_matrix = np.zeros((10,10))
+	val_count_vector = np.zeros((10,1))
+	while training_handler.val_mb_counter < training_handler.n_val_minibatches:
+		# LOAD VARIABLES & RUN SESSION
+		val_imageBatch, val_labelBatch = training_handler.create_next_val_minibatch()
+		loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: val_imageBatch, Network.Y: val_labelBatch, Network.SGD_lr: 0., Network.dropout_keep_prob: 1.0})
+		# STORE PERFORMANCE
+		loss_store.append(loss)
+		top1_store.append(top1)
+		max_logits = np.argmax(logits, axis=1)
+		for entry in range(len(val_labelBatch)):
+			val_confusion_matrix[int(val_labelBatch[entry]), max_logits[entry]] += 1.
+			val_count_vector[int(val_labelBatch[entry])] += 1.
+	# GET MEAN PERFORMANCE OVER VALIDATION MINIBATCHES
+	val_loss = np.mean(loss_store)
+	val_top1 = np.mean(top1_store)
+	val_apc = np.zeros((10,))
+	for i in range(10):
+		val_apc[i] = np.array(val_confusion_matrix[i,i]/val_count_vector[i])[0]
+	if print_val_apc:
+		print('[MESSAGE] accuracy per class (v): {1: %.3f |' %val_apc[0] + ' 2: %.3f |' %val_apc[1] + ' 3: %.3f |' %val_apc[2] + ' 4: %.3f |' %val_apc[3] + ' 5: %.3f |' %val_apc[4] +
+												' 6: %.3f |' %val_apc[5] + ' 7: %.3f |' %val_apc[6] + ' 8: %.3f |' %val_apc[7] + ' 9: %.3f |' %val_apc[8] + ' 10: %.3f}' %val_apc[9])
+	# GET AF WEIGHTS
+	af_weights_dict = Network.get_af_weights_dict(sess)
+	# STORE RESULTS
+	rec.feed_val_performance(counter.mb_count_total, val_loss, val_top1, val_apc, af_weights_dict)
+	timer.feed_val_duration(time.time()-time_val_start)
+# WORK IN PROGRESS END
+
+def test_saved_model(TaskSettings, Paths, Network, test_handler, print_results=False, print_messages=True):
 	# SESSION CONFIG AND START
 	time_test_start = time.time()
 	test_handler.reset_test()
