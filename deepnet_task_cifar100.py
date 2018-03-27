@@ -790,7 +790,7 @@ def validate(TaskSettings, sess, Network, training_handler, counter, timer, rec,
 	rec.feed_val_performance(counter.mb_count_total, val_loss, val_top1, val_apc, af_weights_dict)
 	timer.feed_val_duration(time.time()-time_val_start)
 
-def test(sess, Network, test_handler, counter, rec, print_test_apc=False):
+def test(TaskSettings, sess, Network, test_handler, counter, rec, print_test_apc=False):
 	# TEST START
 	test_handler.reset_test()
 	# MINIBATCH HANDLING

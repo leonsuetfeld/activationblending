@@ -31,42 +31,42 @@ import subprocess
 ################################################################################
 ################################################################################
 """
-
-################################################################################
-os.system("nvidia-smi")
-command = "python3 "          				+ 'deepnet_main.py' + \
-		  " -experiment_name="  			+ 'debugging' + \
-		  " -spec_name="        			+ 'smcn_cifar10' + \
-		  " -run="              			+ str(3) + \
-		  " -task="             			+ 'cifar10' + \
-		  " -network="          			+ 'smcn' + \
-		  " -mode="             			+ 'training' + \
-		  " -n_minibatches="    			+ str(1000) + \
-		  " -minibatch_size="   			+ str(256) + \
-		  " -dropout_keep_probs="   		+ '[0.5]' + \
-		  " -dropout_keep_probs_inference="	+ '[1.0]' + \
-		  " -optimizer="            		+ 'Adam' + \
-		  " -lr="               			+ str(0.01) + \
-		  " -lr_step_ep="           		+ '[]' + \
-		  " -lr_step_multi="        		+ '[]' + \
-		  " -use_wd="        				+ str(False) + \
-		  " -wd_lambda="        			+ str(0.0) + \
-		  " -training_schedule="			+ 'epochs' + \
-		  " -create_val_set="				+ str(True) + \
-		  " -val_set_fraction="				+ str(0.05) + \
-		  " -af_set="           			+ '1_jelu' +\
-		  " -af_weights_init="  			+ 'default' + \
-		  " -blend_trainable="  			+ str(False) + \
-		  " -blend_mode="       			+ 'unrestricted' + \
-		  " -swish_beta_trainable=" 		+ str(False)
-subprocess.run(command, shell=True)
+#
+# ################################################################################
+# os.system("nvidia-smi")
+# command = "python3 "          				+ 'deepnet_main.py' + \
+# 		  " -experiment_name="  			+ 'debugging' + \
+# 		  " -spec_name="        			+ 'smcn_cifar10' + \
+# 		  " -run="              			+ str(1) + \
+# 		  " -task="             			+ 'cifar10' + \
+# 		  " -network="          			+ 'smcn' + \
+# 		  " -mode="             			+ 'training' + \
+# 		  " -n_minibatches="    			+ str(1000) + \
+# 		  " -minibatch_size="   			+ str(256) + \
+# 		  " -dropout_keep_probs="   		+ '[0.5]' + \
+# 		  " -dropout_keep_probs_inference="	+ '[1.0]' + \
+# 		  " -optimizer="            		+ 'Adam' + \
+# 		  " -lr="               			+ str(0.001) + \
+# 		  " -lr_step_ep="           		+ '[]' + \
+# 		  " -lr_step_multi="        		+ '[]' + \
+# 		  " -use_wd="        				+ str(False) + \
+# 		  " -wd_lambda="        			+ str(0.0) + \
+# 		  " -training_schedule="			+ 'epochs' + \
+# 		  " -create_val_set="				+ str(True) + \
+# 		  " -val_set_fraction="				+ str(0.05) + \
+# 		  " -af_set="           			+ '1_jelu' +\
+# 		  " -af_weights_init="  			+ 'default' + \
+# 		  " -blend_trainable="  			+ str(False) + \
+# 		  " -blend_mode="       			+ 'unrestricted' + \
+# 		  " -swish_beta_trainable=" 		+ str(False)
+# subprocess.run(command, shell=True)
 #
 # ################################################################################
 # os.system("nvidia-smi")
 # command = "python3 "          				+ 'deepnet_main.py' + \
 # 		  " -experiment_name="  			+ 'debugging' + \
 # 		  " -spec_name="        			+ 'smcn_cifar100' + \
-# 		  " -run="              			+ str(1) + \
+# 		  " -run="              			+ str(2) + \
 # 		  " -task="             			+ 'cifar100' + \
 # 		  " -network="          			+ 'smcn' + \
 # 		  " -mode="             			+ 'training' + \
@@ -75,7 +75,7 @@ subprocess.run(command, shell=True)
 # 		  " -dropout_keep_probs="   		+ '[.5]' + \
 # 		  " -dropout_keep_probs_inference="	+ '[1.0]' + \
 # 		  " -optimizer="            		+ 'Adam' + \
-# 		  " -lr="               			+ str(0.01) + \
+# 		  " -lr="               			+ str(0.001) + \
 # 		  " -lr_step_ep="           		+ '[]' + \
 # 		  " -lr_step_multi="        		+ '[]' + \
 # 		  " -use_wd="        				+ str(False) + \
@@ -90,6 +90,65 @@ subprocess.run(command, shell=True)
 # 		  " -swish_beta_trainable=" 		+ str(False)
 # subprocess.run(command, shell=True)
 #
+# ################################################################################
+# os.system("nvidia-smi")
+# command = "python3 "          				+ 'deepnet_main.py' + \
+# 		  " -experiment_name="  			+ 'debugging' + \
+# 		  " -spec_name="        			+ 'smcn_cifar10' + \
+# 		  " -run="              			+ str(1) + \
+# 		  " -task="             			+ 'cifar10' + \
+# 		  " -network="          			+ 'smcn' + \
+# 		  " -mode="             			+ 'training' + \
+# 		  " -n_minibatches="    			+ str(1000) + \
+# 		  " -minibatch_size="   			+ str(256) + \
+# 		  " -dropout_keep_probs="   		+ '[.5]' + \
+# 		  " -dropout_keep_probs_inference="	+ '[1.0]' + \
+# 		  " -optimizer="            		+ 'Adam' + \
+# 		  " -lr="               			+ str(0.001) + \
+# 		  " -lr_step_ep="           		+ '[]' + \
+# 		  " -lr_step_multi="        		+ '[]' + \
+# 		  " -use_wd="        				+ str(True) + \
+# 		  " -wd_lambda="        			+ str(0.001) + \
+# 		  " -training_schedule="			+ 'epochs' + \
+# 		  " -create_val_set="				+ str(False) + \
+# 		  " -val_set_fraction="				+ str(0.05) + \
+# 		  " -af_set="           			+ '5_blend5_swish' +\
+# 		  " -af_weights_init="  			+ 'default' + \
+# 		  " -blend_trainable="  			+ str(True) + \
+# 		  " -blend_mode="       			+ 'unrestricted' + \
+# 		  " -swish_beta_trainable=" 		+ str(False)
+# subprocess.run(command, shell=True)
+
+
+################################################################################
+os.system("nvidia-smi")
+command = "python3 "          				+ 'deepnet_main.py' + \
+		  " -experiment_name="  			+ 'debugging' + \
+		  " -spec_name="        			+ 'allcnnc_cifar10' + \
+		  " -run="              			+ str(1) + \
+		  " -task="             			+ 'cifar10' + \
+		  " -network="          			+ 'allcnnc' + \
+		  " -mode="             			+ 'training' + \
+		  " -n_minibatches="    			+ str(1000) + \
+		  " -minibatch_size="   			+ str(256) + \
+		  " -dropout_keep_probs="   		+ '[0.8, 0.5, 0.5]' + \
+		  " -dropout_keep_probs_inference="	+ '[1.0, 1.0, 1.0]' + \
+		  " -optimizer="            		+ 'Adam' + \
+		  " -lr="               			+ str(0.001) + \
+		  " -lr_step_ep="           		+ '[]' + \
+		  " -lr_step_multi="        		+ '[]' + \
+		  " -use_wd="        				+ str(True) + \
+		  " -wd_lambda="        			+ str(0.001) + \
+		  " -training_schedule="			+ 'epochs' + \
+		  " -create_val_set="				+ str(True) + \
+		  " -val_set_fraction="				+ str(0.05) + \
+		  " -af_set="           			+ '5_blend5_swish' +\
+		  " -af_weights_init="  			+ 'default' + \
+		  " -blend_trainable="  			+ str(True) + \
+		  " -blend_mode="       			+ 'unrestricted' + \
+		  " -swish_beta_trainable=" 		+ str(False)
+subprocess.run(command, shell=True)
+
 # ################################################################################
 # os.system("nvidia-smi")
 # command = "python3 "          				+ 'deepnet_main.py' + \

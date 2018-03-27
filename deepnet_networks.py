@@ -91,7 +91,6 @@ class Network(object):
 		self.Y = tf.placeholder(tf.int64, [None], name='labels')
 		self.lr = tf.placeholder(tf.float32, name='learning_rate')
 		self.dropout_keep_prob = tf.placeholder(tf.float32, [None], name='dropout_keep_prob')
-		print('\n\nDEBUG', tf.shape(self.dropout_keep_prob))
 		self.global_step = tf.Variable(0, dtype=tf.int32, trainable=False)
 		self.reuse = reuse
 		# --- cifar10 reshape --------------------------------------------------
@@ -120,12 +119,13 @@ class Network(object):
 
 		# OBJECTIVE / EVALUATION
 		with tf.name_scope('objective'):
+			self.xentropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
 			if NetSettings.use_wd:
-				filters = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name=='weights'] # DEBUG (get trainable vars containing "weight", but not "blend" or something)
-				print('DEBUG', len(filters))
-				self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))+NetSettings.wd_lambda*tf.reduce_sum(tf.square(filters)) # DEBUG // reduce mean?
+				self.l2 = [tf.nn.l2_loss(v) for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if 'weight' in v.name and not 'blend_weight' in v.name]
+				self.weights_norm = tf.reduce_sum(input_tensor = NetSettings.wd_lambda*tf.stack( self.l2 ), name='weights_norm')
+				self.loss = self.xentropy + self.weights_norm
 			else:
-				self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
+				self.loss = self.xentropy
 			self.top1 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(self.logits, self.Y, 1), tf.float32))
 			self.top5 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(self.logits, self.Y, 5), tf.float32))
 			tf.summary.scalar('loss', self.loss)
@@ -276,7 +276,6 @@ class Network(object):
 			# block 4 / output block
 			self.state = tf.nn.avg_pool(self.state, ksize=[1,6,6,1], strides=[1,1,1,1], padding='VALID', name=namescope+'/avgpool10')
 			self.logits = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[self.NetSettings.logit_dims], bias_init=0.0, AF_set=None, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/dense11')
-			# add weight decay lambda = 0.001
 			return self.logits
 
 	# ============================= NETWORK BLOCKS =============================
