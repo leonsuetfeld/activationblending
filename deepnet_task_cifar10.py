@@ -53,9 +53,11 @@ class TaskSettings(object):
 			assert args['run'] is not None, 'run must be specified.'
 			assert args['spec_name'] is not None, 'spec_name must be specified.'
 			assert args['minibatch_size'] is not None, 'minibatch_size must be specified.'
+			assert args['dropout_keep_probs_inference'] is not None, 'dropout_keep_probs_inference must be specified for training.'
 			self.spec_name = args['spec_name'][0]
 			self.run = args['run'][0]
 			self.minibatch_size = args['minibatch_size'][0]
+			self.dropout_keep_probs_inference = eval(args['dropout_keep_probs_inference'][0]) # safety hazard
 			if self.mode in ['train','training','']:
 				assert args['training_schedule'] is not None, 'training_schedule must be specified.'
 				assert args['n_minibatches'] is not None, 'n_minibatches (runtime) must be specified for training.'
@@ -176,7 +178,6 @@ class TrainingHandler(object):
 		self.training_images = self.dataset_images[:]
 		self.training_labels = self.dataset_labels[:]
 		if self.TaskSettings.create_val_set:
-			print('creating val set.')
 			# determine train/ val split: make n_validation_samples multiple of minibatch_size
 			self.n_validation_samples = np.round(self.n_total_samples*self.TaskSettings.val_set_fraction)
 			offset = self.n_validation_samples%self.TaskSettings.minibatch_size
@@ -474,14 +475,19 @@ class PerformanceRecorder(object):
 			print('[MESSAGE] file saved: %s (performance dict)'%(savepath+filename))
 
 class Counter(object):
-	def __init__(self):
-		self.mb_count_total = 0
+	def __init__(self, TrainingHandler):
+		self.mb_count_total = 0 # current mb
+		self.ep_count_total = 0	# current ep
+		self.mbs_per_epoch = TrainingHandler.n_train_minibatches_per_epoch
 	def mb_plus_one(self):
 		self.mb_count_total += 1
+		self.ep_count_total = 1 + np.floor(self.mb_count_total / self.mbs_per_epoch)
 	def reset(self):
 		self.mb_count_total = 0
+		self.ep_count_total = 0
 	def set_counters(self, mb):
 		self.mb_count_total = mb
+		self.ep_count_total = 1 + np.floor(self.mb_count_total / self.mbs_per_epoch)
 
 class SessionTimer(object):
 	def __init__(self):
@@ -596,7 +602,7 @@ def train(TaskSettings, Paths, Network, training_handler, validation_handler, te
 			args_to_txt(args, Paths)
 
 		if TaskSettings.create_val_set:
-			validate(sess, Network, training_handler, counter, timer, rec)
+			validate(TaskSettings, sess, Network, training_handler, counter, timer, rec)
 		for mb in range(n_minibatches_remaining):
 
 			# MB START
@@ -605,7 +611,7 @@ def train(TaskSettings, Paths, Network, training_handler, validation_handler, te
 			imageBatch, labelBatch = training_handler.get_train_minibatch()
 
 			# SESSION RUN
-			input_dict = {Network.X: imageBatch, Network.Y: labelBatch, Network.SGD_lr: lr_step_scheduler(TaskSettings, counter.ep_count_total), Network.dropout_keep_prob: TaskSettings.dropout_keep_probs}
+			input_dict = {Network.X: imageBatch, Network.Y: labelBatch, Network.lr: lr_step_scheduler(TaskSettings, counter.ep_count_total), Network.dropout_keep_prob: TaskSettings.dropout_keep_probs}
 			run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 			run_metadata = tf.RunMetadata()
 
@@ -646,7 +652,7 @@ def train(TaskSettings, Paths, Network, training_handler, validation_handler, te
 			# RUN VALIDATION AND PRINT
 			if TaskSettings.create_val_set:
 				if (mb+1)%TaskSettings.val_to_val_mbs == 0 or mb+1 == TaskSettings.n_minibatches:
-					validate(sess, Network, training_handler, counter, timer, rec)
+					validate(TaskSettings, sess, Network, training_handler, counter, timer, rec)
 					print('['+str(TaskSettings.spec_name)+', run '+str(TaskSettings.run).zfill(2)+'] mb '+str(counter.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
 						  ' | l(t) %05.3f [%05.3f]' %(rec.train_loss_hist[-1], rec.get_running_average(measure='t-loss', window_length=50)) +
 						  ' | acc(t) %05.3f [%05.3f]' %(rec.train_top1_hist[-1], rec.get_running_average(measure='t-acc', window_length=50)) +
@@ -680,7 +686,7 @@ def train(TaskSettings, Paths, Network, training_handler, validation_handler, te
 		print('=================================================================================================================================================================================================')
 
 		# TEST AFTER TRAINING IS COMPLETE
-		test_acc, test_loss = test(sess, Network, test_handler, counter, rec)
+		test_acc, test_loss = test(TaskSettings, sess, Network, test_handler, counter, rec)
 		print('=== TESTING FINISHED -- ACCURACY: %.3f =========================================================================================================================================================' %(test_acc))
 		print('=================================================================================================================================================================================================')
 
@@ -750,7 +756,7 @@ def delete_previous_savefiles(TaskSettings, Paths, counter, which_files, print_m
 		if print_messsages:
 			print('[MESSAGE] file deleted: %s'%(del_file))
 
-def validate(sess, Network, training_handler, counter, timer, rec, print_val_apc=False):
+def validate(TaskSettings, sess, Network, training_handler, counter, timer, rec, print_val_apc=False):
 	# VALIDATION START
 	time_val_start = time.time()
 	training_handler.reset_val()
@@ -762,7 +768,7 @@ def validate(sess, Network, training_handler, counter, timer, rec, print_val_apc
 	while training_handler.val_mb_counter < training_handler.n_val_minibatches:
 		# LOAD VARIABLES & RUN SESSION
 		val_imageBatch, val_labelBatch = training_handler.create_next_val_minibatch()
-		loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: val_imageBatch, Network.Y: val_labelBatch, Network.SGD_lr: 0., Network.dropout_keep_prob: 1.0})
+		loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: val_imageBatch, Network.Y: val_labelBatch, Network.lr: 0., Network.dropout_keep_prob: TaskSettings.dropout_keep_probs_inference})
 		# STORE PERFORMANCE
 		loss_store.append(loss)
 		top1_store.append(top1)
@@ -785,7 +791,7 @@ def validate(sess, Network, training_handler, counter, timer, rec, print_val_apc
 	rec.feed_val_performance(counter.mb_count_total, val_loss, val_top1, val_apc, af_weights_dict)
 	timer.feed_val_duration(time.time()-time_val_start)
 
-def test(sess, Network, test_handler, counter, rec, print_test_apc=False):
+def test(TaskSettings, sess, Network, test_handler, counter, rec, print_test_apc=False):
 	# TEST START
 	test_handler.reset_test()
 	# MINIBATCH HANDLING
@@ -796,7 +802,7 @@ def test(sess, Network, test_handler, counter, rec, print_test_apc=False):
 	while test_handler.test_mb_counter < test_handler.n_test_minibatches:
 		# LOAD VARIABLES & RUN SESSION
 		test_imageBatch, test_labelBatch = test_handler.create_next_test_minibatch()
-		loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: test_imageBatch, Network.Y: test_labelBatch, Network.SGD_lr: 0., Network.dropout_keep_prob: 1.0})
+		loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: test_imageBatch, Network.Y: test_labelBatch, Network.lr: 0., Network.dropout_keep_prob: TaskSettings.dropout_keep_probs_inference})
 		# STORE PERFORMANCE
 		loss_store.append(loss)
 		top1_store.append(top1)
@@ -866,7 +872,7 @@ def test_saved_model(TaskSettings, Paths, Network, test_handler, print_results=F
 		while test_handler.test_mb_counter < test_handler.n_test_minibatches:
 			# LOAD DATA & RUN SESSION
 			test_imageBatch, test_labelBatch = test_handler.create_next_test_minibatch()
-			loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: test_imageBatch, Network.Y: test_labelBatch, Network.dropout_keep_prob: 1.0}) # why was this set to 0.5?
+			loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: test_imageBatch, Network.Y: test_labelBatch, Network.dropout_keep_prob: TaskSettings.dropout_keep_probs_inference}) # why was this set to 0.5?
 			# STORE PERFORMANCE
 			loss_store.append(loss)
 			top1_store.append(top1)
