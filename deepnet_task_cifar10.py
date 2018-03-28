@@ -46,18 +46,18 @@ class TaskSettings(object):
 	def __init__(self, args):
 
 		assert args['experiment_name'] is not None, 'experiment_name must be specified.'
-		self.mode = args['mode'][0]
-		self.experiment_name = args['experiment_name'][0]
+		self.mode = args['mode']
+		self.experiment_name = args['experiment_name']
 
 		if self.mode != 'analysis':
 			assert args['run'] is not None, 'run must be specified.'
 			assert args['spec_name'] is not None, 'spec_name must be specified.'
 			assert args['minibatch_size'] is not None, 'minibatch_size must be specified.'
 			assert args['dropout_keep_probs_inference'] is not None, 'dropout_keep_probs_inference must be specified for training.'
-			self.spec_name = args['spec_name'][0]
-			self.run = args['run'][0]
-			self.minibatch_size = args['minibatch_size'][0]
-			self.dropout_keep_probs_inference = eval(args['dropout_keep_probs_inference'][0]) # safety hazard
+			self.spec_name = args['spec_name']
+			self.run = args['run']
+			self.minibatch_size = args['minibatch_size']
+			self.dropout_keep_probs_inference = args['dropout_keep_probs_inference']
 			if self.mode in ['train','training','']:
 				assert args['training_schedule'] is not None, 'training_schedule must be specified.'
 				assert args['n_minibatches'] is not None, 'n_minibatches (runtime) must be specified for training.'
@@ -67,17 +67,17 @@ class TaskSettings(object):
 				assert args['lr'] is not None, 'lr must be specified for training.'
 				assert args['lr_step_ep'] is not None, 'lr_step_ep must be specified for training.'
 				assert args['lr_step_multi'] is not None, 'lr_step_multi must be specified for training.'
-				self.n_minibatches = args['n_minibatches'][0]
-				self.training_schedule = args['training_schedule'][0]
-				self.create_val_set = args['create_val_set'][0] # True
-				self.val_set_fraction = float(args['val_set_fraction'][0]) # 0.05
+				self.n_minibatches = args['n_minibatches']
+				self.training_schedule = args['training_schedule']
+				self.create_val_set = args['create_val_set']
+				self.val_set_fraction = args['val_set_fraction']
 				self.val_to_val_mbs = 20
 				self.restore_model = True
-				self.dropout_keep_probs = eval(args['dropout_keep_probs'][0]) # safety hazard
-				self.lr = float(args['lr'][0])
-				self.lr_step_ep = eval(args['lr_step_ep'][0]) # safety hazard
-				self.lr_step_multi = eval(args['lr_step_multi'][0]) # safety hazard
-				if args['blend_trainable'][0] or args['swish_beta_trainable'][0]:
+				self.dropout_keep_probs = args['dropout_keep_probs']
+				self.lr = args['lr']
+				self.lr_step_ep = args['lr_step_ep']
+				self.lr_step_multi = args['lr_step_multi']
+				if args['blend_trainable'] or args['swish_beta_trainable']:
 					self.af_weights_exist = True
 				else:
 					self.af_weights_exist = False
@@ -965,7 +965,10 @@ def lr_linear_decay(step, start_lr=0.001, stop_lr=0.00004, total_steps=10000): #
 def lr_step_scheduler(TaskSettings, current_ep):
 	if len(TaskSettings.lr_step_ep) == 0:
 		return TaskSettings.lr
-	else:
+	if len(TaskSettings.lr_step_ep) == 1:
+		if current_ep > TaskSettings.lr_step_ep[0]:
+			return TaskSettings.lr * TaskSettings.lr_step_multi[0]
+	elif len(TaskSettings.lr_step_ep) == 3:
 		if current_ep < TaskSettings.lr_step_ep[0]:
 			return TaskSettings.lr
 		elif current_ep > TaskSettings.lr_step_ep[0] and current_ep < TaskSettings.lr_step_ep[1]:
@@ -977,12 +980,12 @@ def lr_step_scheduler(TaskSettings, current_ep):
 
 def args_to_txt(args, Paths):
 	# prepare
-	experiment_name = args['experiment_name'][0]
-	spec_name = args['spec_name'][0]
-	run = args['run'][0]
-	network = args['network'][0]
-	task = args['task'][0]
-	mode = args['mode'][0]
+	experiment_name = args['experiment_name']
+	spec_name = args['spec_name']
+	run = args['run']
+	network = args['network']
+	task = args['task']
+	mode = args['mode']
 	# write file
 	if not os.path.exists(Paths.exp_spec_folder):
 		os.makedirs(Paths.exp_spec_folder)
@@ -1000,4 +1003,4 @@ def args_to_txt(args, Paths):
 		print("", file=text_file)
 		for key in args.keys():
 			if args[key] is not None and key not in ['experiment_name','spec_name','run','network','task','mode']:
-				print("{:>25} {:<30}".format(key+':', str(args[key][0])), file=text_file)
+				print("{:>25} {:<30}".format(key+':', str(args[key])), file=text_file)
