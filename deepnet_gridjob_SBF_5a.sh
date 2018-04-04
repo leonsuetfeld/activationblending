@@ -46,7 +46,7 @@ echo "Start"
 $UVENV
 
 export THEANO_FLAGS=floatX=float32,device=gpu0,lib.cnmem=0.8
-export CUDNN_HOME=/net/store/ni/users/lsuetfel/squeezeMI/cuda
+export CUDNN_HOME=/net/store/ni/users/lsuetfel/activations/cuda
 export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$CUDNN_HOME/lib64"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDNN_HOME/lib64"
 

@@ -153,11 +153,11 @@ os.system("nvidia-smi")
 command = "python3 "          				+ 'deepnet_main.py' + \
 		  " -experiment_name "  			+ 'debugging' + \
 		  " -spec_name "        			+ 'allcnnc_cifar10' + \
-		  " -run "              			+ '2' + \
+		  " -run "              			+ '1' + \
 		  " -task "             			+ 'cifar10' + \
 		  " -network "          			+ 'allcnnc' + \
 		  " -mode "             			+ 'training' + \
-		  " -n_minibatches "    			+ '1000' + \
+		  " -n_minibatches "    			+ '70000' + \
 		  " -minibatch_size "   			+ '256' + \
 		  " -dropout_keep_probs "   		+ '0.8 0.5 0.5' + \
 		  " -dropout_keep_probs_inference "	+ '1.0 1.0 1.0' + \
@@ -170,7 +170,7 @@ command = "python3 "          				+ 'deepnet_main.py' + \
 		  " -training_schedule "			+ 'epochs' + \
 		  " -create_val_set "				+ 'True' + \
 		  " -val_set_fraction "				+ '0.05' + \
-		  " -af_set "           			+ '1_relu' +\
+		  " -af_set "           			+ '1_jelu' +\
 		  " -af_weights_init "  			+ 'default' + \
 		  " -blend_trainable "  			+ 'True' + \
 		  " -blend_mode "       			+ 'unrestricted' + \

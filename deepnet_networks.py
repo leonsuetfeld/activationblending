@@ -97,7 +97,7 @@ class Network(object):
 		# --- per image standardization ----------------------------------------
 		self.Xp_per_image_mean = tf.reduce_mean(self.Xp, [1,2,3], name='image_mean', keep_dims=True)
 		_,self.Xp_per_image_std = tf.nn.moments(self.Xp, [1,2,3], name='image_std', keep_dims=True)
-		self.Xp = tf.divide((self.Xp-self.Xp_per_image_mean),tf.maximum(self.Xp_per_image_std, tf.divide(tf.fill(self.Xp_per_image_std.get_shape(),1.),tf.sqrt(3072.))))
+		self.Xp = tf.divide((self.Xp-self.Xp_per_image_mean),tf.maximum(self.Xp_per_image_std, tf.divide(tf.fill(self.Xp_per_image_std.get_shape(),1.),tf.sqrt(3072.)))) # check again?
 
 		# CHOOSE NETWORK ARCHITECTURE
 		if self.NetSettings.network_spec == 'sfnet':
