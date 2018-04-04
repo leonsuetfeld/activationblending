@@ -86,12 +86,12 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 			ax.plot(np.array([0,300]), np.array([np.max(mean_run_per_spec[spec]),np.max(mean_run_per_spec[spec])]), linewidth=1.5, linestyle='-', color=cmap(spec/len(spec_list)), alpha=0.8)
 		# layer 2
 		for spec in range(len(spec_list)):
-			ax.plot(mb_list[spec], mean_run_per_spec[spec], linewidth=2.0, color=cmap(spec/len(spec_list)), label='[%i / m %.4f / v %.6f] %s (%.2f / %.2f)' %(n_runs_list[spec], 100*mean_of_run_maxs_per_spec[spec], 100*var_of_run_maxs_per_spec[spec], spec_list[spec], 100*np.max(mean_run_per_spec[spec]), 100*np.max(best_run_per_spec[spec])), alpha=0.8)
+			ax.plot(mb_list[spec], mean_run_per_spec[spec], linewidth=2.0, color=cmap(spec/len(spec_list)), label='[%i / m %.4f / v %.6f] %s' %(n_runs_list[spec], 100*test_mean_per_spec[spec], 100*test_var_per_spec[spec], spec_list[spec]), alpha=0.8)
 		# settings
 		ax.set_ylim(0.1,1.)
 		ax.set_xlim(0.,float(n_mb_total))
-		ax.set_xticks(np.arange(0, float(n_mb_total)+.1, 1000))
-		ax.set_xticks(np.arange(0, float(n_mb_total)+.1, 500), minor=True)
+		ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/10.))
+		ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/40.), minor=True)
 		ax.set_yticks(np.arange(0.1, 1.01, .1))
 		ax.set_yticks(np.arange(0.1, 1.01, .05), minor=True)
 		ax.grid(which='major', linewidth=0.5, linestyle='dotted', color='black', alpha=0.3)
@@ -310,8 +310,8 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 			# settings ax
 			ax.set_ylim(0.1,1.)
 			ax.set_xlim(0.,float(n_mb_total))
-			ax.set_xticks(np.arange(0, float(n_mb_total)+.1, 1000))
-			ax.set_xticks(np.arange(0, float(n_mb_total)+.1, 500), minor=True)
+			ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/10.))
+			ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/40.), minor=True)
 			ax.set_yticks(np.arange(0.1, 1.01, .1))
 			ax.set_yticks(np.arange(0.1, 1.01, .05), minor=True)
 			ax.grid(which='major', linewidth=0.5, linestyle='dotted', color='black', alpha=0.3)
