@@ -59,7 +59,7 @@ class NetSettings(object):
 		self.optimizer_choice = args['optimizer']
 		self.print_overview()
 
-		assert self.std_type in [1,2], 'std_type must be in [1,2].'
+		assert self.std_type in [0,1,2], 'std_type must be in [0,1,2].'
 
 	def print_overview(self):
 		print('')
@@ -90,7 +90,6 @@ class Network(object):
 		# --- input  --------------------------------------------------
 		self.X = tf.placeholder(tf.float32, [NetSettings.minibatch_size, 3072], name='images')
 		self.Y = tf.placeholder(tf.int64, [None], name='labels')
-		self.s = tf.placeholder(tf.float32, [NetSettings.image_x, NetSettings.image_y, NetSettings.image_z], name='dataset_perpixel_std')
 		self.lr = tf.placeholder(tf.float32, name='learning_rate')
 		self.dropout_keep_prob = tf.placeholder(tf.float32, [None], name='dropout_keep_prob')
 		self.global_step = tf.Variable(0, dtype=tf.int32, trainable=False)
@@ -99,13 +98,15 @@ class Network(object):
 		self.Xp = tf.reshape(self.X, [NetSettings.minibatch_size, NetSettings.image_z, NetSettings.image_x, NetSettings.image_y]) # [256,3,32,32]
 		self.Xp = tf.transpose(self.Xp, [0,2,3,1]) # => [256,32,32,3]
 		# --- per image standardization ----------------------------------------
-		if NetSettings.std_type == 1:
+		if NetSettings.std_type == 0:
+			pass
+		elif NetSettings.std_type == 1:
 			self.Xp_per_image_mean = tf.reduce_mean(self.Xp, [1,2,3], name='image_mean', keep_dims=True)
 			_,self.Xp_per_image_std = tf.nn.moments(self.Xp, [1,2,3], name='image_std', keep_dims=True)
 			self.Xp = tf.divide((self.Xp-self.Xp_per_image_mean),tf.maximum( self.Xp_per_image_std, tf.divide(tf.fill(self.Xp_per_image_std.get_shape(),1.),tf.sqrt(3072.)) ))
 		elif NetSettings.std_type == 2:
 			self.Xp = self.Xp-tf.reduce_mean(self.Xp, [1,2,3], name='image_mean', keep_dims=True)
-			self.Xp = tf.divide(self.s * self.Xp, tf.maximum(tf.reduce_mean(tf.square(self.Xp))+self.std_lambda, tf.constant(10**(-8))))
+			self.Xp = tf.divide(tf.constant(1) * self.Xp, tf.maximum(tf.reduce_mean(tf.square(self.Xp))+tf.constant(0), tf.constant(10**(-8))))
 
 		# CHOOSE NETWORK ARCHITECTURE
 		if self.NetSettings.network_spec == 'sfnet':
