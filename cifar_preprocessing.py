@@ -95,7 +95,7 @@ def split_dataset(dataset_images, dataset_labels, splitpoint=50000):
     return training_images, training_labels, test_images, test_labels
 
 def load_cifar10(path_train='./1_data_cifar10/train_batches/', path_test='./1_data_cifar10/test_batches/', max_size = 0):
-    print('\nLoading and fusing training and test sets...')
+    print('\nLoading and fusing cifar 10 training and test sets...')
     dataset_images = []
     dataset_labels = []
     for batch in range(5):
@@ -119,12 +119,58 @@ def load_cifar10(path_train='./1_data_cifar10/train_batches/', path_test='./1_da
     print('done.')
     return dataset_images, dataset_labels
 
+def load_cifar100(path_train='./1_data_cifar100/train_batches/', path_test='./1_data_cifar100/test_batches/', max_size = 0):
+    print('\nLoading and fusing cifar 100 training and test sets...')
+    dataset_images = []
+    dataset_labels = []
+    with open(path_train+'train', 'rb') as file:
+        data_dict = pickle.load(file, encoding='bytes')
+        dataset_images.extend(data_dict[b'data'])
+        dataset_labels.extend(data_dict[b'labels'])
+    with open(path_test+'test', 'rb') as file:
+    	test_dict = pickle.load(file, encoding='bytes')
+    	dataset_images.extend(test_dict[b'data'])
+    	dataset_labels.extend(test_dict[b'labels'])
+    dataset_images = np.array(dataset_images)
+    dataset_labels = np.array(dataset_labels)
+    if max_size > 0:
+        dataset_images = dataset_images[:max_size,:]
+        dataset_labels = dataset_labels[:max_size]
+    print('done.')
+    return dataset_images, dataset_labels
+
 # ##############################################################################
 # ### PROCESS DATA #############################################################
 # ##############################################################################
 
 print('\n#############################################')
-print('### CIFAR PRE-PROCESSING ####################')
+print('### CIFAR 10 RESHAPING ######################')
+print('#############################################')
+
+# load and reshape images
+dataset_images, dataset_labels = load_cifar10()
+dataset_images = reshape_cifar(dataset_images)
+
+# separate training and test data, save as files
+train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_batches_nopp/', 'cifar10_trainset.pkl')
+save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_batches_nopp/', 'cifar10_testset.pkl')
+
+print('\n#############################################')
+print('### CIFAR 100 RESHAPING #####################')
+print('#############################################')
+
+# load and reshape images
+dataset_images, dataset_labels = load_cifar100()
+dataset_images = reshape_cifar(dataset_images)
+
+# separate training and test data, save as files
+train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_batches_nopp/', 'cifar100_trainset.pkl')
+save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_batches_nopp/', 'cifar100_testset.pkl')
+
+print('\n#############################################')
+print('### CIFAR 10 GCN & ZCA PRE-PROCESSING #######')
 print('#############################################')
 
 # load and reshape images
@@ -141,7 +187,24 @@ save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_batches_gcn_zca/', 
 save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_batches_gcn_zca/', 'cifar10_testset.pkl')
 
 print('\n#############################################')
-print('### FINISHED ################################')
+print('### CIFAR 100 GCN & ZCA PRE-PROCESSING ######')
+print('#############################################')
+
+# load and reshape images
+dataset_images, dataset_labels = load_cifar100()
+dataset_images = reshape_cifar(dataset_images)
+
+# perform GCN and ZCA
+dataset_images = GCN(dataset_images, goodfellow=True)
+dataset_images = ZCA(dataset_images)
+
+# separate training and test data, save as files
+train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_batches_gcn_zca/', 'cifar100_trainset.pkl')
+save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_batches_gcn_zca/', 'cifar100_testset.pkl')
+
+print('\n#############################################')
+print('### ALL FINISHED ############################')
 print('#############################################\n')
 
 # show_images(dataset_images)
