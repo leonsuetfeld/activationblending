@@ -139,6 +139,15 @@ def load_cifar100(path_train='./1_data_cifar100/train_batches/', path_test='./1_
     print('done.')
     return dataset_images, dataset_labels
 
+def array_to_list(a):
+    if len(a.shape)==4:
+        b = []
+        for i in range(a.shape[0]):
+            b.append(a[i,:,:,:])
+    if len(a.shape)==1:
+        b = a.tolist()
+    return b
+
 # ##############################################################################
 # ### PROCESS DATA #############################################################
 # ##############################################################################
@@ -153,6 +162,10 @@ dataset_images = reshape_cifar(dataset_images)
 
 # separate training and test data, save as files
 train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+train_imgs = array_to_list(train_imgs)
+train_lbls = array_to_list(train_lbls)
+test_imgs = array_to_list(test_imgs)
+test_lbls = array_to_list(test_lbls)
 save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_batches_nopp/', 'cifar10_trainset.pkl')
 save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_batches_nopp/', 'cifar10_testset.pkl')
 
@@ -166,6 +179,10 @@ dataset_images = reshape_cifar(dataset_images)
 
 # separate training and test data, save as files
 train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+train_imgs = array_to_list(train_imgs)
+train_lbls = array_to_list(train_lbls)
+test_imgs = array_to_list(test_imgs)
+test_lbls = array_to_list(test_lbls)
 save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_batches_nopp/', 'cifar100_trainset.pkl')
 save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_batches_nopp/', 'cifar100_testset.pkl')
 
@@ -183,6 +200,10 @@ dataset_images = ZCA(dataset_images)
 
 # separate training and test data, save as files
 train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+train_imgs = array_to_list(train_imgs)
+train_lbls = array_to_list(train_lbls)
+test_imgs = array_to_list(test_imgs)
+test_lbls = array_to_list(test_lbls)
 save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_batches_gcn_zca/', 'cifar10_trainset.pkl')
 save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_batches_gcn_zca/', 'cifar10_testset.pkl')
 
@@ -200,6 +221,10 @@ dataset_images = ZCA(dataset_images)
 
 # separate training and test data, save as files
 train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+train_imgs = array_to_list(train_imgs)
+train_lbls = array_to_list(train_lbls)
+test_imgs = array_to_list(test_imgs)
+test_lbls = array_to_list(test_lbls)
 save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_batches_gcn_zca/', 'cifar100_trainset.pkl')
 save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_batches_gcn_zca/', 'cifar100_testset.pkl')
 

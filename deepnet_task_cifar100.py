@@ -67,6 +67,8 @@ class TaskSettings(object):
 				assert args['lr'] is not None, 'lr must be specified for training.'
 				assert args['lr_step_ep'] is not None, 'lr_step_ep must be specified for training.'
 				assert args['lr_step_multi'] is not None, 'lr_step_multi must be specified for training.'
+				assert args['preprocessing'] is not None, 'preprocessing must be specified.'
+				self.pre_processing = args['preprocessing']
 				self.n_minibatches = args['n_minibatches']
 				self.training_schedule = args['training_schedule']
 				self.create_val_set = args['create_val_set']
@@ -144,13 +146,13 @@ class Paths(object):
 
 class TrainingHandler(object):
 
-	def __init__(self, TaskSettings, Paths):
+	def __init__(self, TaskSettings, Paths, args):
 
 		self.TaskSettings = TaskSettings
 		self.Paths = Paths
 		self.val_mb_counter = 0
 		self.train_mb_counter = 0
-		self.load_dataset()
+		self.load_dataset(args)
 		self.shuffle_training_data_idcs()
 		self.n_train_minibatches_per_epoch = int(np.floor((self.n_training_samples / TaskSettings.minibatch_size)))
 		self.n_val_minibatches = int(self.n_validation_samples / TaskSettings.minibatch_size)
@@ -160,16 +162,19 @@ class TrainingHandler(object):
 	def reset_val(self):
 		self.val_mb_counter = 0
 
-	def load_dataset(self):
+	def load_dataset(self, args):
 	# only call this function once per run, as it will randomly split the, dataset into training set and validation set
-		self.dataset_images = []
-		self.dataset_labels = []
-		with open(self.Paths.train_batches+'train', 'rb') as file:
-			data_dict = pickle.load(file, encoding='bytes')
-			images = data_dict[b'data']
-			self.dataset_images.extend(images)
-			labels = data_dict[b'fine_labels']
-			self.dataset_labels.extend(labels)
+		# loader
+		if args['preprocessing'] == 'default':
+			path_train_set = self.Paths.train_set+'cifar100_trainset.pkl'
+		elif args['preprocessing'] == 'gcn_zca':
+			path_train_set = self.Paths.train_set_gcn_zca+'cifar100_trainset.pkl'
+		else:
+			print('[ERROR] requested preprocessing type unknown (%s)' %(self.NetSettings.pre_processing))
+		data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
+		self.dataset_images = data_dict['images']
+		self.dataset_labels = data_dict['labels']
+		# rest
 		self.dataset_images, self.dataset_labels = shuffle(self.dataset_images, self.dataset_labels)
 		self.n_total_samples = int(len(self.dataset_labels))
 		self.n_training_samples = self.n_total_samples
@@ -292,31 +297,28 @@ class TrainingHandler(object):
 		if self.TaskSettings.training_schedule == 'epochs':
 			print(' - # minibatches per epoch: ' + str(self.n_train_minibatches_per_epoch))
 
-class ValidationHandler(object):
-
-	def __init__(self, TaskSettings, Paths):
-		self.info = 'Validation set is handled by TrainingHandler, since the validation set is a random fraction of the training set.'
-
 class TestHandler(object):
 
-	def __init__(self, TaskSettings, Paths):
+	def __init__(self, TaskSettings, Paths, args):
 		self.TaskSettings = TaskSettings
 		self.Paths = Paths
-		self.load_test_data()
+		self.load_test_data(args)
 		self.n_test_samples = int(len(self.test_images))
 		self.n_test_minibatches = int(np.floor(self.n_test_samples/TaskSettings.minibatch_size))
 		self.test_mb_counter = 0
 		self.print_overview()
 
-	def load_test_data(self):
-		self.test_images = []
-		self.test_labels = []
-		with open(self.Paths.test_batches+'test', 'rb') as file:
-			test_dict = pickle.load(file, encoding='bytes')
-			images = test_dict[b'data']
-			self.test_images.extend(images)
-			labels = test_dict[b'fine_labels']
-			self.test_labels.extend(labels)
+	def load_test_data(self, args):
+		if args['preprocessing'] == 'default':
+			path_test_set = self.Paths.test_set+'cifar100_testset.pkl'
+		elif args['preprocessing'] == 'gcn_zca':
+			path_test_set = self.Paths.test_set_gcn_zca+'cifar100_testset.pkl'
+		else:
+			print('[ERROR] requested preprocessing type unknown (%s)' %(self.NetSettings.pre_processing))
+		data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
+		self.test_images = data_dict['images']
+		self.test_labels = data_dict['labels']
+
 
 	def create_next_test_minibatch(self):
 		start_idx = int(self.TaskSettings.minibatch_size*self.test_mb_counter)
@@ -532,7 +534,7 @@ class SessionTimer(object):
 # ### MAIN FUNCTIONS ###########################################################
 # ##############################################################################
 
-def train(TaskSettings, Paths, Network, training_handler, validation_handler, test_handler, counter, timer, rec, args, plot_learning_curves=False):
+def train(TaskSettings, Paths, Network, training_handler, test_handler, counter, timer, rec, args, plot_learning_curves=False):
 
 	assert TaskSettings.training_schedule in ['random', 'epochs'], 'requested training schedule unknown.'
 	print('')

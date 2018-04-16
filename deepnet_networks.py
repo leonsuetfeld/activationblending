@@ -33,6 +33,7 @@ class NetSettings(object):
 		assert args['optimizer'] is not None, 'optimizer must be specified.'
 		assert args['use_wd'] is not None, 'use_wd must be specified.'
 		assert args['wd_lambda'] is not None, 'wd_lambda must be specified.'
+		assert args['preprocessing'] is not None, 'preprocessing must be specified.'
 
 		self.mode = args['mode']
 		self.task = args['task']
@@ -58,8 +59,6 @@ class NetSettings(object):
 		self.swish_beta_trainable = args['swish_beta_trainable']
 		self.optimizer_choice = args['optimizer']
 		self.print_overview()
-
-		assert self.std_type in [0,1,2], 'std_type must be in [0,1,2].'
 
 	def print_overview(self):
 		print('')
@@ -88,19 +87,21 @@ class Network(object):
 		self.NetSettings = NetSettings
 		self.Paths = Paths
 		# --- input  --------------------------------------------------
-		self.X = tf.placeholder(tf.float32, [NetSettings.minibatch_size, 3072], name='images')
+		self.X = tf.placeholder(tf.float32, [NetSettings.minibatch_size, 32,32,3], name='images')
 		self.Y = tf.placeholder(tf.int64, [None], name='labels')
 		self.lr = tf.placeholder(tf.float32, name='learning_rate')
 		self.dropout_keep_prob = tf.placeholder(tf.float32, [None], name='dropout_keep_prob')
 		self.global_step = tf.Variable(0, dtype=tf.int32, trainable=False)
 		self.reuse = reuse
 		# --- per image standardization ----------------------------------------
-		if NetSettings.pre_processing == ['gcn_zca']:
+		if NetSettings.pre_processing == 'gcn_zca': # pre-processing already included in loaded files
 			pass
-		elif NetSettings.pre_processing == ['default']:
-			self.Xp_per_image_mean = tf.reduce_mean(self.Xp, [1,2,3], name='image_mean', keep_dims=True)
-			_,self.Xp_per_image_std = tf.nn.moments(self.Xp, [1,2,3], name='image_std', keep_dims=True)
-			self.Xp = tf.divide((self.Xp-self.Xp_per_image_mean),tf.maximum( self.Xp_per_image_std, tf.divide(tf.fill(self.Xp_per_image_std.get_shape(),1.),tf.sqrt(3072.)) ))
+		elif NetSettings.pre_processing == 'default':
+			self.X_per_image_mean = tf.reduce_mean(self.X, [1,2,3], name='image_mean', keep_dims=True)
+			_,self.X_per_image_std = tf.nn.moments(self.X, [1,2,3], name='image_std', keep_dims=True)
+			self.X = tf.divide((self.X-self.X_per_image_mean),tf.maximum( self.X_per_image_std, tf.divide(tf.fill(self.X_per_image_std.get_shape(),1.),tf.sqrt(3072.)) ))
+		else:
+			print('[ERROR] requested preprocessing type unknown (%s)' %(self.NetSettings.pre_processing))
 
 		# CHOOSE NETWORK ARCHITECTURE
 		if self.NetSettings.network_spec == 'sfnet':
@@ -158,7 +159,7 @@ class Network(object):
 	def smcn(self, namescope=None):
 		with tf.name_scope(namescope):
 			# input block
-			self.state = self.conv2d_parallel_act_layer(layer_input=self.Xp, W_shape=[5,5,3,64], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.X, W_shape=[5,5,3,64], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
 			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,64,64], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv2')
 			# pooling layer
@@ -181,7 +182,7 @@ class Network(object):
 	def smcnLin(self, namescope=None):
 		with tf.name_scope(namescope):
 			# input block
-			self.state = self.conv2d_parallel_act_layer(layer_input=self.Xp, W_shape=[5,5,3,64], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.X, W_shape=[5,5,3,64], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
 			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,64,64], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv2')
 			# pooling layer
@@ -203,7 +204,7 @@ class Network(object):
 	# Sonja's convnet
 	def sfnet(self, namescope=None):
 		with tf.name_scope(namescope):
-			self.state = self.conv2d_parallel_act_layer(layer_input=self.Xp, W_shape=[5,5,3,64], strides=[1,1,1,1], bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.X, W_shape=[5,5,3,64], strides=[1,1,1,1], bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
 			self.state = tf.nn.max_pool(self.state, ksize=[1,3,3,1], strides=[1,2,2,1], padding='SAME', name=namescope+'/pool1')
 			self.state = tf.nn.local_response_normalization(self.state, depth_radius=4, bias=1.0, alpha=0.001/9.0, beta=0.75, name=namescope+'/norm1')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[5,5,64,64], strides=[1,1,1,1], AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv2')
@@ -222,7 +223,7 @@ class Network(object):
 	def squeezenet(self, namescope=None):
 		# commented out some max-poolings for cifar10, adjust state_3 & state_7 function call when commented in again
 		with tf.name_scope(namescope):
-			self.state = self.conv2d_parallel_act_layer(layer_input=self.Xp, W_shape=[7,7,3,96], strides=[1,2,2,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.X, W_shape=[7,7,3,96], strides=[1,2,2,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
 			# self.state = tf.nn.max_pool(self.state, ksize=[1,3,3,1], strides=[1,2,2,1], padding='VALID', name=namescope+'/maxpool1')
 			self.state = self.fire_parallel_act_module(self.state, 96, 16, 128, reuse=self.reuse, varscope=namescope+'/fire2')
 			self.state = self.fire_parallel_act_module(self.state, 128, 16, 128, reuse=self.reuse, varscope=namescope+'/fire3')
@@ -244,7 +245,7 @@ class Network(object):
 	def densenet(self, namescope=None):
 		with tf.name_scope(namescope):
 			# commented out some max-poolings for cifar10, adjust state_3 function call and global pooling size when commented in again
-			self.state = self.conv2d_parallel_act_layer(layer_input=self.Xp, W_shape=[7,7,3,32], strides=[1,2,2,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.X, W_shape=[7,7,3,32], strides=[1,2,2,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
 			# self.state = tf.nn.max_pool(self.state, ksize=[1,3,3,1], strides=[1,2,2,1], padding='VALID', name=namescope+'/maxpool1')
 			self.state = self.parallel_act_dense_block(self.state, 32, varscope=namescope+'/denseblock3')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,92,32], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv3')
@@ -260,7 +261,7 @@ class Network(object):
 	def allcnnc(self, namescope=None):
 		with tf.name_scope(namescope):
 			# input
-			self.state = tf.nn.dropout(self.Xp, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
+			self.state = tf.nn.dropout(self.X, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
 			# block 1
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,3,96], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,96,96], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv2')

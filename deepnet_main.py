@@ -67,14 +67,13 @@ if __name__ == '__main__':
 		NetSettings = net.NetSettings(args)
 		TaskSettings = task.TaskSettings(args)
 		Paths = task.Paths(TaskSettings)
-		training_handler = task.TrainingHandler(TaskSettings, Paths)
-		validation_handler = task.ValidationHandler(TaskSettings, Paths)
-		test_handler = task.TestHandler(TaskSettings, Paths)
+		training_handler = task.TrainingHandler(TaskSettings, Paths, args)
+		test_handler = task.TestHandler(TaskSettings, Paths, args)
 		rec = task.PerformanceRecorder(TaskSettings, Paths)
 		counter = task.Counter(training_handler)
 		timer = task.SessionTimer()
 		Network = net.Network(NetSettings, Paths, namescope='Network')
-		task.train(TaskSettings, Paths, Network, training_handler, validation_handler, test_handler, counter, timer, rec, args)
+		task.train(TaskSettings, Paths, Network, training_handler, test_handler, counter, timer, rec, args)
 
 	# analysis
 	if args['mode'] in ['analysis']:
