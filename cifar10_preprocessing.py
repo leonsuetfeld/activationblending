@@ -94,7 +94,7 @@ def split_dataset(dataset_images, dataset_labels, splitpoint=50000):
     print('done.')
     return training_images, training_labels, test_images, test_labels
 
-def load_dataset(path_train='./1_data_cifar10/train_batches/', path_test='./1_data_cifar10/test_batches/', max_size = 0):
+def load_cifar10(path_train='./1_data_cifar10/train_batches/', path_test='./1_data_cifar10/test_batches/', max_size = 0):
     print('\nLoading and fusing training and test sets...')
     dataset_images = []
     dataset_labels = []
@@ -128,7 +128,7 @@ print('### CIFAR PRE-PROCESSING ####################')
 print('#############################################')
 
 # load and reshape images
-dataset_images, dataset_labels = load_dataset()
+dataset_images, dataset_labels = load_cifar10()
 dataset_images = reshape_cifar(dataset_images)
 
 # perform GCN and ZCA
