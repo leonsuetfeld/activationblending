@@ -32,9 +32,9 @@ def show_images(dataset, n=5, random=False):
     plt.show()
 
 def GCN(dataset, s=1., lmda=0., epsilon=1.0e-8, goodfellow=False):
+    # perform per-image Global Contrast Normalization (except for scaling by factor s)
     out_set = []
-    # perform per-image GCN (except for scaling by factor s)
-    print('\nGlobal contrast normalization...')
+    print('\nGNC...')
     for i in range(dataset.shape[0]):
         X = np.squeeze(dataset[i,:,:,:])
         X_mean = np.mean(X)
@@ -58,6 +58,7 @@ def GCN(dataset, s=1., lmda=0., epsilon=1.0e-8, goodfellow=False):
     return out_set
 
 def ZCA(dataset):
+    # perform ZCA-whitening
     print('\nZCA step 1: compute PCA...')
     pca = PCA(n_components=3072, random_state=0, svd_solver='randomized')
     dataset_flattened = np.reshape(dataset,(np.shape(dataset)[0],-1))
@@ -72,6 +73,7 @@ def ZCA(dataset):
         out_set.append(whitened.reshape((32,32,3)))
         print('%i / %i' %(i+1,dataset.shape[0]),end='\r')
     print('done.')
+    out_set = np.array(out_set)
     return out_set
 
 def save_dataset(images, labels, path, filename):
@@ -92,7 +94,7 @@ def split_dataset(dataset_images, dataset_labels, splitpoint=50000):
     print('done.')
     return training_images, training_labels, test_images, test_labels
 
-def load_dataset(path_train='./1_data_cifar10/train_batches/', path_test='./1_data_cifar10/test_batches/'):
+def load_dataset(path_train='./1_data_cifar10/train_batches/', path_test='./1_data_cifar10/test_batches/', max_size = 0):
     print('\nLoading and fusing training and test sets...')
     dataset_images = []
     dataset_labels = []
@@ -109,15 +111,27 @@ def load_dataset(path_train='./1_data_cifar10/train_batches/', path_test='./1_da
     	dataset_images.extend(images)
     	labels = test_dict[b'labels']
     	dataset_labels.extend(labels)
+    dataset_images = np.array(dataset_images)
+    dataset_labels = np.array(dataset_labels)
+    if max_size > 0:
+        dataset_images = dataset_images[:max_size,:]
+        dataset_labels = dataset_labels[:max_size]
     print('done.')
-    return np.array(dataset_images), dataset_labels
+    return dataset_images, dataset_labels
 
 # ##############################################################################
 # ### PROCESS DATA #############################################################
 # ##############################################################################
 
+print('\n#############################################')
+print('### CIFAR PRE-PROCESSING ####################')
+print('#############################################')
+
+# load and reshape images
 dataset_images, dataset_labels = load_dataset()
 dataset_images = reshape_cifar(dataset_images)
+
+# perform GCN and ZCA
 dataset_images = GCN(dataset_images, goodfellow=True)
 dataset_images = ZCA(dataset_images)
 
@@ -126,5 +140,8 @@ train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dat
 save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_batches_gcn_zca/', 'cifar10_trainset.pkl')
 save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_batches_gcn_zca/', 'cifar10_testset.pkl')
 
-print('')
+print('\n#############################################')
+print('### FINISHED ################################')
+print('#############################################\n')
+
 # show_images(dataset_images)
