@@ -119,6 +119,8 @@ class Paths(object):
 
 	def __init__(self, TaskSettings):
 		# data location
+		self.train_batches = './1_data_cifar10/train_batches/'
+		self.test_batches = './1_data_cifar10/test_batches/'
 		self.train_set = './1_data_cifar10/train_batches_nopp/'
 		self.test_set = './1_data_cifar10/test_batches_nopp/'
 		self.train_set_gcn_zca = './1_data_cifar10/train_batches_gcn_zca/'
@@ -164,16 +166,29 @@ class TrainingHandler(object):
 
 	def load_dataset(self, args):
 	# only call this function once per run, as it will randomly split the dataset into training set and validation set
-		# loader
 		if args['preprocessing'] == 'default':
 			path_train_set = self.Paths.train_set+'cifar10_trainset.pkl'
+			data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
+			self.dataset_images = data_dict['images']
+			self.dataset_labels = data_dict['labels']
 		elif args['preprocessing'] == 'gcn_zca':
 			path_train_set = self.Paths.train_set_gcn_zca+'cifar10_trainset.pkl'
+			data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
+			self.dataset_images = data_dict['images']
+			self.dataset_labels = data_dict['labels']
+		elif args['preprocessing'] == 'old':
+			self.dataset_images = []
+			self.dataset_labels = []
+			for batch in range(5):
+				with open(self.Paths.train_batches+'data_batch_' + str(batch+1), 'rb') as file:
+					data_dict = pickle.load(file, encoding='bytes')
+					images = data_dict[b'data']
+					self.dataset_images.extend(images)
+					labels = data_dict[b'labels']
+					self.dataset_labels.extend(labels)
 		else:
 			print('[ERROR] requested preprocessing type unknown (%s)' %(self.NetSettings.pre_processing))
-		data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
-		self.dataset_images = data_dict['images']
-		self.dataset_labels = data_dict['labels']
+
 		# rest
 		self.dataset_images, self.dataset_labels = shuffle(self.dataset_images, self.dataset_labels)
 		self.n_total_samples = int(len(self.dataset_labels))
@@ -309,15 +324,28 @@ class TestHandler(object):
 		self.print_overview()
 
 	def load_test_data(self, args):
+
 		if args['preprocessing'] == 'default':
 			path_test_set = self.Paths.test_set+'cifar10_testset.pkl'
+			data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
+			self.test_images = data_dict['images']
+			self.test_labels = data_dict['labels']
 		elif args['preprocessing'] == 'gcn_zca':
 			path_test_set = self.Paths.test_set_gcn_zca+'cifar10_testset.pkl'
+			data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
+			self.test_images = data_dict['images']
+			self.test_labels = data_dict['labels']
+		elif args['preprocessing'] == 'old':
+			self.test_images = []
+			self.test_labels = []
+			with open(self.Paths.test_batches+'test_batch', 'rb') as file:
+				test_dict = pickle.load(file, encoding='bytes')
+				images = test_dict[b'data']
+				self.test_images.extend(images)
+				labels = test_dict[b'labels']
+				self.test_labels.extend(labels)
 		else:
 			print('[ERROR] requested preprocessing type unknown (%s)' %(self.NetSettings.pre_processing))
-		data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
-		self.test_images = data_dict['images']
-		self.test_labels = data_dict['labels']
 
 	def create_next_test_minibatch(self):
 		start_idx = int(self.TaskSettings.minibatch_size*self.test_mb_counter)

@@ -8,7 +8,7 @@
 #$ -l nv_mem_free=2800M
 #$ -l ubuntu_version=xenial
 #$ -l cuda=1
-#$ -l cuda_capability=3000
+#$ -l cuda_capability=500
 #$ -l cuda_driver=8000.000000
 #$ -l cuda_cores=3000
 ##$ -l h=*cippy*
