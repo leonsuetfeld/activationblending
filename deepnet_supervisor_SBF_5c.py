@@ -43,7 +43,7 @@ if TASK_ID < 101:
 			  " -spec_name="        	+ 'linu' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -69,7 +69,7 @@ elif TASK_ID < 201:
 			  " -spec_name="        	+ 'tanh' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -95,7 +95,7 @@ elif TASK_ID < 301:
 			  " -spec_name="        	+ 'relu' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -121,7 +121,7 @@ elif TASK_ID < 401:
 			  " -spec_name="        	+ 'elu' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -147,7 +147,7 @@ elif TASK_ID < 501:
 			  " -spec_name="        	+ 'selu' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -173,7 +173,7 @@ elif TASK_ID < 601:
 			  " -spec_name="        	+ 'swish' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -199,7 +199,7 @@ elif TASK_ID < 701:
 			  " -spec_name="        	+ 'adaptive_linu' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -225,7 +225,7 @@ elif TASK_ID < 801:
 			  " -spec_name="        	+ 'adaptive_tanh' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -251,7 +251,7 @@ elif TASK_ID < 901:
 			  " -spec_name="        	+ 'adaptive_relu' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -277,7 +277,7 @@ elif TASK_ID < 1001:
 			  " -spec_name="        	+ 'adaptive_elu' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -303,7 +303,7 @@ elif TASK_ID < 1101:
 			  " -spec_name="        	+ 'adaptive_selu' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -329,7 +329,7 @@ elif TASK_ID < 1201:
 			  " -spec_name="        	+ 'adaptive_swish' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -355,7 +355,7 @@ elif TASK_ID < 1301:
 			  " -spec_name="        	+ 'blend5_unrest' + \
 			  " -run="              	+ str(RUN) + \
 			  " -task="             	+ 'cifar10' + \
-			  " -pre-processing="		+ 'gcnzca' +\
+			  " -preprocessing="		+ 'gcn_zca' +\
 			  " -network="          	+ 'allcnnc' + \
 			  " -mode="             	+ 'training' + \
 			  " -n_minibatches="    	+ str(10000) + \
@@ -381,7 +381,7 @@ elif TASK_ID < 1301:
 # 			  " -spec_name="        	+ 'concat_TERLS' + \
 # 			  " -run="              	+ str(RUN) + \
 # 			  " -task="             	+ 'cifar10' + \
-# 			  " -pre-processing="		+ 'gcnzca' +\
+# 			  " -preprocessing="		+ 'gcn_zca' +\
 # 			  " -network="          	+ 'allcnnc' + \
 # 			  " -mode="             	+ 'training' + \
 # 			  " -n_minibatches="    	+ str(10000) + \

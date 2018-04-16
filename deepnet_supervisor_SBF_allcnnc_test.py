@@ -46,8 +46,9 @@ for TASK_ID in range(10):
 				  " -experiment_name "  			+ 'debugging' + \
 				  " -spec_name "        			+ 'allcnnc_cifar10_relu' + \
 				  " -run "              			+ str(RUN) + \
-				  " -task "             			+ 'cifar10' + \
-				  " -network "          			+ 'allcnnc' + \
+				  " -task="             			+ 'cifar10' + \
+				  " -preprocessing="				+ 'gcn_zca' +\
+				  " -network="          			+ 'allcnnc' + \
 				  " -mode "             			+ 'training' + \
 				  " -n_minibatches "    			+ '70000' + \
 				  " -minibatch_size "   			+ '256' + \
@@ -77,8 +78,9 @@ for TASK_ID in range(10):
 				  " -experiment_name "  			+ 'debugging' + \
 				  " -spec_name "        			+ 'allcnnc_cifar10_jelu' + \
 				  " -run "              			+ str(RUN) + \
-				  " -task "             			+ 'cifar10' + \
-				  " -network "          			+ 'allcnnc' + \
+				  " -task="             			+ 'cifar10' + \
+				  " -preprocessing="				+ 'gcn_zca' +\
+				  " -network="          			+ 'allcnnc' + \
 				  " -mode "             			+ 'training' + \
 				  " -n_minibatches "    			+ '70000' + \
 				  " -minibatch_size "   			+ '256' + \

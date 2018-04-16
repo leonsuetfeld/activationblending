@@ -48,7 +48,7 @@ class NetSettings(object):
 		elif self.task == 'cifar100':
 			self.logit_dims = 100
 		self.network_spec = args['network']
-		self.std_type = 2 # 1 or 2 (2 == maxout style, goodfellow 2013)
+		self.pre_processing = args['preprocessing']
 		self.use_wd = args['use_wd']
 		self.wd_lambda = args['wd_lambda']
 		self.af_set = args['af_set']
@@ -94,19 +94,13 @@ class Network(object):
 		self.dropout_keep_prob = tf.placeholder(tf.float32, [None], name='dropout_keep_prob')
 		self.global_step = tf.Variable(0, dtype=tf.int32, trainable=False)
 		self.reuse = reuse
-		# --- cifar10 reshape --------------------------------------------------
-		self.Xp = tf.reshape(self.X, [NetSettings.minibatch_size, NetSettings.image_z, NetSettings.image_x, NetSettings.image_y]) # [256,3,32,32]
-		self.Xp = tf.transpose(self.Xp, [0,2,3,1]) # => [256,32,32,3]
 		# --- per image standardization ----------------------------------------
-		if NetSettings.std_type == 0:
+		if NetSettings.pre_processing == ['gcn_zca']:
 			pass
-		elif NetSettings.std_type == 1:
+		elif NetSettings.pre_processing == ['default']:
 			self.Xp_per_image_mean = tf.reduce_mean(self.Xp, [1,2,3], name='image_mean', keep_dims=True)
 			_,self.Xp_per_image_std = tf.nn.moments(self.Xp, [1,2,3], name='image_std', keep_dims=True)
 			self.Xp = tf.divide((self.Xp-self.Xp_per_image_mean),tf.maximum( self.Xp_per_image_std, tf.divide(tf.fill(self.Xp_per_image_std.get_shape(),1.),tf.sqrt(3072.)) ))
-		elif NetSettings.std_type == 2:
-			self.Xp = self.Xp-tf.reduce_mean(self.Xp, [1,2,3], name='image_mean', keep_dims=True)
-			self.Xp = tf.divide(tf.constant(1) * self.Xp, tf.maximum(tf.reduce_mean(tf.square(self.Xp))+tf.constant(0), tf.constant(10**(-8))))
 
 		# CHOOSE NETWORK ARCHITECTURE
 		if self.NetSettings.network_spec == 'sfnet':

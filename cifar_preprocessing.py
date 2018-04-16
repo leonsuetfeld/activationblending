@@ -126,11 +126,11 @@ def load_cifar100(path_train='./1_data_cifar100/train_batches/', path_test='./1_
     with open(path_train+'train', 'rb') as file:
         data_dict = pickle.load(file, encoding='bytes')
         dataset_images.extend(data_dict[b'data'])
-        dataset_labels.extend(data_dict[b'labels'])
+        dataset_labels.extend(data_dict[b'fine_labels'])
     with open(path_test+'test', 'rb') as file:
     	test_dict = pickle.load(file, encoding='bytes')
     	dataset_images.extend(test_dict[b'data'])
-    	dataset_labels.extend(test_dict[b'labels'])
+    	dataset_labels.extend(test_dict[b'fine_labels'])
     dataset_images = np.array(dataset_images)
     dataset_labels = np.array(dataset_labels)
     if max_size > 0:

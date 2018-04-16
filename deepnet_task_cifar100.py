@@ -117,8 +117,10 @@ class Paths(object):
 
 	def __init__(self, TaskSettings):
 		# data location
-		self.train_batches = './1_data_cifar100/train_batches/'
-		self.test_batches = './1_data_cifar100/test_batches/'
+		self.train_set = './1_data_cifar100/train_batches_nopp/'
+		self.test_set = './1_data_cifar100/test_batches_nopp/'
+		self.train_set_gcn_zca = './1_data_cifar100/train_batches_gcn_zca/'
+		self.test_set_gcn_zca = './1_data_cifar100/test_batches_gcn_zca/'
 		self.sample_images = './1_data_cifar100/samples/'
 		# save paths (experiment level)
 		self.exp_folder = './2_output_cifar/'+str(TaskSettings.experiment_name)+'/'
