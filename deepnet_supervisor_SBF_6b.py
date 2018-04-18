@@ -227,7 +227,7 @@ elif TASK_ID < 601:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-if TASK_ID < 701:
+elif TASK_ID < 701:
 	RUN = TASK_ID-600
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
