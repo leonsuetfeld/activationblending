@@ -97,21 +97,18 @@ class Network(object):
 		self.global_step = tf.Variable(0, dtype=tf.int32, trainable=False)
 		self.reuse = reuse
 		# --- per image standardization ----------------------------------------
-		if NetSettings.pre_processing == 'gcn_zca': # pre-processing already included in loaded files
+		if NetSettings.pre_processing in ['none', 'ztrans', 'gcn_zca']: # pre-processing already included in loaded files
 			self.Xp = self.X
-		elif NetSettings.pre_processing == 'old':
-			# --- cifar reshape --------------------------------------------------
-			self.Xp = tf.reshape(self.X, [NetSettings.minibatch_size, NetSettings.image_z, NetSettings.image_x, NetSettings.image_y]) # [256,3,32,32] # old way, remove once new way provides same results
-			self.Xp = tf.transpose(self.Xp, [0,2,3,1]) # => [256,32,32,3] # old way, remove once new way provides same results
-			# --- per image standardization ----------------------------------------
-			self.Xp_per_image_mean = tf.reduce_mean(self.Xp, [1,2,3], name='image_mean', keep_dims=True)
-			_,self.Xp_per_image_std = tf.nn.moments(self.Xp, [1,2,3], name='image_std', keep_dims=True)
-			self.Xp = tf.divide((self.Xp-self.Xp_per_image_mean),tf.maximum(self.Xp_per_image_std, tf.divide(tf.fill(self.Xp_per_image_std.get_shape(),1.),tf.sqrt(3072.))))
-		elif NetSettings.pre_processing == 'default':
-			self.Xp = self.X
-			self.Xp_per_image_mean = tf.reduce_mean(self.Xp, [1,2,3], name='image_mean', keep_dims=True)
-			_,self.Xp_per_image_std = tf.nn.moments(self.Xp, [1,2,3], name='image_std', keep_dims=True)
-			self.Xp = tf.divide((self.Xp-self.Xp_per_image_mean),tf.maximum(self.Xp_per_image_std, tf.divide(tf.fill(self.Xp_per_image_std.get_shape(),1.),tf.sqrt(3072.))))
+		elif NetSettings.pre_processing in ['tf_ztrans']:
+
+			# self.X_per_image_mean = tf.reduce_mean(self.X, [1,2,3], name='image_mean', keep_dims=True)
+			self.X_per_image_mean, self.X_per_image_std = tf.nn.moments(self.X, [1,2,3], name='image_std', keep_dims=True)
+			self.X2 = self.X-self.X_per_image_mean
+			self.minval = tf.divide(tf.fill(self.X_per_image_std.get_shape(),1.), tf.sqrt(3072.))
+			self.X_std_adjusted = tf.maximum(self.X_per_image_std, self.minval)
+			self.X3 = tf.divide(self.X2, self.X_std_adjusted)
+			self.Xp = self.X3
+
 		else:
 			print('[ERROR] requested preprocessing type unknown (%s)' %(self.NetSettings.pre_processing))
 

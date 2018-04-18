@@ -29,7 +29,7 @@ if __name__ == '__main__':
 	# parse input arguments
 	parser = argparse.ArgumentParser(description='Run network session.')
 	parser.add_argument('-task', type=str, help='cifar10, cifar100')
-	parser.add_argument('-preprocessing', type=str, help='default, gcn_zca')
+	parser.add_argument('-preprocessing', type=str, help='none, ztrans, gcn_zca')
 	parser.add_argument('-network', type=str, help='smcn, allcnnc, ...')
 	parser.add_argument('-mode', type=str, help='(optional) training, analysis, test')
 	parser.add_argument('-n_minibatches', type=int)

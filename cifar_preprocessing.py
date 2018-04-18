@@ -12,7 +12,7 @@ import os
 # ##############################################################################
 
 def reshape_cifar(dataset):
-    return dataset.reshape((dataset_images.shape[0],3,32,32)).transpose([0,2,3,1])
+    return dataset.reshape((dataset.shape[0],3,32,32)).transpose([0,2,3,1])
 
 def show_images(dataset, n=5, random=False):
     if random:
@@ -75,6 +75,21 @@ def ZCA(dataset):
     print('done.')
     out_set = np.array(out_set)
     return out_set
+
+def z_trans(dataset, bounded_std=True): # float 32 for testing purposes
+    print('\nPerforming image-wise z-transformation...')
+    dataset_new = []
+    for i in range(dataset.shape[0]):
+        img = dataset[i,:,:,:]
+        img = img.astype(np.float32)
+        img_mean = np.mean(img, dtype=np.float32)
+        img_std = np.std(img, dtype=np.float32)
+        if bounded_std:
+            img_std = np.maximum(img_std,(1. / np.sqrt(3072.)), dtype=np.float32)
+        img = np.divide((img-img_mean), img_std, dtype=np.float32)
+        dataset_new.append(img)
+    print('done.')
+    return np.array(dataset_new)
 
 def save_dataset(images, labels, path, filename):
     print('\nSaving file...')
@@ -152,84 +167,127 @@ def array_to_list(a):
 # ### PROCESS DATA #############################################################
 # ##############################################################################
 
-print('\n#############################################')
-print('### CIFAR 10 RESHAPING ######################')
-print('#############################################')
+if __name__ == '__main__':
 
-# load and reshape images
-dataset_images, dataset_labels = load_cifar10()
-dataset_images = reshape_cifar(dataset_images)
+    print('\n#############################################')
+    print('### CIFAR 10 RESHAPING ######################')
+    print('#############################################')
 
-# separate training and test data, save as files
-train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
-train_imgs = array_to_list(train_imgs)
-train_lbls = array_to_list(train_lbls)
-test_imgs = array_to_list(test_imgs)
-test_lbls = array_to_list(test_lbls)
-save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_batches_nopp/', 'cifar10_trainset.pkl')
-save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_batches_nopp/', 'cifar10_testset.pkl')
+    # load and reshape images
+    dataset_images, dataset_labels = load_cifar10()
+    dataset_images = reshape_cifar(dataset_images)
 
-print('\n#############################################')
-print('### CIFAR 100 RESHAPING #####################')
-print('#############################################')
+    # separate training and test data, save as files
+    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    train_imgs = array_to_list(train_imgs)
+    train_lbls = array_to_list(train_lbls)
+    test_imgs = array_to_list(test_imgs)
+    test_lbls = array_to_list(test_lbls)
+    save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_set/', 'cifar10_trainset.pkl')
+    save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_set/', 'cifar10_testset.pkl')
 
-# load and reshape images
-dataset_images, dataset_labels = load_cifar100()
-dataset_images = reshape_cifar(dataset_images)
+    print('\n#############################################')
+    print('### CIFAR 100 RESHAPING #####################')
+    print('#############################################')
 
-# separate training and test data, save as files
-train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
-train_imgs = array_to_list(train_imgs)
-train_lbls = array_to_list(train_lbls)
-test_imgs = array_to_list(test_imgs)
-test_lbls = array_to_list(test_lbls)
-save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_batches_nopp/', 'cifar100_trainset.pkl')
-save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_batches_nopp/', 'cifar100_testset.pkl')
+    # load and reshape images
+    dataset_images, dataset_labels = load_cifar100()
+    dataset_images = reshape_cifar(dataset_images)
 
-print('\n#############################################')
-print('### CIFAR 10 GCN & ZCA PRE-PROCESSING #######')
-print('#############################################')
+    # separate training and test data, save as files
+    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    train_imgs = array_to_list(train_imgs)
+    train_lbls = array_to_list(train_lbls)
+    test_imgs = array_to_list(test_imgs)
+    test_lbls = array_to_list(test_lbls)
+    save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_set/', 'cifar100_trainset.pkl')
+    save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_set/', 'cifar100_testset.pkl')
 
-# load and reshape images
-dataset_images, dataset_labels = load_cifar10()
-dataset_images = reshape_cifar(dataset_images)
+    print('\n#############################################')
+    print('### CIFAR 10 Z-TRANS ########################')
+    print('#############################################')
 
-# perform GCN and ZCA
-dataset_images = GCN(dataset_images, goodfellow=True)
-dataset_images = ZCA(dataset_images)
+    # load and reshape images
+    dataset_images, dataset_labels = load_cifar10()
+    dataset_images = reshape_cifar(dataset_images)
 
-# separate training and test data, save as files
-train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
-train_imgs = array_to_list(train_imgs)
-train_lbls = array_to_list(train_lbls)
-test_imgs = array_to_list(test_imgs)
-test_lbls = array_to_list(test_lbls)
-save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_batches_gcn_zca/', 'cifar10_trainset.pkl')
-save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_batches_gcn_zca/', 'cifar10_testset.pkl')
+    # pre-processing
+    dataset_images = dataset_images.astype(np.float32) # set to float 32 before the calculations to test if this decreases performance by introducing noise
+    dataset_images = z_trans(dataset_images)
 
-print('\n#############################################')
-print('### CIFAR 100 GCN & ZCA PRE-PROCESSING ######')
-print('#############################################')
+    # separate training and test data, save as files
+    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    train_imgs = array_to_list(train_imgs)
+    train_lbls = array_to_list(train_lbls)
+    test_imgs = array_to_list(test_imgs)
+    test_lbls = array_to_list(test_lbls)
+    save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_set_ztrans/', 'cifar10_trainset.pkl')
+    save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_set_ztrans/', 'cifar10_testset.pkl')
 
-# load and reshape images
-dataset_images, dataset_labels = load_cifar100()
-dataset_images = reshape_cifar(dataset_images)
+    print('\n#############################################')
+    print('### CIFAR 100 Z-TRANS #######################')
+    print('#############################################')
 
-# perform GCN and ZCA
-dataset_images = GCN(dataset_images, goodfellow=True)
-dataset_images = ZCA(dataset_images)
+    # load and reshape images
+    dataset_images, dataset_labels = load_cifar100()
+    dataset_images = reshape_cifar(dataset_images)
 
-# separate training and test data, save as files
-train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
-train_imgs = array_to_list(train_imgs)
-train_lbls = array_to_list(train_lbls)
-test_imgs = array_to_list(test_imgs)
-test_lbls = array_to_list(test_lbls)
-save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_batches_gcn_zca/', 'cifar100_trainset.pkl')
-save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_batches_gcn_zca/', 'cifar100_testset.pkl')
+    # pre-processing
+    dataset_images = z_trans(dataset_images)
 
-print('\n#############################################')
-print('### ALL FINISHED ############################')
-print('#############################################\n')
+    # separate training and test data, save as files
+    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    train_imgs = array_to_list(train_imgs)
+    train_lbls = array_to_list(train_lbls)
+    test_imgs = array_to_list(test_imgs)
+    test_lbls = array_to_list(test_lbls)
+    save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_set_ztrans/', 'cifar100_trainset.pkl')
+    save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_set_ztrans/', 'cifar100_testset.pkl')
 
-# show_images(dataset_images)
+    print('\n#############################################')
+    print('### CIFAR 10 GCN & ZCA PRE-PROCESSING #######')
+    print('#############################################')
+
+    # load and reshape images
+    dataset_images, dataset_labels = load_cifar10()
+    dataset_images = reshape_cifar(dataset_images)
+
+    # perform GCN and ZCA
+    dataset_images = GCN(dataset_images, goodfellow=True)
+    dataset_images = ZCA(dataset_images)
+
+    # separate training and test data, save as files
+    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    train_imgs = array_to_list(train_imgs)
+    train_lbls = array_to_list(train_lbls)
+    test_imgs = array_to_list(test_imgs)
+    test_lbls = array_to_list(test_lbls)
+    save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_set_gcn_zca/', 'cifar10_trainset.pkl')
+    save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_set_gcn_zca/', 'cifar10_testset.pkl')
+
+    print('\n#############################################')
+    print('### CIFAR 100 GCN & ZCA PRE-PROCESSING ######')
+    print('#############################################')
+
+    # load and reshape images
+    dataset_images, dataset_labels = load_cifar100()
+    dataset_images = reshape_cifar(dataset_images)
+
+    # perform GCN and ZCA
+    dataset_images = GCN(dataset_images, goodfellow=True)
+    dataset_images = ZCA(dataset_images)
+
+    # separate training and test data, save as files
+    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    train_imgs = array_to_list(train_imgs)
+    train_lbls = array_to_list(train_lbls)
+    test_imgs = array_to_list(test_imgs)
+    test_lbls = array_to_list(test_lbls)
+    save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_set_gcn_zca/', 'cifar100_trainset.pkl')
+    save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_set_gcn_zca/', 'cifar100_testset.pkl')
+
+    print('\n#############################################')
+    print('### ALL FINISHED ############################')
+    print('#############################################\n')
+
+    show_images(dataset_images)
