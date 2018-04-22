@@ -272,8 +272,7 @@ class Network(object):
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,192,192], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv8')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,192,self.NetSettings.logit_dims], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv9')
 			# output
-			self.state = tf.squeeze(tf.nn.avg_pool(self.state, ksize=[1,6,6,1], strides=[1,1,1,1], padding='VALID', name=namescope+'/avgpool10'))
-			self.logits = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[self.NetSettings.logit_dims], AF_set=None, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=False, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=False, reuse=self.reuse, varscope=namescope+'/dense10')
+			self.logits = tf.squeeze(tf.nn.avg_pool(self.state, ksize=[1,6,6,1], strides=[1,1,1,1], padding='VALID', name=namescope+'/avgpool10'))
 			return self.logits
 
 	# ============================= NETWORK BLOCKS =============================

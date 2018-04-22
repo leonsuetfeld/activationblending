@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -N SBF_allcnn
+#$ -N SBF_smcn
 #$ -wd /net/store/ni/users/lsuetfel/activations/
 ##$ -cwd
 #$ -l h_rt=03:00:00 ## carefull with blend runs taking up to 30 mins on a Titan X (Pascal)
