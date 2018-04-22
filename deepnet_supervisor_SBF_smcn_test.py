@@ -34,37 +34,36 @@ import subprocess
 
 TASK_ID = int(sys.argv[1])
 
-
 ################################################################################
-if TASK_ID < 6:
+if TASK_ID < 5:
 	RUN = TASK_ID
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'debugging' + \
-			  " -spec_name "        			+ 'allcnnc_cifar10_relu_gcn_zca' + \
+			  " -spec_name "        			+ 'smcn_cifar10_elu_gcn_zca' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'gcn_zca' +\
-			  " -network="          			+ 'allcnnc' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '70000' + \
+			  " -n_minibatches "    			+ '10000' + \
 			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.8 0.5 0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0 1.0 1.0' + \
-			  " -optimizer "            		+ 'Momentum' + \
-			  " -lr "               			+ '0.01' + \
-			  " -lr_step_ep "           		+ '200 250 300' + \
-			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
-			  " -use_wd "        				+ 'True' + \
+			  " -dropout_keep_probs "   		+ '0.5' + \
+			  " -dropout_keep_probs_inference "	+ '1.0' + \
+			  " -optimizer "            		+ 'Adam' + \
+			  " -lr "               			+ '0.001' + \
+			  " -lr_step_ep "           		+ '0' + \
+			  " -lr_step_multi "        		+ '1' + \
+			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'True' + \
-			  " -val_set_fraction "				+ '0.05' + \
-			  " -af_set "           			+ '1_relu' +\
+			  " -create_val_set "				+ 'False' + \
+			  " -val_set_fraction "				+ '0.0' + \
+			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
-			  " -blend_trainable "  			+ 'True' + \
+			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'True'
+			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
 ################################################################################
@@ -73,30 +72,30 @@ elif TASK_ID < 11:
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'debugging' + \
-			  " -spec_name "        			+ 'allcnnc_cifar10_jelu_gcn_zca' + \
+			  " -spec_name "        			+ 'smcn_cifar10_elu_ztrans_lrschedule' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
-			  " -preprocessing="				+ 'gcn_zca' +\
-			  " -network="          			+ 'allcnnc' + \
+			  " -preprocessing="				+ 'ztrans' +\
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '70000' + \
 			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.8 0.5 0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0 1.0 1.0' + \
+			  " -dropout_keep_probs "   		+ '0.5' + \
+			  " -dropout_keep_probs_inference "	+ '1.0' + \
 			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '200 250 300' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
-			  " -use_wd "        				+ 'True' + \
+			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'True' + \
-			  " -val_set_fraction "				+ '0.05' + \
+			  " -create_val_set "				+ 'False' + \
+			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
-			  " -blend_trainable "  			+ 'True' + \
+			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'True'
+			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
 ################################################################################
@@ -105,16 +104,16 @@ elif TASK_ID < 16:
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'debugging' + \
-			  " -spec_name "        			+ 'allcnnc_cifar10_relu_ztrans' + \
+			  " -spec_name "        			+ 'smcn_cifar10_elu_ztrans_lrschedule_wd' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'allcnnc' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '70000' + \
 			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.8 0.5 0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0 1.0 1.0' + \
+			  " -dropout_keep_probs "   		+ '0.5' + \
+			  " -dropout_keep_probs_inference "	+ '1.0' + \
 			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '200 250 300' + \
@@ -122,13 +121,13 @@ elif TASK_ID < 16:
 			  " -use_wd "        				+ 'True' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'True' + \
-			  " -val_set_fraction "				+ '0.05' + \
-			  " -af_set "           			+ '1_relu' +\
+			  " -create_val_set "				+ 'False' + \
+			  " -val_set_fraction "				+ '0.0' + \
+			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
-			  " -blend_trainable "  			+ 'True' + \
+			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'True'
+			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
 ################################################################################
@@ -137,16 +136,48 @@ elif TASK_ID < 21:
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'debugging' + \
-			  " -spec_name "        			+ 'allcnnc_cifar10_elu_ztrans' + \
+			  " -spec_name "        			+ 'smcn_cifar10_elu_gcn_zca_lrschedule' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
-			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'allcnnc' + \
+			  " -preprocessing="				+ 'gcn_zca' +\
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '70000' + \
 			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.8 0.5 0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0 1.0 1.0' + \
+			  " -dropout_keep_probs "   		+ '0.5' + \
+			  " -dropout_keep_probs_inference "	+ '1.0' + \
+			  " -optimizer "            		+ 'Momentum' + \
+			  " -lr "               			+ '0.01' + \
+			  " -lr_step_ep "           		+ '200 250 300' + \
+			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
+			  " -use_wd "        				+ 'False' + \
+			  " -wd_lambda "        			+ '0.01' + \
+			  " -training_schedule "			+ 'epochs' + \
+			  " -create_val_set "				+ 'False' + \
+			  " -val_set_fraction "				+ '0.0' + \
+			  " -af_set "           			+ '1_jelu' +\
+			  " -af_weights_init "  			+ 'default' + \
+			  " -blend_trainable "  			+ 'False' + \
+			  " -blend_mode "       			+ 'unrestricted' + \
+			  " -swish_beta_trainable " 		+ 'False'
+	subprocess.run(command, shell=True)
+
+################################################################################
+elif TASK_ID < 26:
+	RUN = TASK_ID-20
+	os.system("nvidia-smi")
+	command = "python3 "          				+ 'deepnet_main.py' + \
+			  " -experiment_name "  			+ 'debugging' + \
+			  " -spec_name "        			+ 'smcn_cifar10_elu_gcn_zca_lrschedule_wd' + \
+			  " -run "              			+ str(RUN) + \
+			  " -task="             			+ 'cifar10' + \
+			  " -preprocessing="				+ 'gcn_zca' +\
+			  " -network="          			+ 'smcn' + \
+			  " -mode "             			+ 'training' + \
+			  " -n_minibatches "    			+ '70000' + \
+			  " -minibatch_size "   			+ '256' + \
+			  " -dropout_keep_probs "   		+ '0.5' + \
+			  " -dropout_keep_probs_inference "	+ '1.0' + \
 			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '200 250 300' + \
@@ -154,11 +185,11 @@ elif TASK_ID < 21:
 			  " -use_wd "        				+ 'True' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'True' + \
-			  " -val_set_fraction "				+ '0.05' + \
+			  " -create_val_set "				+ 'False' + \
+			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
-			  " -blend_trainable "  			+ 'True' + \
+			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'True'
+			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)

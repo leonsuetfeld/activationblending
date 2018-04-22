@@ -96,19 +96,7 @@ class Network(object):
 		self.dropout_keep_prob = tf.placeholder(tf.float32, [None], name='dropout_keep_prob')
 		self.global_step = tf.Variable(0, dtype=tf.int32, trainable=False)
 		self.reuse = reuse
-		# --- per image standardization ----------------------------------------
-		if NetSettings.pre_processing in ['none', 'ztrans', 'gcn_zca']: # pre-processing already included in loaded files
-			self.Xp = self.X
-		elif NetSettings.pre_processing in ['tf_ztrans']:
-
-			# self.X_per_image_mean = tf.reduce_mean(self.X, [1,2,3], name='image_mean', keep_dims=True)
-			self.X_per_image_mean, self.X_per_image_std = tf.nn.moments(self.X, [1,2,3], name='image_std', keep_dims=True)
-			self.X2 = self.X-self.X_per_image_mean
-			self.minval = tf.divide(tf.fill(self.X_per_image_std.get_shape(),1.), tf.sqrt(3072.))
-			self.X_std_adjusted = tf.maximum(self.X_per_image_std, self.minval)
-			self.X3 = tf.divide(self.X2, self.X_std_adjusted)
-			self.Xp = self.X3
-
+		self.Xp = self.X
 		else:
 			print('[ERROR] requested preprocessing type unknown (%s)' %(self.NetSettings.pre_processing))
 
@@ -270,7 +258,7 @@ class Network(object):
 	def allcnnc(self, namescope=None):
 		with tf.name_scope(namescope):
 			# input
-			self.state = tf.nn.dropout(self.X, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
+			self.state = tf.nn.dropout(self.Xp, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
 			# block 1
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,3,96], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,96,96], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv2')

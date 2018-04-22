@@ -13,7 +13,7 @@
 #$ -l cuda_cores=3000
 ##$ -l h=*cippy*
 #$ -l h=!vector*&!*picture* ## callisto might have trouble with tensorflow?
-#$ -t 1:20
+#$ -t 1:25
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y
@@ -23,7 +23,7 @@
 UVENV="source venvtfgpu/bin/activate"
 UAPP="python3"
 UCWD="/net/store/ni/users/lsuetfel/activations/"
-UMCR="deepnet_supervisor_SBF_allcnnc_test.py"
+UMCR="deepnet_supervisor_SBF_smcn_test.py"
 
 # write header for return files
 echo "*** Start of job ***"
