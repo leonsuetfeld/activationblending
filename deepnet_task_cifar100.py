@@ -802,10 +802,9 @@ def validate(TaskSettings, sess, Network, training_handler, counter, timer, rec,
 	val_apc = np.zeros((100,))
 	for i in range(100):
 		val_apc[i] = np.array(val_confusion_matrix[i,i]/val_count_vector[i])[0]
-	# TODO: this does not yet work for 100 classes
+	# TO DO: this does not yet work for 100 classes
 	if print_val_apc:
-		print('[MESSAGE] accuracy per class (v): {1: %.3f |' %val_apc[0] + ' 2: %.3f |' %val_apc[1] + ' 3: %.3f |' %val_apc[2] + ' 4: %.3f |' %val_apc[3] + ' 5: %.3f |' %val_apc[4] +
-												' 6: %.3f |' %val_apc[5] + ' 7: %.3f |' %val_apc[6] + ' 8: %.3f |' %val_apc[7] + ' 9: %.3f |' %val_apc[8] + ' 10: %.3f}' %val_apc[9])
+		print('[MESSAGE] accuracy per class not printed for CIFAR100. Implement print of variable "test_apc" if necessary.')
 	# GET AF WEIGHTS
 	af_weights_dict = Network.get_af_weights_dict(sess)
 	# STORE RESULTS

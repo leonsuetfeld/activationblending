@@ -50,27 +50,28 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 		path = Paths.exp_folder+spec_name+'/'+Paths.performance_sub
 		spec_perf_dict = spec_analysis(TaskSettings, Paths, spec_name=spec_name, perf_files_path=path, make_plot=True)
 		# general info about spec
-		spec_name_list.append(spec_perf_dict['spec_name'])
-		n_runs_list.append(spec_perf_dict['n_runs'])
-		# full runs for plotting
-		mb_list.append(spec_perf_dict['v_mb'])
-		best_run_per_spec.append(spec_perf_dict['v_top1_himax_run'])
-		mean_run_per_spec.append(spec_perf_dict['v_top1_mean_run'])
-		worst_run_per_spec.append(spec_perf_dict['v_top1_lomax_run'])
-		std_per_spec.append(spec_perf_dict['v_top1_std_run'])
-		# performance info for text output
-		t_min_per_spec.append(spec_perf_dict['t_top1_run_max_min'])
-		t_max_per_spec.append(spec_perf_dict['t_top1_run_max_max'])
-		t_mean_per_spec.append(spec_perf_dict['t_top1_run_max_mean'])
-		t_var_per_spec.append(spec_perf_dict['t_top1_run_max_var'])
-		v_min_per_spec.append(spec_perf_dict['v_top1_run_max_min'])
-		v_max_per_spec.append(spec_perf_dict['v_top1_run_max_max'])
-		v_mean_per_spec.append(spec_perf_dict['v_top1_run_max_mean'])
-		v_var_per_spec.append(spec_perf_dict['v_top1_run_max_var'])
-		test_min_per_spec.append(spec_perf_dict['test_top1_min'])
-		test_max_per_spec.append(spec_perf_dict['test_top1_max'])
-		test_mean_per_spec.append(spec_perf_dict['test_top1_mean'])
-		test_var_per_spec.append(spec_perf_dict['test_top1_var'])
+		if spec_perf_dict:
+			spec_name_list.append(spec_perf_dict['spec_name'])
+			n_runs_list.append(spec_perf_dict['n_runs'])
+			# full runs for plotting
+			mb_list.append(spec_perf_dict['v_mb'])
+			best_run_per_spec.append(spec_perf_dict['v_top1_himax_run'])
+			mean_run_per_spec.append(spec_perf_dict['v_top1_mean_run'])
+			worst_run_per_spec.append(spec_perf_dict['v_top1_lomax_run'])
+			std_per_spec.append(spec_perf_dict['v_top1_std_run'])
+			# performance info for text output
+			t_min_per_spec.append(spec_perf_dict['t_top1_run_max_min'])
+			t_max_per_spec.append(spec_perf_dict['t_top1_run_max_max'])
+			t_mean_per_spec.append(spec_perf_dict['t_top1_run_max_mean'])
+			t_var_per_spec.append(spec_perf_dict['t_top1_run_max_var'])
+			v_min_per_spec.append(spec_perf_dict['v_top1_run_max_min'])
+			v_max_per_spec.append(spec_perf_dict['v_top1_run_max_max'])
+			v_mean_per_spec.append(spec_perf_dict['v_top1_run_max_mean'])
+			v_var_per_spec.append(spec_perf_dict['v_top1_run_max_var'])
+			test_min_per_spec.append(spec_perf_dict['test_top1_min'])
+			test_max_per_spec.append(spec_perf_dict['test_top1_max'])
+			test_mean_per_spec.append(spec_perf_dict['test_top1_mean'])
+			test_var_per_spec.append(spec_perf_dict['test_top1_var'])
 	print('=================================================================================================================================================================================================')
 
 	# BIG FINAL PLOT
@@ -184,6 +185,8 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 			run_number_store.append(run_number)
 
 	# if more than one run was done in this spec, build spec performance summary dict
+	v_run_max_list = []
+	spec_perf_dict = {}
 	if len(run_number_store) > 0:
 		n_runs = len(run_number_store)
 

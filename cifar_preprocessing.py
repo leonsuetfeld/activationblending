@@ -31,10 +31,10 @@ def show_images(dataset, n=5, random=False):
             a.axes.get_yaxis().set_visible(False)
     plt.show()
 
-def GCN(dataset, s=1., lmda=0., epsilon=1.0e-8, goodfellow=False):
+def GCN(dataset, s=1., lmda=0., epsilon=1.0e-8, goodfellow=False): # to do: add option to subtract mean per color channel
     # perform per-image Global Contrast Normalization (except for scaling by factor s)
     out_set = []
-    print('\nGNC...')
+    print('\nGCN...')
     for i in range(dataset.shape[0]):
         X = np.squeeze(dataset[i,:,:,:])
         X_mean = np.mean(X)
@@ -69,7 +69,7 @@ def ZCA(dataset):
     for i in range(dataset.shape[0]):
         vec = dataset_flattened[i]
         dot = np.dot(vec - pca.mean_, pca.components_.T)
-        whitened = np.dot(dot / pca.singular_values_, pca.components_) * np.sqrt(60000) * 64 + 128
+        whitened = np.dot(dot / pca.singular_values_, pca.components_) * np.sqrt(dataset.shape[0]) * 0.5
         out_set.append(whitened.reshape((32,32,3)))
         print('%i / %i' %(i+1,dataset.shape[0]),end='\r')
     print('done.')
@@ -90,6 +90,11 @@ def z_trans(dataset, bounded_std=True): # float 32 for testing purposes
         dataset_new.append(img)
     print('done.')
     return np.array(dataset_new)
+
+def unify_dataset(dataset):
+    ds_mean = np.mean(dataset)
+    ds_std = np.std(dataset)
+    return (dataset - ds_mean) / ds_std
 
 def save_dataset(images, labels, path, filename):
     print('\nSaving file...')
@@ -168,81 +173,81 @@ def array_to_list(a):
 # ##############################################################################
 
 if __name__ == '__main__':
-
-    print('\n#############################################')
-    print('### CIFAR 10 RESHAPING ######################')
-    print('#############################################')
-
-    # load and reshape images
-    dataset_images, dataset_labels = load_cifar10()
-    dataset_images = reshape_cifar(dataset_images)
-
-    # separate training and test data, save as files
-    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
-    train_imgs = array_to_list(train_imgs)
-    train_lbls = array_to_list(train_lbls)
-    test_imgs = array_to_list(test_imgs)
-    test_lbls = array_to_list(test_lbls)
-    save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_set/', 'cifar10_trainset.pkl')
-    save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_set/', 'cifar10_testset.pkl')
-
-    print('\n#############################################')
-    print('### CIFAR 100 RESHAPING #####################')
-    print('#############################################')
-
-    # load and reshape images
-    dataset_images, dataset_labels = load_cifar100()
-    dataset_images = reshape_cifar(dataset_images)
-
-    # separate training and test data, save as files
-    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
-    train_imgs = array_to_list(train_imgs)
-    train_lbls = array_to_list(train_lbls)
-    test_imgs = array_to_list(test_imgs)
-    test_lbls = array_to_list(test_lbls)
-    save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_set/', 'cifar100_trainset.pkl')
-    save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_set/', 'cifar100_testset.pkl')
-
-    print('\n#############################################')
-    print('### CIFAR 10 Z-TRANS ########################')
-    print('#############################################')
-
-    # load and reshape images
-    dataset_images, dataset_labels = load_cifar10()
-    dataset_images = reshape_cifar(dataset_images)
-
-    # pre-processing
-    dataset_images = dataset_images.astype(np.float32) # set to float 32 before the calculations to test if this decreases performance by introducing noise
-    dataset_images = z_trans(dataset_images)
-
-    # separate training and test data, save as files
-    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
-    train_imgs = array_to_list(train_imgs)
-    train_lbls = array_to_list(train_lbls)
-    test_imgs = array_to_list(test_imgs)
-    test_lbls = array_to_list(test_lbls)
-    save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_set_ztrans/', 'cifar10_trainset.pkl')
-    save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_set_ztrans/', 'cifar10_testset.pkl')
-
-    print('\n#############################################')
-    print('### CIFAR 100 Z-TRANS #######################')
-    print('#############################################')
-
-    # load and reshape images
-    dataset_images, dataset_labels = load_cifar100()
-    dataset_images = reshape_cifar(dataset_images)
-
-    # pre-processing
-    dataset_images = z_trans(dataset_images)
-
-    # separate training and test data, save as files
-    train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
-    train_imgs = array_to_list(train_imgs)
-    train_lbls = array_to_list(train_lbls)
-    test_imgs = array_to_list(test_imgs)
-    test_lbls = array_to_list(test_lbls)
-    save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_set_ztrans/', 'cifar100_trainset.pkl')
-    save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_set_ztrans/', 'cifar100_testset.pkl')
+    #
+    # print('\n#############################################')
+    # print('### CIFAR 10 RESHAPING ######################')
+    # print('#############################################')
+    #
+    # # load and reshape images
+    # dataset_images, dataset_labels = load_cifar10()
+    # dataset_images = reshape_cifar(dataset_images)
+    #
+    # # separate training and test data, save as files
+    # train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    # train_imgs = array_to_list(train_imgs)
+    # train_lbls = array_to_list(train_lbls)
+    # test_imgs = array_to_list(test_imgs)
+    # test_lbls = array_to_list(test_lbls)
+    # save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_set/', 'cifar10_trainset.pkl')
+    # save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_set/', 'cifar10_testset.pkl')
+    #
+    # print('\n#############################################')
+    # print('### CIFAR 100 RESHAPING #####################')
+    # print('#############################################')
+    #
+    # # load and reshape images
+    # dataset_images, dataset_labels = load_cifar100()
+    # dataset_images = reshape_cifar(dataset_images)
+    #
+    # # separate training and test data, save as files
+    # train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    # train_imgs = array_to_list(train_imgs)
+    # train_lbls = array_to_list(train_lbls)
+    # test_imgs = array_to_list(test_imgs)
+    # test_lbls = array_to_list(test_lbls)
+    # save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_set/', 'cifar100_trainset.pkl')
+    # save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_set/', 'cifar100_testset.pkl')
+    #
+    # print('\n#############################################')
+    # print('### CIFAR 10 Z-TRANS ########################')
+    # print('#############################################')
+    #
+    # # load and reshape images
+    # dataset_images, dataset_labels = load_cifar10()
+    # dataset_images = reshape_cifar(dataset_images)
+    #
+    # # pre-processing
+    # dataset_images = dataset_images.astype(np.float32) # set to float 32 before the calculations to test if this decreases performance by introducing noise
+    # dataset_images = z_trans(dataset_images)
+    #
+    # # separate training and test data, save as files
+    # train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    # train_imgs = array_to_list(train_imgs)
+    # train_lbls = array_to_list(train_lbls)
+    # test_imgs = array_to_list(test_imgs)
+    # test_lbls = array_to_list(test_lbls)
+    # save_dataset(train_imgs, train_lbls, './1_data_cifar10/train_set_ztrans/', 'cifar10_trainset.pkl')
+    # save_dataset(test_imgs, test_lbls, './1_data_cifar10/test_set_ztrans/', 'cifar10_testset.pkl')
+    #
+    # print('\n#############################################')
+    # print('### CIFAR 100 Z-TRANS #######################')
+    # print('#############################################')
+    #
+    # # load and reshape images
+    # dataset_images, dataset_labels = load_cifar100()
+    # dataset_images = reshape_cifar(dataset_images)
+    #
+    # # pre-processing
+    # dataset_images = z_trans(dataset_images)
+    #
+    # # separate training and test data, save as files
+    # train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
+    # train_imgs = array_to_list(train_imgs)
+    # train_lbls = array_to_list(train_lbls)
+    # test_imgs = array_to_list(test_imgs)
+    # test_lbls = array_to_list(test_lbls)
+    # save_dataset(train_imgs, train_lbls, './1_data_cifar100/train_set_ztrans/', 'cifar100_trainset.pkl')
+    # save_dataset(test_imgs, test_lbls, './1_data_cifar100/test_set_ztrans/', 'cifar100_testset.pkl')
 
     print('\n#############################################')
     print('### CIFAR 10 GCN & ZCA PRE-PROCESSING #######')
@@ -255,6 +260,8 @@ if __name__ == '__main__':
     # perform GCN and ZCA
     dataset_images = GCN(dataset_images, goodfellow=True)
     dataset_images = ZCA(dataset_images)
+    dataset_images = unify_dataset(dataset_images)
+    print('dataset mean & std:', np.mean(dataset_images), np.std(dataset_images))
 
     # separate training and test data, save as files
     train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)
@@ -276,6 +283,8 @@ if __name__ == '__main__':
     # perform GCN and ZCA
     dataset_images = GCN(dataset_images, goodfellow=True)
     dataset_images = ZCA(dataset_images)
+    dataset_images = unify_dataset(dataset_images)
+    print('dataset mean & std:', np.mean(dataset_images), np.std(dataset_images))
 
     # separate training and test data, save as files
     train_imgs, train_lbls, test_imgs, test_lbls = split_dataset(dataset_images, dataset_labels, splitpoint=50000)

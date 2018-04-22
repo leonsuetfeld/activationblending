@@ -39,7 +39,7 @@ if TASK_ID < 101:
 	RUN = TASK_ID-0
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
 			  " -spec_name "        			+ 'linu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
@@ -71,7 +71,7 @@ elif TASK_ID < 201:
 	RUN = TASK_ID-100
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
 			  " -spec_name "        			+ 'tanh' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
@@ -103,7 +103,7 @@ elif TASK_ID < 301:
 	RUN = TASK_ID-200
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
 			  " -spec_name "        			+ 'relu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
@@ -135,7 +135,7 @@ elif TASK_ID < 401:
 	RUN = TASK_ID-300
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
 			  " -spec_name "        			+ 'elu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
@@ -167,7 +167,7 @@ elif TASK_ID < 501:
 	RUN = TASK_ID-400
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
 			  " -spec_name "        			+ 'selu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
@@ -199,7 +199,7 @@ elif TASK_ID < 601:
 	RUN = TASK_ID-500
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
 			  " -spec_name "        			+ 'swish' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
@@ -231,8 +231,8 @@ elif TASK_ID < 701:
 	RUN = TASK_ID-600
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'linu' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
+			  " -spec_name "        			+ 'adaptive_linu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
 			  " -preprocessing="				+ 'ztrans' +\
@@ -263,8 +263,8 @@ elif TASK_ID < 801:
 	RUN = TASK_ID-700
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'tanh' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
+			  " -spec_name "        			+ 'adaptive_tanh' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
 			  " -preprocessing="				+ 'ztrans' +\
@@ -295,8 +295,8 @@ elif TASK_ID < 901:
 	RUN = TASK_ID-800
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'relu' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
+			  " -spec_name "        			+ 'adaptive_relu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
 			  " -preprocessing="				+ 'ztrans' +\
@@ -327,8 +327,8 @@ elif TASK_ID < 1001:
 	RUN = TASK_ID-900
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'elu' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
+			  " -spec_name "        			+ 'adaptive_elu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
 			  " -preprocessing="				+ 'ztrans' +\
@@ -359,8 +359,8 @@ elif TASK_ID < 1101:
 	RUN = TASK_ID-1000
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'selu' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
+			  " -spec_name "        			+ 'adaptive_selu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
 			  " -preprocessing="				+ 'ztrans' +\
@@ -391,8 +391,8 @@ elif TASK_ID < 1201:
 	RUN = TASK_ID-1100
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'swish' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
+			  " -spec_name "        			+ 'adaptive_swish' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
 			  " -preprocessing="				+ 'ztrans' +\
@@ -423,7 +423,7 @@ elif TASK_ID < 1301:
 	RUN = TASK_ID-1200
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_6b' + \
 			  " -spec_name "        			+ 'blend5_unrest' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar100' + \
