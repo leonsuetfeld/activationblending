@@ -111,6 +111,8 @@ class Network(object):
 			self.logits = self.densenet(namescope='densenet')
 		elif self.NetSettings.network_spec == 'allcnnc':
 			self.logits = self.allcnnc(namescope='allcnnc')
+		elif self.NetSettings.network_spec == 'simpnet':
+			self.logits = self.simpnet(namescope='simpnet')
 		else:
 			print('[ERROR] requested network spec unknown (%s)' %(self.NetSettings.network_spec))
 
@@ -268,13 +270,53 @@ class Network(object):
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,192,192], strides=[1,2,2,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv6')
 			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[2], name=namescope+'/dropout3')
 			# block 3
-			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,192,192], strides=[1,1,1,1], padding='VALID', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv7')
-			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,192,192], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv8')
-			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,192,self.NetSettings.logit_dims], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv9')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,192,192], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv7')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,192,192], strides=[1,1,1,1], padding='VALID', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv8')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,192,self.NetSettings.logit_dims], strides=[1,1,1,1], padding='VALID', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv9')
 			# output
-			self.logits = tf.squeeze(tf.nn.avg_pool(self.state, ksize=[1,6,6,1], strides=[1,1,1,1], padding='VALID', name=namescope+'/avgpool10'))
+			self.logits = tf.squeeze(tf.nn.avg_pool(self.state, ksize=[1,8,8,1], strides=[1,1,1,1], padding='VALID', name=namescope+'/avgpool10'))
 			return self.logits
-
+	
+	def simpnet(self, namescope=None):
+		with tf.name_scope(namescope):
+			# block 1
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.Xp, W_shape=[3,3,3,128], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv1')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,128,182], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv1_0')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1_0')
+			# block 2
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,182,182], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv2')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout2')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,182,182], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv2_0')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout2_0')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,182,182], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv2_1')
+			self.state = tf.nn.max_pool(self.state, ksize=[1,2,2,1], strides=[1,2,2,1], padding='VALID', name=namescope+'/maxpool2')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout2_1')
+			# block 3
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,182,182], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv3')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout3')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,182,182], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv3_0')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout3_0')
+			# block 4
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,182,182], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv4')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout4')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,182,182], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv4_0')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout4_0')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,182,430], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv4_1')
+			self.state = tf.nn.max_pool(self.state, ksize=[1,2,2,1], strides=[1,2,2,1], padding='VALID', name=namescope+'/maxpool4')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout4_1')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,430,430], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv4_2')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout4_2')
+			# block 5
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,430,455], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv5')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout5')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,455,600], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preact_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv5_0')
+			self.state = tf.squeeze(tf.nn.max_pool(self.state, ksize=[1,8,8,1], strides=[1,1,1,1], padding='VALID', name=namescope+'/maxpool_5'))
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout5_0')
+			# output
+			self.logits = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[self.NetSettings.logit_dims], AF_set=None, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=False, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=False, reuse=self.reuse, varscope=namescope+'/dense10')
+			return self.logits
+	
 	# ============================= NETWORK BLOCKS =============================
 
 	def parallel_act_dense_block(self, X, input_depth, k=12, varscope=None):
@@ -319,7 +361,7 @@ class Network(object):
 				return iState
 			return self.activate(iState, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, varscope)
 
-	def conv2d_parallel_act_layer(self, layer_input, W_shape, b_shape=[-1], strides=[1,1,1,1], padding='SAME', bias_init=0.1, AF_set=None, af_weights_init='default', W_blend_trainable=True, AF_blend_mode='unrestricted', swish_beta_trainable=True, reuse=False, varscope=None):
+	def conv2d_parallel_act_layer(self, layer_input, W_shape, b_shape=[-1], strides=[1,1,1,1], padding='SAME', bias_init=0.1, AF_set=None, af_weights_init='default', W_blend_trainable=True, AF_blend_mode='unrestricted', swish_beta_trainable=True, preact_batchnorm=False, reuse=False, varscope=None):
 		with tf.variable_scope(varscope, reuse=reuse):
 			if b_shape == [-1]:
 				b_shape = [W_shape[-1]]
@@ -331,6 +373,8 @@ class Network(object):
 			iState = tf.nn.conv2d(layer_input, W, strides, padding)
 			if b_shape != [0]:
 				iState += b
+			if preact_batchnorm:
+				iState = tf.layers.batch_normalization(iState,momentum=.95)
 			if AF_set is None:
 				return iState
 			return self.activate(iState, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, varscope)
