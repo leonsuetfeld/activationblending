@@ -34,6 +34,38 @@ import subprocess
 
 TASK_ID = int(sys.argv[1])
 
+RUN = TASK_ID+58
+os.system("nvidia-smi")
+command = "python3 "          				+ 'deepnet_main.py' + \
+		  " -experiment_name "  			+ 'SBF_6b' + \
+		  " -spec_name "        			+ 'blend5_unrest' + \
+		  " -run "              			+ str(RUN) + \
+		  " -task="             			+ 'cifar100' + \
+		  " -preprocessing="				+ 'ztrans' +\
+		  " -network="          			+ 'smcn' + \
+		  " -mode "             			+ 'training' + \
+		  " -n_minibatches "    			+ '10000' + \
+		  " -minibatch_size "   			+ '256' + \
+		  " -dropout_keep_probs "   		+ '0.5' + \
+		  " -dropout_keep_probs_inference "	+ '1.0' + \
+		  " -optimizer "            		+ 'Adam' + \
+		  " -lr "               			+ '0.001' + \
+		  " -lr_step_ep "           		+ '0' + \
+		  " -lr_step_multi "        		+ '1' + \
+		  " -use_wd "        				+ 'False' + \
+		  " -wd_lambda "        			+ '0.01' + \
+		  " -training_schedule "			+ 'epochs' + \
+		  " -create_val_set "				+ 'False' + \
+		  " -val_set_fraction "				+ '0.0' + \
+		  " -af_set "           			+ '5_blend5_swish' +\
+		  " -af_weights_init "  			+ 'default' + \
+		  " -blend_trainable "  			+ 'True' + \
+		  " -blend_mode "       			+ 'unrestricted' + \
+		  " -swish_beta_trainable " 		+ 'True'
+subprocess.run(command, shell=True)
+
+"""
+
 ################################################################################
 if TASK_ID < 101:
 	RUN = TASK_ID-0
@@ -449,3 +481,4 @@ elif TASK_ID < 1301:
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
 	subprocess.run(command, shell=True)
+""" 

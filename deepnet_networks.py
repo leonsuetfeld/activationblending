@@ -97,8 +97,6 @@ class Network(object):
 		self.global_step = tf.Variable(0, dtype=tf.int32, trainable=False)
 		self.reuse = reuse
 		self.Xp = self.X
-		else:
-			print('[ERROR] requested preprocessing type unknown (%s)' %(self.NetSettings.pre_processing))
 
 		# CHOOSE NETWORK ARCHITECTURE
 		if self.NetSettings.network_spec == 'sfnet':
