@@ -149,7 +149,7 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 	test_loss_store = []
 	run_number_store = []
 
-	# make a list of all completed runs
+	# criteria for exclusion: incomplete runs. this section makes a list of all completed runs
 	n_val_samples_list = []
 	for run_file in perf_files_list:
 		p_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
@@ -170,9 +170,12 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 		run_number = int(run_file.split('run_')[1].split('.')[0])
 		n_val_samples = len(p_dict['val_mb_n_hist'])
 		run_val_mean = np.mean(p_dict['val_top1_hist'])
+		test_t1 = p_dict['test_top1'][0]
 		# exclude bad runs
 		if (n_val_samples > 0) and (run_val_mean > .95 or run_val_mean < .3):
-			print('[WARNING] bad run detected and excluded from analysis: %s, run %i' %(spec_name, run_number))
+			print('[WARNING] bad run detected and excluded from analysis (based on validation performance): %s, run %i' %(spec_name, run_number))
+		if test_t1 and test_t1 > 0. and test_t1 < .3:
+			print('[WARNING] bad run detected and excluded from analysis (based on test performance): %s, run %i' %(spec_name, run_number))
 		else:
 			train_mb_n_hist_store.append(np.array(p_dict['train_mb_n_hist']))
 			train_top1_hist_store.append(np.array(p_dict['train_top1_hist']))
