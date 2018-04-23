@@ -57,8 +57,7 @@ def GCN(dataset, s=1., lmda=0., epsilon=1.0e-8, goodfellow=False): # to do: add 
     print('done.')
     return out_set
 
-def ZCA(dataset):
-    # perform ZCA-whitening
+def ZCA(dataset, epsilon=0.0): # what about epsilon? Keras has fixed 10e-7
     print('\nZCA step 1: compute PCA...')
     pca = PCA(n_components=3072, random_state=0, svd_solver='randomized')
     dataset_flattened = np.reshape(dataset,(np.shape(dataset)[0],-1))
@@ -69,7 +68,7 @@ def ZCA(dataset):
     for i in range(dataset.shape[0]):
         vec = dataset_flattened[i]
         dot = np.dot(vec - pca.mean_, pca.components_.T)
-        whitened = np.dot(dot / pca.singular_values_, pca.components_) * np.sqrt(dataset.shape[0]) * 0.5
+        whitened = np.dot(dot / (pca.singular_values_+epsilon), pca.components_) * np.sqrt(dataset.shape[0]) * 0.5 # added +epsilon
         out_set.append(whitened.reshape((32,32,3)))
         print('%i / %i' %(i+1,dataset.shape[0]),end='\r')
     print('done.')
