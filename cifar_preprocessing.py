@@ -58,6 +58,7 @@ def GCN(dataset, s=1., lmda=0., epsilon=1.0e-8, goodfellow=False): # to do: add 
     return out_set
 
 def ZCA(dataset, epsilon=0.0): # what about epsilon? Keras has fixed 10e-7
+    # zero-phased component analysis
     print('\nZCA step 1: compute PCA...')
     pca = PCA(n_components=3072, random_state=0, svd_solver='randomized')
     dataset_flattened = np.reshape(dataset,(np.shape(dataset)[0],-1))

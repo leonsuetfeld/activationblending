@@ -78,6 +78,9 @@ qdel {jobid_1..jobid_n}       # deletes all jobs with ids from 1 to n, excluding
 # ### MISC #####################################################################
 # ##############################################################################
 
+# get current folder size and subfolder sizes:
+du --max-depth=1 -h
+
 # To start Ipython:
 python -c 'import IPython; IPython.terminal.ipapp.launch_new_instance()'
 
