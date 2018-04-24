@@ -35,7 +35,7 @@ import subprocess
 os.system("nvidia-smi")
 
 command = "python3 "          		+ 'deepnet_main.py' + \
-		  " -experiment_name="  	+ 'SBF_6a' + \
+		  " -experiment_name="  	+ 'SBF_7a' + \
 		  " -mode="             	+ 'analysis' + \
 		  " -task="             	+ 'cifar10'
 subprocess.run(command, shell=True)
