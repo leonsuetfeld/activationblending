@@ -51,7 +51,7 @@ if __name__ == '__main__':
 	parser.add_argument('-af_set', type=str, help='AF / set of AFs to use')
 	parser.add_argument('-af_weights_init', type=str, help='defines initialization of blend weights and swish beta - \'default\' or \'predefined\'')
 	parser.add_argument('-blend_trainable', type=str2bool, help='enables adaptive blend / AF weights')
-	parser.add_argument('-blend_mode',  type=str, help='\'unrestricted\', \'normalized\', \'softmaxed\'')
+	parser.add_argument('-blend_mode',  type=str, help='\'unrestricted\', \'normalized\', \'posnorm\'')
 	parser.add_argument('-swish_beta_trainable', type=str2bool)
 	args = vars(parser.parse_args())
 

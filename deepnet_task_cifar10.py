@@ -83,6 +83,7 @@ class TaskSettings(object):
 					self.af_weights_exist = True
 				else:
 					self.af_weights_exist = False
+				self.save_af_weights_at_minibatch = []  # TO DO: implement as supervisor setting
 				################################################################
 				# FILE WRITING OPTIONS ['never', 'once' (if run==1), 'always'] #
 				################################################################
@@ -698,6 +699,9 @@ def train(TaskSettings, Paths, Network, training_handler, test_handler, counter,
 					if rec.top_score(counter.mb_count_total):
 						save_model(TaskSettings, Paths, Network, sess, saver, counter, rec, delete_previous=True)
 
+			# SAVE AF WEIGHTS INTERMITTENTLY IF REQUESTED
+			if mb in TaskSettings.save_af_weights_at_minibatch:
+				Network.save_af_weights(sess, counter)
 
 		# AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
 		timer.set_session_end_time()

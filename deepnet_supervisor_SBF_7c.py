@@ -46,13 +46,13 @@ if TASK_ID < 41:
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcnLin' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'SGD' + \
+			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '150 200 250' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
@@ -78,13 +78,13 @@ elif TASK_ID < 81:
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcnLin' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'SGD' + \
+			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '150 200 250' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
@@ -110,13 +110,13 @@ elif TASK_ID < 121:
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcnLin' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'SGD' + \
+			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '150 200 250' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
@@ -142,13 +142,13 @@ elif TASK_ID < 161:
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcnLin' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'SGD' + \
+			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '150 200 250' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
@@ -175,13 +175,13 @@ elif TASK_ID < 201:
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcnLin' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'SGD' + \
+			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '150 200 250' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
@@ -207,13 +207,13 @@ elif TASK_ID < 241:
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcnLin' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'SGD' + \
+			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '150 200 250' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
@@ -239,13 +239,13 @@ elif TASK_ID < 281:
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcnLin' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'SGD' + \
+			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.01' + \
 			  " -lr_step_ep "           		+ '150 200 250' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
