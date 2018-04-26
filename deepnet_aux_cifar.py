@@ -161,7 +161,7 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 	for run_file in perf_files_list:
 		p_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
 		run_number = int(run_file.split('run_')[1].split('.')[0])
-		if len(p_dict['val_mb_n_hist']) == run_length:
+		if len(p_dict['test_top1'])> 0: # put 'if len(p_dict['val_mb_n_hist']) == run_length:' for runs without test
 			complete_runs.append(run_file)
 
 	# extract data from files

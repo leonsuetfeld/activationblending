@@ -2,7 +2,7 @@
 #$ -N SBF_allcnn
 #$ -wd /net/store/ni/users/lsuetfel/activations/
 ##$ -cwd
-#$ -l h_rt=01:29:00 ## carefull with blend runs taking up to 30 mins on a Titan X (Pascal)
+#$ -l h_rt=04:00:00 ## carefull with blend runs taking up to 30 mins on a Titan X (Pascal)
 #$ -l mem=3G
 #$ -l mem_free=3G
 #$ -l nv_mem_free=2800M

@@ -62,6 +62,10 @@ command = "python3 "          				+ 'deepnet_main.py' + \
 		  " -val_set_fraction "				+ '0.0' + \
 		  " -af_set "           			+ '5_blend5_swish' +\
 		  " -af_weights_init "  			+ 'default' + \
+		  " -load_af_weights_from "  		+ 'none' + \
+		  " -norm_blendw_at_init "  		+ 'False' + \
+		  " -safe_af_ws_n "  				+ '0' + \
+		  " -safe_all_ws_n "  				+ '0' + \
 		  " -blend_trainable "  			+ 'True' + \
 		  " -blend_mode "       			+ 'unrestricted' + \
 		  " -swish_beta_trainable " 		+ 'True'
@@ -105,6 +109,10 @@ if TASK_ID < 41:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_linu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -137,6 +145,10 @@ elif TASK_ID < 81:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -169,6 +181,10 @@ elif TASK_ID < 121:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -201,6 +217,10 @@ elif TASK_ID < 161:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_linu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -234,6 +254,10 @@ elif TASK_ID < 201:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -266,6 +290,10 @@ elif TASK_ID < 241:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -298,6 +326,10 @@ elif TASK_ID < 281:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '5_blend5_swish' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'

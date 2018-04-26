@@ -61,6 +61,8 @@ class TaskSettings(object):
 			if self.mode in ['train','training','']:
 				assert args['training_schedule'] is not None, 'training_schedule must be specified.'
 				assert args['n_minibatches'] is not None, 'n_minibatches (runtime) must be specified for training.'
+				assert args['safe_af_ws_n'] is not None, 'safe_af_ws_n must be specified for training.'
+				assert args['safe_all_ws_n'] is not None, 'safe_all_ws_n must be specified for training.'
 				assert args['create_val_set'] is not None, 'create_val_set must be specified for training.'
 				assert args['val_set_fraction'] is not None, 'val_set_fraction must be specified for training.'
 				assert args['dropout_keep_probs'] is not None, 'dropout_keep_probs must be specified for training.'
@@ -83,7 +85,8 @@ class TaskSettings(object):
 					self.af_weights_exist = True
 				else:
 					self.af_weights_exist = False
-				self.save_af_weights_at_minibatch = []  # TO DO: implement as supervisor setting
+				self.save_af_weights_at_minibatch = np.around(np.linspace(0, args['n_minibatches'], num=args['safe_af_ws_n'], endpoint=True)).tolist()
+				self.save_all_weights_at_minibatch = np.around(np.linspace(0, args['n_minibatches'], num=args['safe_all_ws_n'], endpoint=True)).tolist()
 				################################################################
 				# FILE WRITING OPTIONS ['never', 'once' (if run==1), 'always'] #
 				################################################################
@@ -100,6 +103,9 @@ class TaskSettings(object):
 				if self.save_performance_dict != 'always':
 					print('[WARNING] Performance / result files will not be saved.')
 		self.print_overview()
+
+	def even_splits(n,k):
+		return np.around(np.linspace(0, args['n_minibatches'], num=args['safe_af_ws_n'], endpoint=True))
 
 	def print_overview(self):
 		print('')
@@ -699,9 +705,11 @@ def train(TaskSettings, Paths, Network, training_handler, test_handler, counter,
 					if rec.top_score(counter.mb_count_total):
 						save_model(TaskSettings, Paths, Network, sess, saver, counter, rec, delete_previous=True)
 
-			# SAVE AF WEIGHTS INTERMITTENTLY IF REQUESTED
+			# SAVE (AF) WEIGHTS INTERMITTENTLY IF REQUESTED
 			if mb in TaskSettings.save_af_weights_at_minibatch:
 				Network.save_af_weights(sess, counter)
+			if mb in TaskSettings.save_all_weights_at_minibatch:
+				Network.save_all_weights(sess, counter)
 
 		# AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
 		timer.set_session_end_time()

@@ -61,6 +61,10 @@ if TASK_ID < 4:
 			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
@@ -93,6 +97,10 @@ elif TASK_ID < 7:
 			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
@@ -125,6 +133,10 @@ elif TASK_ID < 10:
 			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
@@ -157,6 +169,10 @@ elif TASK_ID < 13:
 			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
@@ -189,6 +205,10 @@ elif TASK_ID < 16:
 			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '5_blend5_swish' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'

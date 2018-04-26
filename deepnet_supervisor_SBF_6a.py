@@ -61,6 +61,10 @@ if TASK_ID < 101:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_linu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -93,6 +97,10 @@ elif TASK_ID < 201:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_tanh' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -125,6 +133,10 @@ elif TASK_ID < 301:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -157,6 +169,10 @@ elif TASK_ID < 401:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -189,6 +205,10 @@ elif TASK_ID < 501:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_selu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -221,6 +241,10 @@ elif TASK_ID < 601:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jswish' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
@@ -253,6 +277,10 @@ elif TASK_ID < 701:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_linu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -285,6 +313,10 @@ elif TASK_ID < 801:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_tanh' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -317,6 +349,10 @@ elif TASK_ID < 901:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -349,6 +385,10 @@ elif TASK_ID < 1001:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -381,6 +421,10 @@ elif TASK_ID < 1101:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_selu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -413,6 +457,10 @@ elif TASK_ID < 1201:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jswish' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
@@ -445,7 +493,11 @@ elif TASK_ID < 1301:
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '5_blend5_swish' +\
 			  " -af_weights_init "  			+ 'default' + \
-			  " -blend_trainable "  			+ 'True' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
+		  	  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
 	subprocess.run(command, shell=True)

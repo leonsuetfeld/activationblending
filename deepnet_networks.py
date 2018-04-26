@@ -29,7 +29,9 @@ class NetSettings(object):
 		assert args['blend_trainable'] is not None, 'blend_trainable must be specified.'
 		assert args['blend_mode'] is not None, 'blend_mode must be specified.'
 		assert args['swish_beta_trainable'] is not None, 'swish_beta_trainable must be specified.'
-		assert args['blend_mode'] in ['unrestricted', 'normalized', 'posnorm'], 'requested setting for blend_mode unknown.'
+		assert args['blend_mode'] in ['unrestricted', 'normalized', 'posnormed'], 'requested setting for blend_mode unknown.'
+		assert args['load_af_weights_from'] is not None, 'load_af_weights_from must be specified.'
+		assert args['norm_blendw_at_init'] None, 'norm_blendw_at_init must be specified.'
 		assert args['optimizer'] is not None, 'optimizer must be specified.'
 		assert args['use_wd'] is not None, 'use_wd must be specified.'
 		assert args['wd_lambda'] is not None, 'wd_lambda must be specified.'
@@ -58,8 +60,8 @@ class NetSettings(object):
 		self.blend_mode = args['blend_mode']
 		self.swish_beta_trainable = args['swish_beta_trainable']
 		self.optimizer_choice = args['optimizer']
-		self.init_blendweights_from_spec_name = 'todo_implement_as_supervisor_setting'
-		self.normalize_blend_weights_at_init = False # TO DO: implement as supervisor setting
+		self.init_blendweights_from_spec_name = args['load_af_weights_from']
+		self.normalize_blend_weights_at_init = args['norm_blendw_at_init']
 		self.print_overview()
 
 	def print_overview(self):
@@ -410,7 +412,7 @@ class Network(object):
 
 	def activate(self, preact, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, layer_name):
 		assert af_weights_init in ['default','predefined'], 'specified initialization type for W_blend unknown.'
-		assert AF_blend_mode in ['unrestricted','normalized','posnorm'], 'specified blend mode unknown.'
+		assert AF_blend_mode in ['unrestricted','normalized','posnormed'], 'specified blend mode unknown.'
 
 		# INITIALIZE BLEND WEIGHTS
 		if af_weights_init == 'default':
@@ -428,7 +430,7 @@ class Network(object):
 			pass
 		elif AF_blend_mode == 'normalized':
 			blend_weights /= tf.reduce_sum(blend_weights)
-		elif AF_blend_mode == 'posnorm':
+		elif AF_blend_mode == 'posnormed':
 			blend_weights = tf.clip_by_value(blend_weights, 0.0, 1.0)
 			blend_weights /= tf.reduce_sum(blend_weights)
 

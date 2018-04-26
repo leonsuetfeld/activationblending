@@ -57,6 +57,10 @@ for run in range(10):
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -86,6 +90,10 @@ for run in range(10):
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
@@ -115,6 +123,10 @@ for run in range(10):
 			  " -val_set_fraction "				+ '0.0' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '0' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
