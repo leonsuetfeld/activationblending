@@ -1,8 +1,8 @@
 #!/bin/bash
-#$ -N SBF_allcnn
+#$ -N SBF_8b
 #$ -wd /net/store/ni/users/lsuetfel/activations/
 ##$ -cwd
-#$ -l h_rt=04:00:00 ## carefull with blend runs taking up to 30 mins on a Titan X (Pascal)
+#$ -l h_rt=01:29:00
 #$ -l mem=3G
 #$ -l mem_free=3G
 #$ -l nv_mem_free=2800M
@@ -10,10 +10,10 @@
 #$ -l cuda=1
 #$ -l cuda_capability=500
 #$ -l cuda_driver=8000.000000
-#$ -l cuda_cores=3000
+#$ -l cuda_cores=640
 ##$ -l h=*cippy*
-#$ -l h=!*picture* ## callisto might have trouble with tensorflow?
-#$ -t 1:15
+#$ -l h=!*picture*
+#$ -t 1:240
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y
@@ -23,7 +23,7 @@
 UVENV="source venvtfgpu/bin/activate"
 UAPP="python3"
 UCWD="/net/store/ni/users/lsuetfel/activations/"
-UMCR="deepnet_supervisor_SBF_allcnnc_test.py"
+UMCR="deepnet_supervisor_SBF_8b.py"
 
 # write header for return files
 echo "*** Start of job ***"

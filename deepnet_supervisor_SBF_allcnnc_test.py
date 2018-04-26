@@ -39,7 +39,7 @@ if TASK_ID < 4:
 	RUN = TASK_ID
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'debugging' + \
+			  " -experiment_name "  			+ 'preview' + \
 			  " -spec_name "        			+ 'allcnnc_cifar10_relu_ztrans' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
@@ -75,7 +75,7 @@ elif TASK_ID < 7:
 	RUN = TASK_ID-3
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'debugging' + \
+			  " -experiment_name "  			+ 'preview' + \
 			  " -spec_name "        			+ 'allcnnc_cifar10_elu_ztrans' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
@@ -111,7 +111,7 @@ elif TASK_ID < 10:
 	RUN = TASK_ID-6
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'debugging' + \
+			  " -experiment_name "  			+ 'preview' + \
 			  " -spec_name "        			+ 'allcnnc_cifar10_adaptive_relu_ztrans' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
@@ -147,7 +147,7 @@ elif TASK_ID < 13:
 	RUN = TASK_ID-9
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'debugging' + \
+			  " -experiment_name "  			+ 'preview' + \
 			  " -spec_name "        			+ 'allcnnc_cifar10_adaptive_elu_ztrans' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
@@ -183,7 +183,7 @@ elif TASK_ID < 16:
 	RUN = TASK_ID-12
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'debugging' + \
+			  " -experiment_name "  			+ 'preview' + \
 			  " -spec_name "        			+ 'allcnnc_cifar10_blend5_ztrans' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \

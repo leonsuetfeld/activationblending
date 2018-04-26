@@ -31,7 +31,7 @@ class NetSettings(object):
 		assert args['swish_beta_trainable'] is not None, 'swish_beta_trainable must be specified.'
 		assert args['blend_mode'] in ['unrestricted', 'normalized', 'posnormed'], 'requested setting for blend_mode unknown.'
 		assert args['load_af_weights_from'] is not None, 'load_af_weights_from must be specified.'
-		assert args['norm_blendw_at_init'] None, 'norm_blendw_at_init must be specified.'
+		assert args['norm_blendw_at_init'] is not None, 'norm_blendw_at_init must be specified.'
 		assert args['optimizer'] is not None, 'optimizer must be specified.'
 		assert args['use_wd'] is not None, 'use_wd must be specified.'
 		assert args['wd_lambda'] is not None, 'wd_lambda must be specified.'
