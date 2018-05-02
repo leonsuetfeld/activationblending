@@ -36,7 +36,7 @@ TASK_ID = int(sys.argv[1])
 
 
 ################################################################################
-elif TASK_ID < 41:
+if TASK_ID < 41:
 	RUN = TASK_ID
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \

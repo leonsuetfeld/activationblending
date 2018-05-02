@@ -157,7 +157,7 @@ def plot_mean_alpha_by_layers(af_list, name_list, title, saveplot_path, saveplot
     ax.set_ylabel('mean '+r'$\alpha_i$')
     ax.set_title(title)
     handles, labels = ax.get_legend_handles_labels()
-    lgd = ax.legend(handles, labels, loc='center left',  bbox_to_anchor=(1,0.5), fancybox=False, shadow=True)
+    lgd = ax.legend(handles, labels, loc='center left',  bbox_to_anchor=(1,0.5), fancybox=False, shadow=False)
     ax.tick_params(axis='x', which='both', bottom='off', top='off')
     # save plot as image
     if not os.path.exists(saveplot_path):
@@ -168,14 +168,14 @@ def plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means, title, saveplot
     linewidth_default = '3'
     fig = plt.figure(figsize=(9,6))
     ax = fig.add_subplot(111)
-    ax.plot([0,7],[1./7.,1./7.], '-', color='#000000', linewidth='1', alpha=0.5)
+    ax.plot([0,7],[1./5.,1./5.], '-', color='#000000', linewidth='1', alpha=0.5)
     ax.plot([1,1],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
     ax.plot([2,2],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
     ax.plot([3,3],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
     ax.plot([4,4],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
     ax.plot([5,5],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
     ax.plot([6,6],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
-    color_list = ['#66c2a5', '#fc8d62', '#8c9fcb', '#e78ac3', '#a5d853', '#b4b4b4', '#ffd82e', '#e4c494']
+    color_list = ['#8c9fcb', '#e78ac3', '#fc8d62', '#b4b4b4', '#66c2a5', '#a5d853', '#ffd82e', '#e4c494']
     x = np.arange(6)+1
     if swish_beta_by_layers_means.shape[0]>1:
         ax2 = ax.twinx()
@@ -192,7 +192,7 @@ def plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means, title, saveplot
     ax.set_title(title)
     handles, labels = ax.get_legend_handles_labels()
     handles2, labels2 = ax2.get_legend_handles_labels()
-    lgd = ax.legend(handles+handles2, labels+labels2, loc='lower left',  bbox_to_anchor=(1.05,0.0), fancybox=False, shadow=True)
+    lgd = ax.legend(handles+handles2, labels+labels2, loc='lower left',  bbox_to_anchor=(1.05,0.0), fancybox=False, shadow=False)
     ax.tick_params(axis='x', which='both', bottom='off', top='off')
     # save plot as image
     if not os.path.exists(saveplot_path):
@@ -244,8 +244,8 @@ def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, nor
         resulting_AF_layer_i += af(x, 'identity')*vec_alpha_layer_i[4]
         # plot AF
         ax = fig.add_subplot(1,6,layer_i+1)
-        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color='black')
-        plt.plot([0,0],[-100,100], '--', linewidth=1, color='black')
+        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color='black', alpha=0.5)
+        plt.plot([0,0],[-100,100], '--', linewidth=1, color='black', alpha=0.5)
         plt.plot(x,resulting_AF_layer_i, linewidth='3', color='black')
         plt.xlim(show_range[0], show_range[1])
         plt.ylim(-1.5, 2.5)
@@ -292,8 +292,8 @@ def plot_ABU2(mean_alphas_C10, mean_swish_beta_C10, mean_alphas_C100, mean_swish
         resulting_AF_layer_i_C100 += af(x, 'identity')*vec_alpha_layer_i_C100[4]
         # plot AF
         ax = fig.add_subplot(1,6,layer_i+1)
-        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color='black')
-        plt.plot([0,0],[-100,100], '--', linewidth=1, color='black')
+        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color='black', alpha=0.5)
+        plt.plot([0,0],[-100,100], '--', linewidth=1, color='black', alpha=0.5)
         plt.plot(x,resulting_AF_layer_i_C100, linewidth='3', color='blue', alpha=0.5, label='CIFAR100')
         plt.plot(x,resulting_AF_layer_i_C10, linewidth='3', color='orange', alpha=1.0, label='CIFAR10')
         plt.xlim(show_range[0], show_range[1])
@@ -303,7 +303,7 @@ def plot_ABU2(mean_alphas_C10, mean_swish_beta_C10, mean_alphas_C100, mean_swish
             plt.tick_params(axis='y', which='both', labelleft='off') # labels along the left and right off
         if layer_i == 5:
             handles, labels = ax.get_legend_handles_labels()
-            lgd = ax.legend(handles, labels, loc='upper left',  bbox_to_anchor=(1,1), fancybox=False, shadow=True)
+            lgd = ax.legend(handles, labels, loc='upper left',  bbox_to_anchor=(1,1), fancybox=False, shadow=False)
     plt.tight_layout()
     # save plot as image
     if not os.path.exists(saveplot_path):

@@ -135,7 +135,9 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 	# get list of all performance files (pickle dicts) within a spec
 	if perf_files_path == None:
 		perf_files_path = Paths.performance
-	perf_files_list = [f for f in os.listdir(perf_files_path) if (os.path.isfile(os.path.join(perf_files_path, f)) and ('.pkl' in f) and not ('test_performance_' in f))]
+	perf_files_list = []
+	if os.path.isdir(perf_files_path):
+		perf_files_list = [f for f in os.listdir(perf_files_path) if (os.path.isfile(os.path.join(perf_files_path, f)) and ('.pkl' in f) and not ('test_performance_' in f))]
 
 	# prepare extraction from dicts
 	afw_hist_store = []
@@ -156,7 +158,8 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 		run_number = int(run_file.split('run_')[1].split('.')[0])
 		n_val_samples = len(p_dict['val_mb_n_hist'])
 		n_val_samples_list.append(n_val_samples)
-	run_length = np.max(n_val_samples_list)
+	if len(n_val_samples_list) > 0:
+		run_length = np.max(n_val_samples_list)
 	complete_runs = []
 	for run_file in perf_files_list:
 		p_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )

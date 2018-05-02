@@ -35,7 +35,7 @@ import subprocess
 TASK_ID = int(sys.argv[1])
 
 ################################################################################
-if TASK_ID < 41:
+if TASK_ID < 11:
 	RUN = TASK_ID-0
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
@@ -72,8 +72,8 @@ if TASK_ID < 41:
 
 
 ################################################################################
-elif TASK_ID < 81:
-	RUN = TASK_ID-40
+elif TASK_ID < 21:
+	RUN = TASK_ID-10
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9b' + \
@@ -108,8 +108,8 @@ elif TASK_ID < 81:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 121:
-	RUN = TASK_ID-80
+elif TASK_ID < 31:
+	RUN = TASK_ID-20
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9b' + \
@@ -144,8 +144,8 @@ elif TASK_ID < 121:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 161:
-	RUN = TASK_ID-120
+elif TASK_ID < 41:
+	RUN = TASK_ID-30
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9b' + \
@@ -180,8 +180,8 @@ elif TASK_ID < 161:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 201:
-	RUN = TASK_ID-160
+elif TASK_ID < 51:
+	RUN = TASK_ID-40
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9b' + \
@@ -216,8 +216,8 @@ elif TASK_ID < 201:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 241:
-	RUN = TASK_ID-200
+elif TASK_ID < 61:
+	RUN = TASK_ID-50
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9b' + \
