@@ -15,15 +15,15 @@ from scipy.stats import norm
 # ### FUNCTIONS ################################################################
 # ##############################################################################
 
-def smcn_extract_weights(folder_path, file):
+def smcn_extract_weights(folder_path, filename):
 
-    # intantiate lists
+    # initialize lists
     conv1_alpha, conv2_alpha, conv3_alpha, conv4_alpha, dense5_alpha, dense6_alpha = [], [], [], [], [], []
     conv1_swish, conv2_swish, conv3_swish, conv4_swish, dense5_swish, dense6_swish = [], [], [], [], [], []
 
     # go through files and put all weights in lists
-    for i in range(len(file)):
-        run_i = pickle.load( open( folder_path+file[i], "rb" ) )
+    for i in range(len(filename)):
+        run_i = pickle.load( open( folder_path+filename[i], "rb" ) )
         for key, value in run_i.items():
             if 'conv1' in key:
                 if 'swish_beta' in key: conv1_swish.append(value)

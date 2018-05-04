@@ -129,6 +129,7 @@ class Paths(object):
 		# save paths (experiment level)
 		self.exp_folder = './2_output_cifar/'+str(TaskSettings.experiment_name)+'/'
 		self.af_weights = self.exp_folder+'_af_weights/' 												# corresponds to TaskSettings.save_af_weights
+		self.weights = self.exp_folder+'_all_weights/' 			 										# corresponds to TaskSettings.save_weights
 		self.analysis = self.exp_folder+'_analysis/'													# path for analysis files, not used during training
 		self.performance_sub = 'performance/'
 		if TaskSettings.mode != 'analysis':
@@ -140,7 +141,6 @@ class Paths(object):
 			self.models = self.exp_spec_folder+'models/run_'+str(TaskSettings.run)+'/'					# corresponds to TaskSettings.save_models
 			self.summaries = self.exp_spec_folder+'summaries/run_'+str(TaskSettings.run)+'/' 		 	# corresponds to TaskSettings.write_summary
 			self.chrome_tls = self.exp_spec_folder+'chrome_timelines/run_'+str(TaskSettings.run)+'/' 	# corresponds to TaskSettings.run_tracer
-			self.weights = self.exp_spec_folder+'weights/run_'+str(TaskSettings.run)+'/'			 	# corresponds to TaskSettings.save_weights
 
 # ##############################################################################
 # ### DATA HANDLER #############################################################

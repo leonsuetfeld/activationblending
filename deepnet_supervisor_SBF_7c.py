@@ -36,14 +36,18 @@ import subprocess
 
 TASK_ID = int(sys.argv[1])
 
+runs_U = [14,18,20,27,30,33,40]
+runs_N = [13,19,25,31,38,40]
+runs_P = [13,16,19,23,25,29,31,36,38]
+
 ################################################################################
-if TASK_ID < 10:
+if TASK_ID < 8:
 	RUN = TASK_ID
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_7c' + \
 			  " -spec_name "        			+ 'blend5_unrest' + \
-			  " -run "              			+ str(RUN) + \
+			  " -run "              			+ str(runs_U[RUN]) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
@@ -73,13 +77,13 @@ if TASK_ID < 10:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 17:
-	RUN = TASK_ID-9
+elif TASK_ID < 14:
+	RUN = TASK_ID-7
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_7c' + \
 			  " -spec_name "        			+ 'blend5_normalized' + \
-			  " -run "              			+ str(RUN) + \
+			  " -run "              			+ str(runs_N[RUN]) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
@@ -109,13 +113,13 @@ elif TASK_ID < 17:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 29:
-	RUN = TASK_ID-16
+elif TASK_ID < 23:
+	RUN = TASK_ID-13
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_7c' + \
 			  " -spec_name "        			+ 'blend5_posnormed' + \
-			  " -run "              			+ str(RUN) + \
+			  " -run "              			+ str(runs_P[RUN]) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \

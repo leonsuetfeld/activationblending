@@ -689,7 +689,7 @@ class Network(object):
 			# save dict in pickle file
 			if not os.path.exists(self.Paths.weights):
 				os.makedirs(self.Paths.weights)
-			filename = 'all_weights_'+str(counter.mb_count_total).zfill(3)+'.pkl'
+			filename = 'all_weights_'+self.NetSettings.spec_name+'_run_'+str(self.NetSettings.run)+'_mb_'+str(counter.mb_count_total)+'.pkl'
 			pickle.dump(filter_dict, open(self.Paths.weights+filename,'wb'), protocol=3)
 			if print_messages:
 				print('[MESSAGE] file saved: %s (all weights)' %(self.Paths.weights+filename))

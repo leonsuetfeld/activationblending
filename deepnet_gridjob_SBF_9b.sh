@@ -3,17 +3,17 @@
 #$ -wd /net/store/ni/users/lsuetfel/activations/
 ##$ -cwd
 #$ -l h_rt=01:29:00
-#$ -l mem=3G
-#$ -l mem_free=3G
-#$ -l nv_mem_free=2800M
+#$ -l mem=2G
+#$ -l mem_free=2G
+#$ -l nv_mem_free=2000M
 #$ -l ubuntu_version=xenial
 #$ -l cuda=1
 #$ -l cuda_capability=500
 #$ -l cuda_driver=8000.000000
 #$ -l cuda_cores=640
 ##$ -l h=*cippy*
-#$ -l h=!*picture*
-#$ -t 1:240
+#$ -l h=!*picture*&!*isonoe*
+#$ -t 1:70
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y

@@ -34,8 +34,9 @@ import subprocess
 
 TASK_ID = int(sys.argv[1])
 
+
 ################################################################################
-if TASK_ID < 11:
+if TASK_ID < 2:
 	RUN = TASK_ID-0
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
@@ -72,8 +73,8 @@ if TASK_ID < 11:
 
 
 ################################################################################
-elif TASK_ID < 21:
-	RUN = TASK_ID-10
+elif TASK_ID < 3:
+	RUN = TASK_ID-1
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9a' + \
@@ -108,8 +109,8 @@ elif TASK_ID < 21:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 31:
-	RUN = TASK_ID-20
+elif TASK_ID < 4:
+	RUN = TASK_ID-2
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9a' + \
@@ -144,8 +145,8 @@ elif TASK_ID < 31:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 41:
-	RUN = TASK_ID-30
+elif TASK_ID < 5:
+	RUN = TASK_ID-3
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9a' + \
@@ -180,8 +181,8 @@ elif TASK_ID < 41:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 51:
-	RUN = TASK_ID-40
+elif TASK_ID < 6:
+	RUN = TASK_ID-4
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9a' + \
@@ -216,8 +217,8 @@ elif TASK_ID < 51:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 61:
-	RUN = TASK_ID-50
+elif TASK_ID < 7:
+	RUN = TASK_ID-5
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_9a' + \
@@ -249,4 +250,40 @@ elif TASK_ID < 61:
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'posnormed' + \
 			  " -swish_beta_trainable " 		+ 'True'
+	subprocess.run(command, shell=True)
+
+################################################################################
+elif TASK_ID < 8:
+	RUN = TASK_ID-6
+	os.system("nvidia-smi")
+	command = "python3 "          				+ 'deepnet_main.py' + \
+			  " -experiment_name "  			+ 'SBF_9a' + \
+			  " -spec_name "        			+ 'adaptive_tanh_pretrain' + \
+			  " -run "              			+ str(RUN) + \
+			  " -task="             			+ 'cifar10' + \
+			  " -preprocessing="				+ 'ztrans' +\
+			  " -network="          			+ 'smcn' + \
+			  " -mode "             			+ 'training' + \
+			  " -n_minibatches "    			+ '10000' + \
+			  " -minibatch_size "   			+ '256' + \
+			  " -dropout_keep_probs "   		+ '0.5' + \
+			  " -dropout_keep_probs_inference "	+ '1.0' + \
+			  " -optimizer "            		+ 'Adam' + \
+			  " -lr "               			+ '0.001' + \
+			  " -lr_step_ep "           		+ '0' + \
+			  " -lr_step_multi "        		+ '1' + \
+			  " -use_wd "        				+ 'False' + \
+			  " -wd_lambda "        			+ '0.01' + \
+			  " -training_schedule "			+ 'epochs' + \
+			  " -create_val_set "				+ 'False' + \
+			  " -val_set_fraction "				+ '0.0' + \
+			  " -af_set "           			+ '1_tanh' +\
+			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '20' + \
+			  " -safe_all_ws_n "  				+ '2' + \
+			  " -blend_trainable "  			+ 'True' + \
+			  " -blend_mode "       			+ 'unrestricted' + \
+			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)

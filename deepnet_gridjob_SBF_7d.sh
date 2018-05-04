@@ -2,18 +2,18 @@
 #$ -N SBF_7d
 #$ -wd /net/store/ni/users/lsuetfel/activations/
 ##$ -cwd
-#$ -l h_rt=03:00:00 ## carefull with blend runs taking up to 30 mins on a Titan X (Pascal)
-#$ -l mem=3G
-#$ -l mem_free=3G
-#$ -l nv_mem_free=2800M
+#$ -l h_rt=01:29:00 ## carefull with blend runs taking up to 30 mins on a Titan X (Pascal)
+#$ -l mem=2G
+#$ -l mem_free=2G
+#$ -l nv_mem_free=2000M
 #$ -l ubuntu_version=xenial
 #$ -l cuda=1
 #$ -l cuda_capability=500
 #$ -l cuda_driver=8000.000000
 #$ -l cuda_cores=640
 ##$ -l h=*cippy*
-#$ -l h=!vector*&!*picture* ## callisto might have trouble with tensorflow?
-#$ -t 1:360
+#$ -l h=!*picture* ## callisto might have trouble with tensorflow?
+#$ -t 1:40 ## usually 1:360
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y

@@ -85,8 +85,8 @@ class TaskSettings(object):
 					self.af_weights_exist = True
 				else:
 					self.af_weights_exist = False
-				self.save_af_weights_at_minibatch = np.around(np.linspace(0, args['n_minibatches'], num=args['safe_af_ws_n'], endpoint=True)).tolist()
-				self.save_all_weights_at_minibatch = np.around(np.linspace(0, args['n_minibatches'], num=args['safe_all_ws_n'], endpoint=True)).tolist()
+				self.save_af_weights_at_minibatch = np.around(np.linspace(1, args['n_minibatches'], num=args['safe_af_ws_n'], endpoint=True)).tolist()
+				self.save_all_weights_at_minibatch = np.around(np.linspace(1, args['n_minibatches'], num=args['safe_all_ws_n'], endpoint=True)).tolist()
 				################################################################
 				# FILE WRITING OPTIONS ['never', 'once' (if run==1), 'always'] #
 				################################################################
@@ -138,6 +138,7 @@ class Paths(object):
 		# save paths (experiment level)
 		self.exp_folder = './2_output_cifar/'+str(TaskSettings.experiment_name)+'/'
 		self.af_weights = self.exp_folder+'_af_weights/' 												# corresponds to TaskSettings.save_af_weights
+		self.weights = self.exp_folder+'_all_weights/' 			 										# corresponds to TaskSettings.save_weights
 		self.analysis = self.exp_folder+'_analysis/'													# path for analysis files, not used during training
 		self.performance_sub = 'performance/'
 		if TaskSettings.mode != 'analysis':
@@ -149,7 +150,6 @@ class Paths(object):
 			self.models = self.exp_spec_folder+'models/run_'+str(TaskSettings.run)+'/'					# corresponds to TaskSettings.save_models
 			self.summaries = self.exp_spec_folder+'summaries/run_'+str(TaskSettings.run)+'/' 		 	# corresponds to TaskSettings.write_summary
 			self.chrome_tls = self.exp_spec_folder+'chrome_timelines/run_'+str(TaskSettings.run)+'/' 	# corresponds to TaskSettings.run_tracer
-			self.weights = self.exp_spec_folder+'weights/run_'+str(TaskSettings.run)+'/'			 	# corresponds to TaskSettings.save_weights
 
 # ##############################################################################
 # ### DATA HANDLER #############################################################
@@ -706,9 +706,9 @@ def train(TaskSettings, Paths, Network, training_handler, test_handler, counter,
 						save_model(TaskSettings, Paths, Network, sess, saver, counter, rec, delete_previous=True)
 
 			# SAVE (AF) WEIGHTS INTERMITTENTLY IF REQUESTED
-			if mb in TaskSettings.save_af_weights_at_minibatch:
+			if counter.mb_count_total in TaskSettings.save_af_weights_at_minibatch:
 				Network.save_af_weights(sess, counter)
-			if mb in TaskSettings.save_all_weights_at_minibatch:
+			if counter.mb_count_total in TaskSettings.save_all_weights_at_minibatch:
 				Network.save_all_weights(sess, counter)
 
 		# AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT

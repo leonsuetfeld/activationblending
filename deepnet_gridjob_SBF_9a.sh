@@ -12,8 +12,8 @@
 #$ -l cuda_driver=8000.000000
 #$ -l cuda_cores=640
 ##$ -l h=*cippy*
-#$ -l h=!*picture*
-#$ -t 1:240
+#$ -l h=!*picture*&!*isonoe*
+#$ -t 1:8 ## usually 1:70
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y
