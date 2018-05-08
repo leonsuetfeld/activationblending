@@ -7,23 +7,19 @@ import scipy
 from numpy import ma
 from scipy.stats import norm
 
-# relu_i = pickle.load( open( path_finalweights+relu_fw_files[0], "rb" ) )
-# for key, value in relu_i.items() :
-#     print(key, value)
-
 # ##############################################################################
 # ### FUNCTIONS ################################################################
 # ##############################################################################
 
-def smcn_extract_weights(folder_path, filename):
+def smcn_extract_weights(folder_path, filenames):
 
     # initialize lists
     conv1_alpha, conv2_alpha, conv3_alpha, conv4_alpha, dense5_alpha, dense6_alpha = [], [], [], [], [], []
     conv1_swish, conv2_swish, conv3_swish, conv4_swish, dense5_swish, dense6_swish = [], [], [], [], [], []
 
     # go through files and put all weights in lists
-    for i in range(len(filename)):
-        run_i = pickle.load( open( folder_path+filename[i], "rb" ) )
+    for i in range(len(filenames)):
+        run_i = pickle.load( open( folder_path+filenames[i], "rb" ) )
         for key, value in run_i.items():
             if 'conv1' in key:
                 if 'swish_beta' in key: conv1_swish.append(value)
@@ -164,7 +160,55 @@ def plot_mean_alpha_by_layers(af_list, name_list, title, saveplot_path, saveplot
         os.makedirs(saveplot_path)
     fig.savefig(saveplot_path+saveplot_filename, bbox_extra_artists=(lgd,), bbox_inches='tight', dpi=150)
 
-def plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means, title, saveplot_path, saveplot_filename, swish_beta_by_layers_means=np.array([0])):
+def plot_all_runs_alphas(af_dict, title, saveplot_path, saveplot_filename, ylim=[0.0,1.4], beta={}):
+    n_runs = len(af_dict['conv1'])
+    # extract means from afs
+    alphas_by_layers = np.zeros((n_runs,6))
+    for run in range(n_runs):
+        alphas_by_layers[run,0] = af_dict['conv1'][run]
+        alphas_by_layers[run,1] = af_dict['conv2'][run]
+        alphas_by_layers[run,2] = af_dict['conv3'][run]
+        alphas_by_layers[run,3] = af_dict['conv4'][run]
+        alphas_by_layers[run,4] = af_dict['dense5'][run]
+        alphas_by_layers[run,5] = af_dict['dense6'][run]
+    if beta:
+        betas_by_layers = np.zeros((n_runs,6))
+        for run in range(n_runs):
+            betas_by_layers[run,0] = beta['conv1'][run]
+            betas_by_layers[run,1] = beta['conv2'][run]
+            betas_by_layers[run,2] = beta['conv3'][run]
+            betas_by_layers[run,3] = beta['conv4'][run]
+            betas_by_layers[run,4] = beta['dense5'][run]
+            betas_by_layers[run,5] = beta['dense6'][run]
+    # figure
+    linewidth_default = '1'
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(111)
+    ax.plot([0,7],[1,1], '-', color='#000000', linewidth='1', alpha=0.5)
+    ax.plot([1,1],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
+    ax.plot([2,2],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
+    ax.plot([3,3],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
+    ax.plot([4,4],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
+    ax.plot([5,5],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
+    ax.plot([6,6],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
+    x = np.arange(6)+1
+    if beta:
+        for run in range(n_runs):
+            ax.plot(x, betas_by_layers[run,:], linewidth=linewidth_default, color='orange', alpha=0.1)
+    for run in range(n_runs):
+        ax.plot(x, alphas_by_layers[run,:], linewidth=linewidth_default, color='blue', alpha=0.1)
+    ax.set_ylim(ylim)
+    ax.set_xlim([0.8,6.2])
+    ax.set_xticklabels(['','conv1','conv2','conv3','conv4','dense1','dense2'])
+    ax.set_ylabel('mean '+r'$\alpha_i$')
+    ax.set_title(title)
+    ax.tick_params(axis='x', which='both', bottom='off', top='off')
+    # save plot as image
+    if not os.path.exists(saveplot_path):
+        os.makedirs(saveplot_path)
+    fig.savefig(saveplot_path+saveplot_filename, bbox_inches='tight', dpi=150)
+
+def plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means, title, saveplot_path, saveplot_filename, swish_betas_by_layers_means=np.array([0])):
     linewidth_default = '3'
     fig = plt.figure(figsize=(9,6))
     ax = fig.add_subplot(111)
@@ -177,9 +221,9 @@ def plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means, title, saveplot
     ax.plot([6,6],[-9,9], ':', color='#000000', linewidth='1', alpha=0.3)
     color_list = ['#8c9fcb', '#e78ac3', '#fc8d62', '#b4b4b4', '#66c2a5', '#a5d853', '#ffd82e', '#e4c494']
     x = np.arange(6)+1
-    if swish_beta_by_layers_means.shape[0]>1:
+    if swish_betas_by_layers_means.shape[0]>1:
         ax2 = ax.twinx()
-        ax2.plot(x, swish_beta_by_layers_means, '--', linewidth=linewidth_default, color=color_list[3], label=r'$Swish\ \beta$', alpha=1.0)
+        ax2.plot(x, swish_betas_by_layers_means, '--', linewidth=linewidth_default, color=color_list[3], label=r'$Swish\ \beta$', alpha=1.0)
         ax2.set_ylabel(r'$Swish\ \beta$')
         ax2.set_ylim([0.1,1.4])
         ax2.set_xlim([0.8,6.2])
@@ -212,16 +256,16 @@ def get_mean_alphas_by_layers_ABU(weight_dict, swish_beta={}):
     afs_by_layers_means[4,:] = np.mean(weight_dict['dense5'], axis=0)
     afs_by_layers_means[5,:] = np.mean(weight_dict['dense6'], axis=0)
     # extracting swish_beta means
-    swish_beta_by_layers_means = np.zeros((n_layers,))
+    swish_betas_by_layers_means = np.zeros((n_layers,))
     if swish_beta:
-        swish_beta_by_layers_means = np.zeros((n_layers,))
-        swish_beta_by_layers_means[0] = np.mean(swish_beta['conv1'], axis=0)[0]
-        swish_beta_by_layers_means[1] = np.mean(swish_beta['conv2'], axis=0)[0]
-        swish_beta_by_layers_means[2] = np.mean(swish_beta['conv3'], axis=0)[0]
-        swish_beta_by_layers_means[3] = np.mean(swish_beta['conv4'], axis=0)[0]
-        swish_beta_by_layers_means[4] = np.mean(swish_beta['dense5'], axis=0)[0]
-        swish_beta_by_layers_means[5] = np.mean(swish_beta['dense6'], axis=0)[0]
-    return AF_names, afs_by_layers_means, swish_beta_by_layers_means
+        swish_betas_by_layers_means = np.zeros((n_layers,))
+        swish_betas_by_layers_means[0] = np.mean(swish_beta['conv1'], axis=0)[0]
+        swish_betas_by_layers_means[1] = np.mean(swish_beta['conv2'], axis=0)[0]
+        swish_betas_by_layers_means[2] = np.mean(swish_beta['conv3'], axis=0)[0]
+        swish_betas_by_layers_means[3] = np.mean(swish_beta['conv4'], axis=0)[0]
+        swish_betas_by_layers_means[4] = np.mean(swish_beta['dense5'], axis=0)[0]
+        swish_betas_by_layers_means[5] = np.mean(swish_beta['dense6'], axis=0)[0]
+    return AF_names, afs_by_layers_means, swish_betas_by_layers_means
 
 def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, normalize_weights=False):
     mean_alphas = np.copy(mean_alphas)
@@ -317,18 +361,24 @@ def plot_ABU2(mean_alphas_C10, mean_swish_beta_C10, mean_alphas_C100, mean_swish
 path_finalweights = './2_output_cifar/SBF_6a/_af_weights/'
 scaled_AFs_figname = 'mean_alpha_over_layers_scaled_afs_cifar10.png'
 ABU_figname = 'mean_alpha_over_layers_ABU_cifar10.png'
+ABU_N_figname = 'mean_alpha_over_layers_ABU_N_cifar10.png'
+ABU_P_figname = 'mean_alpha_over_layers_ABU_P_cifar10.png'
 ABU_AF_figname = 'mean_ABU_cifar10.png'
 ABU_AF_N_figname = 'mean_ABU_cifar10_normalized.png'
+ABU_N_AF_figname = 'mean_ABU_N_cifar10.png'
+ABU_P_AF_figname = 'mean_ABU_P_cifar10.png'
 print('\n ### CIFAR 10 ###############################################')
 
 # get files from folder
-linu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('linu' in f))]
-tanh_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('tanh' in f))]
-relu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('relu' in f))]
-elu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('elu' in f))]
-selu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('selu' in f))]
-swish_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('swish' in f))]
-blend5_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('blend5' in f))]
+linu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_linu_' in f))]
+tanh_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_tanh_' in f))]
+relu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_relu_' in f))]
+elu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_elu_' in f))]
+selu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_selu_' in f))]
+swish_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_swish_' in f))]
+blend5u_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('blend5_unrest' in f))]
+blend5n_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('blend5_normed' in f))]
+blend5p_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('blend5_posnormed' in f))]
 
 # extract weights from files
 linu_wd, _ = smcn_extract_weights(path_finalweights, linu_fw_files)
@@ -337,24 +387,52 @@ relu_wd, _ = smcn_extract_weights(path_finalweights, relu_fw_files)
 elu_wd, _ = smcn_extract_weights(path_finalweights, elu_fw_files)
 selu_wd, _ = smcn_extract_weights(path_finalweights, selu_fw_files)
 swish_wd, swish_swishbeta = smcn_extract_weights(path_finalweights, swish_fw_files)
-blend5_wd, blend5_swishbeta = smcn_extract_weights(path_finalweights, blend5_fw_files)
+blend5u_wd, blend5u_swishbeta = smcn_extract_weights(path_finalweights, blend5u_fw_files)
+blend5n_wd, blend5n_swishbeta = smcn_extract_weights(path_finalweights, blend5n_fw_files)
+blend5p_wd, blend5p_swishbeta = smcn_extract_weights(path_finalweights, blend5p_fw_files)
 
 # print mean and std for all weights
-smcn_print_mean_std(blend5_wd, 'ABU-TERIS alpha')
-smcn_print_mean_std(blend5_swishbeta, 'ABU-TERIS SwB')
+smcn_print_mean_std(linu_wd, 'alpha-I alpha')
+smcn_print_mean_std(tanh_wd, 'alpha-tanh alpha')
+smcn_print_mean_std(relu_wd, 'alpha-ReLU alpha')
+smcn_print_mean_std(elu_wd, 'alpha-ELU alpha')
+smcn_print_mean_std(selu_wd, 'alpha-SELU alpha')
+smcn_print_mean_std(swish_wd, 'alpha-Swish alpha')
+
+smcn_print_mean_std(swish_swishbeta, 'alpha-Swish beta')
+smcn_print_mean_std(blend5u_wd, 'ABU-TERIS alpha')
+smcn_print_mean_std(blend5u_swishbeta, 'ABU-TERIS SwB')
+smcn_print_mean_std(blend5n_wd, 'ABU_N-TERIS alpha')
+smcn_print_mean_std(blend5n_swishbeta, 'ABU_N-TERIS SwB')
+smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
+smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')
+
+# plot all alphas for individual AFs
+plot_all_runs_alphas(linu_wd, r'$\alpha I$', './2_result_plots/', 'final_scaling_weights_I.png')
+plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './2_result_plots/', 'final_scaling_weights_tanh.png', ylim=[0.0,1.8])
+plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './2_result_plots/', 'final_scaling_weights_ReLU.png')
+plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './2_result_plots/', 'final_scaling_weights_ELU.png')
+plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './2_result_plots/', 'final_scaling_weights_SELU.png')
+plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './2_result_plots/', 'final_scaling_weights_Swish.png', beta=swish_swishbeta)
 
 # plot mean alpha over layers for adaptively scaled functions
 af_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd, swish_swishbeta]
 name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$', r'$\alpha Swish\ \beta$']
 plot_mean_alpha_by_layers(af_list, name_list, 'CIFAR10', './2_result_plots/', scaled_AFs_figname, includes_beta=True)
 
-# plot mean alpha over layers for adaptively scaled functions
-AF_names, afs_by_layers_means_C10, swish_beta_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5_wd, blend5_swishbeta)
-plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means_C10, 'CIFAR10', './2_result_plots/', ABU_figname, swish_beta_by_layers_means=swish_beta_by_layers_means_C10)
-
-# plot resulting trained ABU activation function
-# plot_ABU(afs_by_layers_means_C10, swish_beta_by_layers_means_C10, './2_result_plots/', ABU_AF_figname, normalize_weights=False)
-# plot_ABU(afs_by_layers_means_C10, swish_beta_by_layers_means_C10, './2_result_plots/', ABU_AF_N_figname, normalize_weights=True)
+# plot mean alpha over layers for adaptively scaled functions & plot resulting AFs: ABU
+ABU_AF_names, ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5u_wd, blend5u_swishbeta)
+plot_mean_alpha_by_layers_ABU(ABU_AF_names, ABU_afs_by_layers_means_C10, 'CIFAR10', './2_result_plots/', ABU_figname, swish_betas_by_layers_means=ABU_swish_betas_by_layers_means_C10)
+plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './2_result_plots/', ABU_AF_figname, normalize_weights=False)
+plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './2_result_plots/', ABU_AF_N_figname, normalize_weights=True)
+# ABU_N
+ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5n_wd, blend5u_swishbeta)
+plot_mean_alpha_by_layers_ABU(ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, 'CIFAR10', './2_result_plots/', ABU_N_figname, swish_betas_by_layers_means=ABU_N_swish_betas_by_layers_means_C10)
+plot_ABU(ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10, './2_result_plots/', ABU_N_AF_figname, normalize_weights=False)
+# ABU_P
+ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5p_wd, blend5u_swishbeta)
+plot_mean_alpha_by_layers_ABU(ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, 'CIFAR10', './2_result_plots/', ABU_P_figname, swish_betas_by_layers_means=ABU_P_swish_betas_by_layers_means_C10)
+plot_ABU(ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10, './2_result_plots/', ABU_P_AF_figname, normalize_weights=False)
 
 # ##############################################################################
 # ### SCRIPT CIFAR 100 #########################################################
@@ -363,18 +441,24 @@ plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means_C10, 'CIFAR10', './2
 path_finalweights = './2_output_cifar/SBF_6b/_af_weights/'
 scaled_AFs_figname = 'mean_alpha_over_layers_scaled_afs_cifar100.png'
 ABU_figname = 'mean_alpha_over_layers_ABU_cifar100.png'
+ABU_N_figname = 'mean_alpha_over_layers_ABU_N_cifar100.png'
+ABU_P_figname = 'mean_alpha_over_layers_ABU_P_cifar100.png'
 ABU_AF_figname = 'mean_ABU_cifar100.png'
 ABU_AF_N_figname = 'mean_ABU_cifar100_normalized.png'
+ABU_N_AF_figname = 'mean_ABU_N_cifar100.png'
+ABU_P_AF_figname = 'mean_ABU_P_cifar100.png'
 print('\n ### CIFAR 100 ###############################################')
 
 # get files from folder
-linu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('linu' in f))]
-tanh_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('tanh' in f))]
-relu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('relu' in f))]
-elu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('elu' in f))]
-selu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('selu' in f))]
-swish_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('swish' in f))]
-blend5_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('blend5' in f))]
+linu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_linu_' in f))]
+tanh_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_tanh_' in f))]
+relu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_relu_' in f))]
+elu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_elu_' in f))]
+selu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_selu_' in f))]
+swish_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('adaptive_swish_' in f))]
+blend5u_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('blend5_unrest' in f))]
+blend5n_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('blend5_normed' in f))]
+blend5p_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('blend5_posnormed' in f))]
 
 # extract weights from files
 linu_wd, _ = smcn_extract_weights(path_finalweights, linu_fw_files)
@@ -383,29 +467,52 @@ relu_wd, _ = smcn_extract_weights(path_finalweights, relu_fw_files)
 elu_wd, _ = smcn_extract_weights(path_finalweights, elu_fw_files)
 selu_wd, _ = smcn_extract_weights(path_finalweights, selu_fw_files)
 swish_wd, swish_swishbeta = smcn_extract_weights(path_finalweights, swish_fw_files)
-blend5_wd, blend5_swishbeta = smcn_extract_weights(path_finalweights, blend5_fw_files)
+blend5u_wd, blend5u_swishbeta = smcn_extract_weights(path_finalweights, blend5u_fw_files)
+blend5n_wd, blend5n_swishbeta = smcn_extract_weights(path_finalweights, blend5n_fw_files)
+blend5p_wd, blend5p_swishbeta = smcn_extract_weights(path_finalweights, blend5p_fw_files)
 
 # print mean and std for all weights
-smcn_print_mean_std(blend5_wd, 'ABU-TERIS alpha')
-smcn_print_mean_std(blend5_swishbeta, 'ABU-TERIS SwB')
+smcn_print_mean_std(linu_wd, 'alpha-I alpha')
+smcn_print_mean_std(tanh_wd, 'alpha-tanh alpha')
+smcn_print_mean_std(relu_wd, 'alpha-ReLU alpha')
+smcn_print_mean_std(elu_wd, 'alpha-ELU alpha')
+smcn_print_mean_std(selu_wd, 'alpha-SELU alpha')
+smcn_print_mean_std(swish_wd, 'alpha-Swish alpha')
+smcn_print_mean_std(swish_swishbeta, 'alpha-Swish beta')
+smcn_print_mean_std(blend5u_wd, 'ABU-TERIS alpha')
+smcn_print_mean_std(blend5u_swishbeta, 'ABU-TERIS SwB')
+smcn_print_mean_std(blend5n_wd, 'ABU_N-TERIS alpha')
+smcn_print_mean_std(blend5n_swishbeta, 'ABU_N-TERIS SwB')
+smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
+smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')
 
 # plot mean alpha over layers for adaptively scaled functions
 af_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd, swish_swishbeta]
 name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$', r'$\alpha Swish\ \beta$']
 plot_mean_alpha_by_layers(af_list, name_list, 'CIFAR100', './2_result_plots/', scaled_AFs_figname, includes_beta=True)
 
-# plot mean alpha over layers for adaptively scaled functions
-AF_names, afs_by_layers_means_C100, swish_beta_by_layers_means_C100 = get_mean_alphas_by_layers_ABU(blend5_wd, blend5_swishbeta)
-plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means_C100, 'CIFAR100', './2_result_plots/', ABU_figname, swish_beta_by_layers_means=swish_beta_by_layers_means_C100)
-
-# plot resulting trained ABU activation function
-# plot_ABU(afs_by_layers_means_C100, swish_beta_by_layers_means_C100, './2_result_plots/', ABU_AF_figname, normalize_weights=False)
-# plot_ABU(afs_by_layers_means_C100, swish_beta_by_layers_means_C100, './2_result_plots/', ABU_AF_N_figname, normalize_weights=True)
+# plot mean alpha over layers for adaptively scaled functions & plot resulting AFs: ABU
+ABU_AF_names, ABU_afs_by_layers_means_C100, ABU_swish_betas_by_layers_means_C100 = get_mean_alphas_by_layers_ABU(blend5u_wd, blend5u_swishbeta)
+plot_mean_alpha_by_layers_ABU(ABU_AF_names, ABU_afs_by_layers_means_C100, 'CIFAR100', './2_result_plots/', ABU_figname, swish_betas_by_layers_means=ABU_swish_betas_by_layers_means_C100)
+plot_ABU(ABU_afs_by_layers_means_C100, ABU_swish_betas_by_layers_means_C100, './2_result_plots/', ABU_AF_figname, normalize_weights=False)
+plot_ABU(ABU_afs_by_layers_means_C100, ABU_swish_betas_by_layers_means_C100, './2_result_plots/', ABU_AF_N_figname, normalize_weights=True)
+# ABU_N
+ABU_N_AF_names, ABU_N_afs_by_layers_means_C100, ABU_N_swish_betas_by_layers_means_C100 = get_mean_alphas_by_layers_ABU(blend5n_wd, blend5u_swishbeta)
+plot_mean_alpha_by_layers_ABU(ABU_N_AF_names, ABU_N_afs_by_layers_means_C100, 'CIFAR100', './2_result_plots/', ABU_N_figname, swish_betas_by_layers_means=ABU_N_swish_betas_by_layers_means_C100)
+plot_ABU(ABU_N_afs_by_layers_means_C100, ABU_N_swish_betas_by_layers_means_C100, './2_result_plots/', ABU_N_AF_figname, normalize_weights=False)
+# ABU_P
+ABU_P_AF_names, ABU_P_afs_by_layers_means_C100, ABU_P_swish_betas_by_layers_means_C100 = get_mean_alphas_by_layers_ABU(blend5p_wd, blend5u_swishbeta)
+plot_mean_alpha_by_layers_ABU(ABU_P_AF_names, ABU_P_afs_by_layers_means_C100, 'CIFAR100', './2_result_plots/', ABU_P_figname, swish_betas_by_layers_means=ABU_P_swish_betas_by_layers_means_C100)
+plot_ABU(ABU_P_afs_by_layers_means_C100, ABU_P_swish_betas_by_layers_means_C100, './2_result_plots/', ABU_P_AF_figname, normalize_weights=False)
 
 # ##############################################################################
 # ### SCRIPT COMBINED ##########################################################
 # ##############################################################################
 
 # plot resulting trained ABU activation function
-plot_ABU2(afs_by_layers_means_C10, swish_beta_by_layers_means_C10, afs_by_layers_means_C100, swish_beta_by_layers_means_C100, './2_result_plots/', 'mean_ABU_both.png', normalize_weights=False)
-plot_ABU2(afs_by_layers_means_C10, swish_beta_by_layers_means_C10, afs_by_layers_means_C100, swish_beta_by_layers_means_C100, './2_result_plots/', 'mean_ABU_both_normalized.png', normalize_weights=True)
+plot_ABU2(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, ABU_afs_by_layers_means_C100, ABU_swish_betas_by_layers_means_C100, './2_result_plots/', 'mean_ABU_both.png', normalize_weights=False)
+plot_ABU2(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, ABU_afs_by_layers_means_C100, ABU_swish_betas_by_layers_means_C100, './2_result_plots/', 'mean_ABU_both_normalized.png', normalize_weights=True)
+# plot resulting trained ABU_N activation function
+plot_ABU2(ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10, ABU_N_afs_by_layers_means_C100, ABU_N_swish_betas_by_layers_means_C100, './2_result_plots/', 'mean_ABU_N_both.png', normalize_weights=False)
+# plot resulting trained ABU_P activation function
+plot_ABU2(ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10, ABU_P_afs_by_layers_means_C100, ABU_P_swish_betas_by_layers_means_C100, './2_result_plots/', 'mean_ABU_P_both.png', normalize_weights=False)

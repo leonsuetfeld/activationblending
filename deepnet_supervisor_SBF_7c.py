@@ -36,18 +36,18 @@ import subprocess
 
 TASK_ID = int(sys.argv[1])
 
-runs_U = [14,18,20,27,30,33,40]
-runs_N = [13,19,25,31,38,40]
-runs_P = [13,16,19,23,25,29,31,36,38]
+runs_U = [14]
+runs_N = [13]
+runs_P = [13]
 
 ################################################################################
-if TASK_ID < 8:
+if TASK_ID < 2:
 	RUN = TASK_ID
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_7c' + \
 			  " -spec_name "        			+ 'blend5_unrest' + \
-			  " -run "              			+ str(runs_U[RUN]) + \
+			  " -run "              			+ str(runs_U[RUN-1]) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
@@ -77,13 +77,13 @@ if TASK_ID < 8:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 14:
-	RUN = TASK_ID-7
+elif TASK_ID < 3:
+	RUN = TASK_ID-1
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_7c' + \
 			  " -spec_name "        			+ 'blend5_normalized' + \
-			  " -run "              			+ str(runs_N[RUN]) + \
+			  " -run "              			+ str(runs_N[RUN-1]) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
@@ -113,13 +113,13 @@ elif TASK_ID < 14:
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 23:
-	RUN = TASK_ID-13
+elif TASK_ID < 4:
+	RUN = TASK_ID-2
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'SBF_7c' + \
 			  " -spec_name "        			+ 'blend5_posnormed' + \
-			  " -run "              			+ str(runs_P[RUN]) + \
+			  " -run "              			+ str(runs_P[RUN-1]) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \

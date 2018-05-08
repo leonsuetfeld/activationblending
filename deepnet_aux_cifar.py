@@ -46,11 +46,13 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 	test_var_per_spec = []
 	print('')
 	print('=================================================================================================================================================================================================')
+	spec_list_filtered = [] # will only contain specs that actually have completed runs
 	for spec_name in spec_list:
 		path = Paths.exp_folder+spec_name+'/'+Paths.performance_sub
 		spec_perf_dict = spec_analysis(TaskSettings, Paths, spec_name=spec_name, perf_files_path=path, make_plot=True)
 		# general info about spec
 		if spec_perf_dict:
+			spec_list_filtered.append(spec_name)
 			spec_name_list.append(spec_perf_dict['spec_name'])
 			n_runs_list.append(spec_perf_dict['n_runs'])
 			# full runs for plotting
@@ -82,12 +84,12 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 		cmap = matplotlib.cm.get_cmap('nipy_spectral')#('Dark2') ('nipy_spectral')
 		color_list = ['black','blue','green','red']
 		# layer 1
-		for spec in range(len(spec_list)):
+		for spec in range(len(spec_list_filtered)):
 			# ax.plot(mb_list[spec], best_run_per_spec[spec], linewidth=1.5, color=cmap(spec/len(spec_list)), alpha=0.15)
-			ax.plot(np.array([0,300]), np.array([np.max(mean_run_per_spec[spec]),np.max(mean_run_per_spec[spec])]), linewidth=1.5, linestyle='-', color=cmap(spec/len(spec_list)), alpha=0.8)
+			ax.plot(np.array([0,300]), np.array([np.max(mean_run_per_spec[spec]),np.max(mean_run_per_spec[spec])]), linewidth=1.5, linestyle='-', color=cmap(spec/len(spec_list_filtered)), alpha=0.8)
 		# layer 2
-		for spec in range(len(spec_list)):
-			ax.plot(mb_list[spec], mean_run_per_spec[spec], linewidth=2.0, color=cmap(spec/len(spec_list)), label='[%i / m %.4f / v %.6f] %s' %(n_runs_list[spec], 100*test_mean_per_spec[spec], 100*test_var_per_spec[spec], spec_list[spec]), alpha=0.8)
+		for spec in range(len(spec_list_filtered)):
+			ax.plot(mb_list[spec], mean_run_per_spec[spec], linewidth=2.0, color=cmap(spec/len(spec_list_filtered)), label='[%i / m %.4f / v %.6f] %s' %(n_runs_list[spec], 100*test_mean_per_spec[spec], 100*test_var_per_spec[spec], spec_list_filtered[spec]), alpha=0.8)
 		# settings
 		ax.set_ylim(0.1,1.)
 		ax.set_xlim(0.,float(n_mb_total))
@@ -166,6 +168,10 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 		run_number = int(run_file.split('run_')[1].split('.')[0])
 		if len(p_dict['test_top1'])> 0: # put 'if len(p_dict['val_mb_n_hist']) == run_length:' for runs without test
 			complete_runs.append(run_file)
+
+	if len(complete_runs) == 0:
+		print('[WARNING] No complete run found for spec %s' %(spec_name))
+		return {}
 
 	# extract data from files
 	for run_file in complete_runs:

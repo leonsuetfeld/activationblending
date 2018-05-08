@@ -35,18 +35,18 @@ import subprocess
 TASK_ID = int(sys.argv[1])
 
 ################################################################################
-if TASK_ID < 101:
+if TASK_ID < 21:
 	RUN = TASK_ID-0
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'linu' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'blend5_unrest_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -57,32 +57,105 @@ if TASK_ID < 101:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
-			  " -af_set "           			+ '1_linu' +\
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
+			  " -af_set "           			+ '5_blend5_swish' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
-			  " -blend_trainable "  			+ 'False' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
+			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'False'
+			  " -swish_beta_trainable " 		+ 'True'
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 201:
-	RUN = TASK_ID-100
+elif TASK_ID < 41:
+	RUN = TASK_ID-20
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'blend5_normalized_pretrain' + \
+			  " -run "              			+ str(RUN) + \
+			  " -task="             			+ 'cifar10' + \
+			  " -preprocessing="				+ 'ztrans' +\
+			  " -network="          			+ 'smcn' + \
+			  " -mode "             			+ 'training' + \
+			  " -n_minibatches "    			+ '60000' + \
+			  " -minibatch_size "   			+ '256' + \
+			  " -dropout_keep_probs "   		+ '0.5' + \
+			  " -dropout_keep_probs_inference "	+ '1.0' + \
+			  " -optimizer "            		+ 'Adam' + \
+			  " -lr "               			+ '0.001' + \
+			  " -lr_step_ep "           		+ '0' + \
+			  " -lr_step_multi "        		+ '1' + \
+			  " -use_wd "        				+ 'False' + \
+			  " -wd_lambda "        			+ '0.01' + \
+			  " -training_schedule "			+ 'epochs' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
+			  " -af_set "           			+ '5_blend5_swish' +\
+			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
+			  " -blend_trainable "  			+ 'True' + \
+			  " -blend_mode "       			+ 'normalized' + \
+			  " -swish_beta_trainable " 		+ 'True'
+	subprocess.run(command, shell=True)
+
+################################################################################
+elif TASK_ID < 61:
+	RUN = TASK_ID-40
+	os.system("nvidia-smi")
+	command = "python3 "          				+ 'deepnet_main.py' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'blend5_posnormed_pretrain' + \
+			  " -run "              			+ str(RUN) + \
+			  " -task="             			+ 'cifar10' + \
+			  " -preprocessing="				+ 'ztrans' +\
+			  " -network="          			+ 'smcn' + \
+			  " -mode "             			+ 'training' + \
+			  " -n_minibatches "    			+ '60000' + \
+			  " -minibatch_size "   			+ '256' + \
+			  " -dropout_keep_probs "   		+ '0.5' + \
+			  " -dropout_keep_probs_inference "	+ '1.0' + \
+			  " -optimizer "            		+ 'Adam' + \
+			  " -lr "               			+ '0.001' + \
+			  " -lr_step_ep "           		+ '0' + \
+			  " -lr_step_multi "        		+ '1' + \
+			  " -use_wd "        				+ 'False' + \
+			  " -wd_lambda "        			+ '0.01' + \
+			  " -training_schedule "			+ 'epochs' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
+			  " -af_set "           			+ '5_blend5_swish' +\
+			  " -af_weights_init "  			+ 'default' + \
+			  " -load_af_weights_from "  		+ 'none' + \
+			  " -norm_blendw_at_init "  		+ 'False' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
+			  " -blend_trainable "  			+ 'True' + \
+			  " -blend_mode "       			+ 'posnormed' + \
+			  " -swish_beta_trainable " 		+ 'True'
+	subprocess.run(command, shell=True)
+
+"""
+################################################################################
+if TASK_ID < 21:
+	RUN = TASK_ID-0
+	os.system("nvidia-smi")
+	command = "python3 "          				+ 'deepnet_main.py' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
 			  " -spec_name "        			+ 'tanh' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -93,32 +166,33 @@ elif TASK_ID < 201:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_tanh' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
 			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
+
 ################################################################################
-elif TASK_ID < 301:
-	RUN = TASK_ID-200
+elif TASK_ID < 41:
+	RUN = TASK_ID-20
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
 			  " -spec_name "        			+ 'relu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -129,32 +203,32 @@ elif TASK_ID < 301:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
 			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 401:
-	RUN = TASK_ID-300
+elif TASK_ID < 61:
+	RUN = TASK_ID-40
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
 			  " -spec_name "        			+ 'elu' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -165,32 +239,32 @@ elif TASK_ID < 401:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
 			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
+			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'False' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 501:
-	RUN = TASK_ID-400
+elif TASK_ID < 81:
+	RUN = TASK_ID-60
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'selu' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'adaptive_tanh_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -201,140 +275,33 @@ elif TASK_ID < 501:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
-			  " -af_set "           			+ '1_selu' +\
-			  " -af_weights_init "  			+ 'default' + \
-			  " -load_af_weights_from "  		+ 'none' + \
-			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
-			  " -blend_trainable "  			+ 'False' + \
-			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'False'
-	subprocess.run(command, shell=True)
-
-################################################################################
-elif TASK_ID < 601:
-	RUN = TASK_ID-500
-	os.system("nvidia-smi")
-	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'swish' + \
-			  " -run "              			+ str(RUN) + \
-			  " -task="             			+ 'cifar10' + \
-			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcn' + \
-			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
-			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'Adam' + \
-			  " -lr "               			+ '0.001' + \
-			  " -lr_step_ep "           		+ '0' + \
-			  " -lr_step_multi "        		+ '1' + \
-			  " -use_wd "        				+ 'False' + \
-			  " -wd_lambda "        			+ '0.01' + \
-			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
-			  " -af_set "           			+ '1_jswish' +\
-			  " -af_weights_init "  			+ 'default' + \
-			  " -load_af_weights_from "  		+ 'none' + \
-			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
-			  " -blend_trainable "  			+ 'False' + \
-			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'True'
-	subprocess.run(command, shell=True)
-
-################################################################################
-elif TASK_ID < 701:
-	RUN = TASK_ID-600
-	os.system("nvidia-smi")
-	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'adaptive_linu' + \
-			  " -run "              			+ str(RUN) + \
-			  " -task="             			+ 'cifar10' + \
-			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcn' + \
-			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
-			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'Adam' + \
-			  " -lr "               			+ '0.001' + \
-			  " -lr_step_ep "           		+ '0' + \
-			  " -lr_step_multi "        		+ '1' + \
-			  " -use_wd "        				+ 'False' + \
-			  " -wd_lambda "        			+ '0.01' + \
-			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
-			  " -af_set "           			+ '1_linu' +\
-			  " -af_weights_init "  			+ 'default' + \
-			  " -load_af_weights_from "  		+ 'none' + \
-			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
-			  " -blend_trainable "  			+ 'True' + \
-			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'False'
-	subprocess.run(command, shell=True)
-
-################################################################################
-elif TASK_ID < 801:
-	RUN = TASK_ID-700
-	os.system("nvidia-smi")
-	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'adaptive_tanh' + \
-			  " -run "              			+ str(RUN) + \
-			  " -task="             			+ 'cifar10' + \
-			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcn' + \
-			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
-			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'Adam' + \
-			  " -lr "               			+ '0.001' + \
-			  " -lr_step_ep "           		+ '0' + \
-			  " -lr_step_multi "        		+ '1' + \
-			  " -use_wd "        				+ 'False' + \
-			  " -wd_lambda "        			+ '0.01' + \
-			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_tanh' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
+
 ################################################################################
-elif TASK_ID < 901:
-	RUN = TASK_ID-800
+elif TASK_ID < 101:
+	RUN = TASK_ID-80
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'adaptive_relu' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'adaptive_relu_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -345,32 +312,32 @@ elif TASK_ID < 901:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 1001:
-	RUN = TASK_ID-900
+elif TASK_ID < 121:
+	RUN = TASK_ID-100
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'adaptive_elu' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'adaptive_elu_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -381,32 +348,32 @@ elif TASK_ID < 1001:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '1_jelu' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False'
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 1101:
-	RUN = TASK_ID-1000
+elif TASK_ID < 141:
+	RUN = TASK_ID-120
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'adaptive_selu' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'blend5_unrest_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -417,68 +384,32 @@ elif TASK_ID < 1101:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
-			  " -af_set "           			+ '1_selu' +\
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
+			  " -af_set "           			+ '5_blend5_swish' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
-			  " -blend_trainable "  			+ 'True' + \
-			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'False'
-	subprocess.run(command, shell=True)
-
-################################################################################
-elif TASK_ID < 1201:
-	RUN = TASK_ID-1100
-	os.system("nvidia-smi")
-	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'adaptive_swish' + \
-			  " -run "              			+ str(RUN) + \
-			  " -task="             			+ 'cifar10' + \
-			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcn' + \
-			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
-			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'Adam' + \
-			  " -lr "               			+ '0.001' + \
-			  " -lr_step_ep "           		+ '0' + \
-			  " -lr_step_multi "        		+ '1' + \
-			  " -use_wd "        				+ 'False' + \
-			  " -wd_lambda "        			+ '0.01' + \
-			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
-			  " -af_set "           			+ '1_jswish' +\
-			  " -af_weights_init "  			+ 'default' + \
-			  " -load_af_weights_from "  		+ 'none' + \
-			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True'
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 1301:
-	RUN = TASK_ID-1200
+elif TASK_ID < 161:
+	RUN = TASK_ID-140
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'blend5_unrest' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'blend5_normalized_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -489,69 +420,32 @@ elif TASK_ID < 1301:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '5_blend5_swish' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
-		  	  " -blend_trainable "  			+ 'True' + \
-			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'True'
-	subprocess.run(command, shell=True)
-
-
-################################################################################
-elif TASK_ID < 1401:
-	RUN = TASK_ID-1300
-	os.system("nvidia-smi")
-	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'blend5_normed' + \
-			  " -run "              			+ str(RUN) + \
-			  " -task="             			+ 'cifar10' + \
-			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcn' + \
-			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
-			  " -minibatch_size "   			+ '256' + \
-			  " -dropout_keep_probs "   		+ '0.5' + \
-			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'Adam' + \
-			  " -lr "               			+ '0.001' + \
-			  " -lr_step_ep "           		+ '0' + \
-			  " -lr_step_multi "        		+ '1' + \
-			  " -use_wd "        				+ 'False' + \
-			  " -wd_lambda "        			+ '0.01' + \
-			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
-			  " -af_set "           			+ '5_blend5_swish' +\
-			  " -af_weights_init "  			+ 'default' + \
-			  " -load_af_weights_from "  		+ 'none' + \
-			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
-		  	  " -blend_trainable "  			+ 'True' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
+			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'normalized' + \
 			  " -swish_beta_trainable " 		+ 'True'
 	subprocess.run(command, shell=True)
 
 ################################################################################
-elif TASK_ID < 1501:
-	RUN = TASK_ID-1400
+elif TASK_ID < 181:
+	RUN = TASK_ID-160
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_6a' + \
-			  " -spec_name "        			+ 'blend5_posnormed' + \
+			  " -experiment_name "  			+ 'SBF_11a' + \
+			  " -spec_name "        			+ 'blend5_posnormed_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -562,15 +456,16 @@ elif TASK_ID < 1501:
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -training_schedule "			+ 'epochs' + \
-			  " -create_val_set "				+ 'False' + \
-			  " -val_set_fraction "				+ '0.0' + \
+			  " -create_val_set "				+ 'True' + \
+			  " -val_set_fraction "				+ '0.05' + \
 			  " -af_set "           			+ '5_blend5_swish' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '0' + \
-			  " -safe_all_ws_n "  				+ '0' + \
-		  	  " -blend_trainable "  			+ 'True' + \
+			  " -safe_af_ws_n "  				+ '40' + \
+			  " -safe_all_ws_n "  				+ '2' + \
+			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'posnormed' + \
 			  " -swish_beta_trainable " 		+ 'True'
 	subprocess.run(command, shell=True)
+"""

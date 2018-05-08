@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -N SBF_9a
+#$ -N SBF_9d
 #$ -wd /net/store/ni/users/lsuetfel/activations/
 ##$ -cwd
 #$ -l h_rt=01:29:00
@@ -10,9 +10,9 @@
 #$ -l cuda=1
 #$ -l cuda_capability=500
 #$ -l cuda_driver=8000.000000
-#$ -l cuda_cores=640
+#$ -l cuda_cores=760
 ##$ -l h=*cippy*
-#$ -l h=!*picture*&!*isonoe*
+#$ -l h=!*picture*
 #$ -t 1:70
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
@@ -23,7 +23,7 @@
 UVENV="source venvtfgpu/bin/activate"
 UAPP="python3"
 UCWD="/net/store/ni/users/lsuetfel/activations/"
-UMCR="deepnet_supervisor_SBF_9a.py"
+UMCR="deepnet_supervisor_SBF_9d.py"
 
 # write header for return files
 echo "*** Start of job ***"

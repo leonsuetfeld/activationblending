@@ -13,7 +13,7 @@
 #$ -l cuda_cores=3000
 ##$ -l h=*cippy*
 #$ -l h=!*picture* ## callisto might have trouble with tensorflow?
-#$ -t 1:22 ## usually 1:360
+#$ -t 1:6 ## usually 1:360
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y

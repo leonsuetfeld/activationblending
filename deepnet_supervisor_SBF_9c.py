@@ -39,14 +39,14 @@ if TASK_ID < 11:
 	RUN = TASK_ID-0
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_9a' + \
+			  " -experiment_name "  			+ 'SBF_9c' + \
 			  " -spec_name "        			+ 'adaptive_linu_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '20000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -63,7 +63,7 @@ if TASK_ID < 11:
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '20' + \
+			  " -safe_af_ws_n "  				+ '50' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
@@ -76,14 +76,14 @@ elif TASK_ID < 21:
 	RUN = TASK_ID-10
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_9a' + \
+			  " -experiment_name "  			+ 'SBF_9c' + \
 			  " -spec_name "        			+ 'adaptive_relu_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '20000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -100,7 +100,7 @@ elif TASK_ID < 21:
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '20' + \
+			  " -safe_af_ws_n "  				+ '50' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
@@ -112,14 +112,14 @@ elif TASK_ID < 31:
 	RUN = TASK_ID-20
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_9a' + \
+			  " -experiment_name "  			+ 'SBF_9c' + \
 			  " -spec_name "        			+ 'adaptive_elu_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '20000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -136,7 +136,7 @@ elif TASK_ID < 31:
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '20' + \
+			  " -safe_af_ws_n "  				+ '50' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
@@ -148,14 +148,14 @@ elif TASK_ID < 41:
 	RUN = TASK_ID-30
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_9a' + \
+			  " -experiment_name "  			+ 'SBF_9c' + \
 			  " -spec_name "        			+ 'blend5_unrest_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '20000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -172,7 +172,7 @@ elif TASK_ID < 41:
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '20' + \
+			  " -safe_af_ws_n "  				+ '50' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
@@ -184,14 +184,14 @@ elif TASK_ID < 51:
 	RUN = TASK_ID-40
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_9a' + \
+			  " -experiment_name "  			+ 'SBF_9c' + \
 			  " -spec_name "        			+ 'blend5_normalized_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '20000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -208,7 +208,7 @@ elif TASK_ID < 51:
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '20' + \
+			  " -safe_af_ws_n "  				+ '50' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'normalized' + \
@@ -220,14 +220,14 @@ elif TASK_ID < 61:
 	RUN = TASK_ID-50
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_9a' + \
+			  " -experiment_name "  			+ 'SBF_9c' + \
 			  " -spec_name "        			+ 'blend5_posnormed_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '20000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -244,7 +244,7 @@ elif TASK_ID < 61:
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '20' + \
+			  " -safe_af_ws_n "  				+ '50' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'posnormed' + \
@@ -256,14 +256,14 @@ elif TASK_ID < 71:
 	RUN = TASK_ID-60
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
-			  " -experiment_name "  			+ 'SBF_9a' + \
+			  " -experiment_name "  			+ 'SBF_9c' + \
 			  " -spec_name "        			+ 'adaptive_tanh_pretrain' + \
 			  " -run "              			+ str(RUN) + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '20000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -280,7 +280,7 @@ elif TASK_ID < 71:
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
-			  " -safe_af_ws_n "  				+ '20' + \
+			  " -safe_af_ws_n "  				+ '50' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \

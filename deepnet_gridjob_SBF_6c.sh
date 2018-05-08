@@ -1,8 +1,8 @@
 #!/bin/bash
-#$ -N SBF_9a
+#$ -N SBF_6c
 #$ -wd /net/store/ni/users/lsuetfel/activations/
 ##$ -cwd
-#$ -l h_rt=01:29:00
+#$ -l h_rt=01:29:59 ## carefull with blend runs taking up to 30 mins on a Titan X (Pascal)
 #$ -l mem=3G
 #$ -l mem_free=3G
 #$ -l nv_mem_free=2800M
@@ -13,7 +13,7 @@
 #$ -l cuda_cores=640
 ##$ -l h=*cippy*
 #$ -l h=!*picture*&!*isonoe*
-#$ -t 1:70
+#$ -t 1:480
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y
@@ -23,7 +23,7 @@
 UVENV="source venvtfgpu/bin/activate"
 UAPP="python3"
 UCWD="/net/store/ni/users/lsuetfel/activations/"
-UMCR="deepnet_supervisor_SBF_9a.py"
+UMCR="deepnet_supervisor_SBF_6c.py"
 
 # write header for return files
 echo "*** Start of job ***"
