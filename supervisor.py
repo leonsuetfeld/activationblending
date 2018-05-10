@@ -37,7 +37,7 @@ for run in range(5):
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -experiment_name "  			+ 'debug_new_version' + \
 			  " -spec_name "        			+ 'spec_one' + \
-			  " -run "              			+ '7' + \
+			  " -run "              			+ '8' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \

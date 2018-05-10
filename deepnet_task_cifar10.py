@@ -887,7 +887,7 @@ def early_stopping_minibatch(val_data, val_mb, checkpoints, Paths, save_plot=Tru
 		plt.plot(checkpoints, available_val_data, linewidth=0.3, color='black', marker='x', markersize=4, alpha=1.0, label='estimated performance at save points')
 		plt.plot([minibatch_max_available_val_data], [max_available_val_data], marker='*', markersize=8, color='orange', alpha=1.0, label='max(estimated performance at save point)')
 		plt.grid(False)
-		plt.ylim([0.0,1.0])
+		plt.ylim([max_available_val_data*1.05,max_available_val_data*0.7])
 		plt.legend(loc='lower right', prop={'size': 11})
 		plt.savefig(Paths.experiment_spec_run+'early_stopping_analysis.png', dpi=300)
 	early_stopping_mb = minibatch_max_available_val_data

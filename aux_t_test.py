@@ -19,7 +19,10 @@ def two_sample_t_test(sample_1, sample_2, plotting=False):
     df = n_1+n_2-2
     p_val = 1.0-t.cdf(t_val, df)
     # print & plot
-    print(sample_1[3] + ' vs. ' + sample_2[3] + ': t = ' + str(t_val) + ', df = ' + str(df) + ', p = ' + str(p_val))
+    print(sample_1[3] + ' vs. ' + sample_2[3] + ':')
+    print('t = ' + str(t_val) + ', df = ' + str(df) + ', p = ' + str(p_val))
+    print(sample_1[3] + ' var=' + str(sample_1[2]) + ', std=' + str(np.sqrt(sample_1[2])))
+    print(sample_2[3] + ' var=' + str(sample_2[2]) + ', std=' + str(np.sqrt(sample_2[2])))
     if plotting:
         sigma1 = math.sqrt(var_1)
         sigma2 = math.sqrt(var_2)
@@ -36,12 +39,9 @@ def two_sample_t_test(sample_1, sample_2, plotting=False):
 # ### SCRIPT ################################################################# #
 # ############################################################################ #
 
-elu = [100, 81.3578, 00.005295, 'elu']
-aelu = [100, 81.8938, 00.005422, 'a-elu']
-b5u = [100, 82.2148, 00.004827, 'b5u']
+spec1 = [20, 0.813, 7*(1./10**5), 'A']
+spec2 = [20, 0.814, 7*(1./10**5), 'B']
 
 print('')
-t_aelu_elu, p_aelu_elu = two_sample_t_test(aelu, elu, plotting=False)
-t_b5u_aelu, p_b5u_aelu = two_sample_t_test(b5u, aelu, plotting=False)
-t_b5u_elu, p_b5u_elu = two_sample_t_test(b5u, elu, plotting=False)
+t_val, p_val = two_sample_t_test(spec1, spec2, plotting=True)
 print('')
