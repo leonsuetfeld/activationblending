@@ -45,7 +45,6 @@ if __name__ == '__main__':
 	parser.add_argument('-lr_step_multi', type=float, nargs='*', help='multiplicative factors applied to lr after corresponding step was reached')
 	parser.add_argument('-use_wd', type=str2bool, help='weight decay')
 	parser.add_argument('-wd_lambda', type=float, help='weight decay lambda')
-	parser.add_argument('-training_schedule', type=str, help='\'epochs\' for sampling without replacement, \'random\' for sampling with replacement')
 	parser.add_argument('-create_val_set', type=str2bool, help='enables validation')
 	parser.add_argument('-val_set_fraction', type=float, help='fraction of training set used for validation')
 	parser.add_argument('-af_set', type=str, help='AF / set of AFs to use')
@@ -57,6 +56,12 @@ if __name__ == '__main__':
 	parser.add_argument('-blend_trainable', type=str2bool, help='enables adaptive blend / AF weights')
 	parser.add_argument('-blend_mode',  type=str, help='\'unrestricted\', \'normalized\', \'posnormed\'')
 	parser.add_argument('-swish_beta_trainable', type=str2bool)
+	parser.add_argument('-walltime', type=int, help='walltime in minutes (max length of a split), usually 89')
+	parser.add_argument('-create_checkpoints', type=str2bool)
+	parser.add_argument('-epochs_between_checkpoints', type=int)
+	parser.add_argument('-save_af_weights_at_test_mb', type=str2bool)
+	parser.add_argument('-save_all_weights_at_test_mb', type=str2bool)
+	parser.add_argument('-create_lc_on_the_fly', type=str2bool, help='create learning curves on the fly, i.e., at checkpoints and at the end of the run')
 	args = vars(parser.parse_args())
 
 	if args['task'] == 'cifar10':
@@ -71,13 +76,12 @@ if __name__ == '__main__':
 		NetSettings = net.NetSettings(args)
 		TaskSettings = task.TaskSettings(args)
 		Paths = task.Paths(TaskSettings)
-		training_handler = task.TrainingHandler(TaskSettings, Paths, args)
-		test_handler = task.TestHandler(TaskSettings, Paths, args)
-		rec = task.PerformanceRecorder(TaskSettings, Paths)
-		counter = task.Counter(training_handler)
-		timer = task.SessionTimer()
+		TrainingHandler = task.TrainingHandler(TaskSettings, Paths, args)
+		TestHandler = task.TestHandler(TaskSettings, Paths, args)
+		Rec = task.Recorder(TaskSettings, TrainingHandler, Paths)
+		Timer = task.SessionTimer(Paths)
 		Network = net.Network(NetSettings, Paths, namescope='Network')
-		task.train(TaskSettings, Paths, Network, training_handler, test_handler, counter, timer, rec, args)
+		task.train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec, args)
 
 	# analysis
 	if args['mode'] in ['analysis']:
@@ -85,12 +89,12 @@ if __name__ == '__main__':
 		Paths = task.Paths(TaskSettings)
 		aux.analysis(TaskSettings, Paths)
 
-	# testing
+	# testing: needs to be updates
 	if args['mode'] in ['test', 'testing']:
 		NetSettings = net.NetSettings(args)
 		TaskSettings = task.TaskSettings(args)
 		Paths = task.Paths(TaskSettings)
-		test_handler = task.TestHandler(TaskSettings, Paths)
-		timer = task.SessionTimer()
+		TestHandler = task.TestHandler(TaskSettings, Paths)
+		Timer = task.SessionTimer(Paths)
 		Network = net.Network(NetSettings, Paths, namescope='Network')
-		task.test_saved_model(TaskSettings, Paths, Network, test_handler)
+		task.test_saved_model(TaskSettings, Paths, Network, TestHandler)

@@ -33,7 +33,7 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 	v_min_per_spec, v_max_per_spec, v_median_per_spec, v_mean_per_spec, v_var_per_spec, v_std_per_spec = [], [], [], [], [], []
 	test_min_per_spec, test_max_per_spec, test_median_per_spec, test_mean_per_spec, test_var_per_spec, test_std_per_spec = [], [], [], [], [], []
 	print('')
-	print('=================================================================================================================================================================================================')
+	print('================================================================================================================================================================================================================')
 	spec_list_filtered = [] # will only contain specs that actually have completed runs
 	for spec_name in spec_list:
 		path = Paths.exp_folder+spec_name+'/'+Paths.performance_sub
@@ -71,7 +71,7 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 			test_median_per_spec.append(spec_perf_dict['test_top1_median'])
 			test_var_per_spec.append(spec_perf_dict['test_top1_var'])
 			test_std_per_spec.append(spec_perf_dict['test_top1_std'])
-	print('=================================================================================================================================================================================================')
+	print('================================================================================================================================================================================================================')
 
 	# BIG FINAL PLOT
 	if make_plot and len(mb_list[0])>0:
@@ -147,17 +147,17 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 	# criteria for exclusion: incomplete runs. this section makes a list of all completed runs
 	n_val_samples_list = []
 	for run_file in perf_files_list:
-		p_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
+		rec_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
 		run_number = int(run_file.split('run_')[1].split('.')[0])
-		n_val_samples = len(p_dict['val_mb_n_hist'])
+		n_val_samples = len(rec_dict['val_mb_n_hist'])
 		n_val_samples_list.append(n_val_samples)
 	if len(n_val_samples_list) > 0:
 		run_length = np.max(n_val_samples_list)
 	complete_runs = []
 	for run_file in perf_files_list:
-		p_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
+		rec_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
 		run_number = int(run_file.split('run_')[1].split('.')[0])
-		if len(p_dict['test_top1'])> 0: # put 'if len(p_dict['val_mb_n_hist']) == run_length:' for runs without test
+		if len(rec_dict['test_top1'])> 0: # put 'if len(rec_dict['val_mb_n_hist']) == run_length:' for runs without test
 			complete_runs.append(run_file)
 
 	if len(complete_runs) == 0:
@@ -166,27 +166,27 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 
 	# extract data from files
 	for run_file in complete_runs:
-		p_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
+		rec_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
 		run_number = int(run_file.split('run_')[1].split('.')[0])
-		n_val_samples = len(p_dict['val_mb_n_hist'])
-		run_val_mean = np.mean(p_dict['val_top1_hist'])
-		test_t1 = p_dict['test_top1'][0]
+		n_val_samples = len(rec_dict['val_mb_n_hist'])
+		run_val_mean = np.mean(rec_dict['val_top1_hist'])
+		test_t1 = rec_dict['test_top1'][0]
 		# exclude bad runs
 		if (n_val_samples > 0) and (run_val_mean > .95 or run_val_mean < .3):
 			print('[WARNING] bad run detected and excluded from analysis (based on validation performance): %s, run %i' %(spec_name, run_number))
 		if test_t1 and test_t1 > 0. and test_t1 < .3:
 			print('[WARNING] bad run detected and excluded from analysis (based on test performance): %s, run %i' %(spec_name, run_number))
 		else:
-			train_mb_n_hist_store.append(np.array(p_dict['train_mb_n_hist']))
-			train_top1_hist_store.append(np.array(p_dict['train_top1_hist']))
-			train_loss_hist_store.append(np.array(p_dict['train_loss_hist']))
-			val_mb_n_hist_store.append(np.array(p_dict['val_mb_n_hist']))
-			val_top1_hist_store.append(np.array(p_dict['val_top1_hist']))
-			val_loss_hist_store.append(np.array(p_dict['val_loss_hist']))
-			test_loss_store.append(p_dict['test_loss'])
-			test_top1_store.append(p_dict['test_top1'])
+			train_mb_n_hist_store.append(np.array(rec_dict['train_mb_n_hist']))
+			train_top1_hist_store.append(np.array(rec_dict['train_top1_hist']))
+			train_loss_hist_store.append(np.array(rec_dict['train_loss_hist']))
+			val_mb_n_hist_store.append(np.array(rec_dict['val_mb_n_hist']))
+			val_top1_hist_store.append(np.array(rec_dict['val_top1_hist']))
+			val_loss_hist_store.append(np.array(rec_dict['val_loss_hist']))
+			test_loss_store.append(rec_dict['test_loss'])
+			test_top1_store.append(rec_dict['test_top1'])
 			run_number_store.append(run_number)
-			early_stopping_mb_store.append(early_stopping_mb(p_dict['val_top1_hist'], p_dict['val_mb_n_hist']))
+			early_stopping_mb_store.append(rec_dict['early_stopping_mb_hist'])
 
 	# if more than one run was done in this spec, build spec performance summary dict
 	v_run_max_list = []
@@ -339,7 +339,6 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 			plt.savefig(analysis_savepath+filename, dpi = 120, transparent=False, bbox_inches='tight')
 			print('[MESSAGE] file saved: %s (performance analysis plot for spec "%s")' %(spec_name, analysis_savepath+filename))
 
-
 	# if validation was done and more than one run was done in this spec, make spec plot
 	if len(v_run_max_list) > 1:
 		n_mb_total = int(np.max(t_mb))
@@ -385,59 +384,6 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 	# return spec_perf_dict
 	return spec_perf_dict
 
-def early_stopping_mb(val_data, val_mb, save_plot=False):
-	# calculate size of smoothing window & smoothe data
-	val_steps_total = len(val_data)
-	mb_per_val = val_mb[-1] // val_steps_total
-	smoothing_window_mb = 2000
-	smoothing_window = smoothing_window_mb // mb_per_val
-	smooth_val_data = smooth(val_data, smoothing_window, 3)
-	# define spots where weights were saved
-	epochs_between_saves = 8
-	save_spots = [0]
-	i = 1
-	while save_spots[-1] < val_mb[-1]:
-		save_spots.append(i*195*epochs_between_saves)
-		i+=1
-	save_spots[-1] = val_mb[-1]
-	# get intercepts of save_spots and smooth_val_data
-	available_val_data = []
-	for i in range(len(save_spots)):
-		val_data_idx_closest_to_save_spot = np.argmin(np.abs(np.array(val_mb)-save_spots[i]))
-		available_val_data.append(smooth_val_data[val_data_idx_closest_to_save_spot])
-	# get max of available val data
-	max_available_val_data = np.amax(available_val_data)
-	minibatch_max_available_val_data = save_spots[np.argmax(available_val_data)]
-	# plot
-	if save_plot:
-		plt.plot(np.array([0, val_mb[-1]]), np.array([np.max(smooth_val_data), np.max(smooth_val_data)]), linestyle='--', linewidth=1, color='black', alpha=0.8)
-		for i in range(len(save_spots)):
-			if i == 0:
-				plt.plot([save_spots[i],save_spots[i]],[0,1], color='blue', linewidth=0.5, label='model save points')
-			else:
-				plt.plot([save_spots[i],save_spots[i]],[0,1], color='blue', linewidth=0.5)
-		plt.plot(val_mb, val_data, linewidth=0.5, color='green', alpha=0.5, label='raw validation data')
-		plt.plot(val_mb, smooth_val_data, linewidth=2, color='red', label='smoothed validation data')
-		plt.plot(save_spots, available_val_data, linewidth=0.3, color='black', marker='x', markersize=4, alpha=1.0, label='estimated performance at save points')
-		plt.plot([minibatch_max_available_val_data], [max_available_val_data], marker='*', markersize=8, color='orange', alpha=1.0, label='max(estimated performance at save point)')
-		plt.grid(False)
-		plt.ylim([0.7, 0.8])
-		plt.legend(loc='lower right', prop={'size': 11})
-		plt.savefig('0_DEBUG_val_curve.png', dpi=300)
-	early_stopping_mb = minibatch_max_available_val_data
-	return early_stopping_mb
-
-def smooth(y, smoothing_window, times):
-	for t in range(times):
-		smooth = []
-		for i in range(len(y)):
-			window_start = np.clip(i-(smoothing_window//2), 0, i)
-			window_end = np.clip(i+(smoothing_window//2), 0, len(y))
-			smooth.append(np.mean(y[window_start:window_end]))
-		y = smooth
-	return smooth
-
-
 def get_statistics(data_array):
 	# function gets a all full runs of a spec (train / val) and returns stats. do not use this for single values as in test.
 	assert len(data_array.shape) == 2, 'data_array must be 2-dimensional: number of runs * number of performance measurement per run'
@@ -478,3 +424,92 @@ def sliding_window(l, n):
 	if len(l) < n:
 		n = len(l)
 	return np.mean(l[-n:])
+
+def visualize_performance(TaskSettings, Paths):
+	# load
+	filename = Paths.recorder_files+'record_'+str(TaskSettings.spec_name)+'_run_'+str(TaskSettings.run)+'.pkl'
+	performance_dict = pickle.load( open( filename, "rb" ) )
+	n_mb_total = int(np.max(performance_dict['train_mb_n_hist']))
+	# plot
+	fig = plt.figure(figsize=(10,10))
+	ax = fig.add_subplot(1,1,1)
+	ax.plot(np.array([0,n_mb_total]), np.array([1.0,1.0]), linewidth=3., color='black', label='100%', alpha=0.5)
+	ax.plot(np.array(performance_dict['train_mb_n_hist']), performance_dict['train_top1_hist'], linewidth=1., color='green', label='accuracy train', alpha=0.3) # linewidth=2.,
+	ax.plot(np.array([0,n_mb_total]), np.array([np.max(performance_dict['val_top1_hist']),np.max(performance_dict['val_top1_hist'])]), linewidth=1.0, color='blue', label='max val acc (%.3f)'%(np.max(performance_dict['val_top1_hist'])), alpha=0.5)
+	ax.plot(np.array(performance_dict['val_mb_n_hist']), performance_dict['val_top1_hist'], linewidth=2., color='blue', label='accuracy val', alpha=0.5)
+	ax.plot(np.array([0,n_mb_total]), np.array([0.1,0.1]), linewidth=3., color='red', label='chance level', alpha=0.5)
+	ax.set_ylim(0.,1.01)
+	ax.set_xlim(0.,float(n_mb_total))
+	ax.set_xticks(np.arange(0, n_mb_total, n_mb_total//6))
+	ax.set_yticks(np.arange(0., 1.1, .1))
+	ax.set_yticks(np.arange(0., 1.1, .02), minor=True)
+	ax.grid(which='major', alpha=0.6)
+	ax.grid(which='minor', alpha=0.1)
+	ax.set_aspect(float(n_mb_total))
+	ax.set_title('accuracy over epochs ('+str(TaskSettings.spec_name)+', run_'+str(TaskSettings.run)+')')
+	ax.legend(loc=4)
+	plt.tight_layout()
+	# save
+	savepath = Paths.run_learning_curves
+	filename = 'learning_curves_'+str(TaskSettings.spec_name)+'_run_'+str(TaskSettings.run)+'.png'
+	if not os.path.exists(savepath):
+		os.makedirs(savepath)
+	plt.savefig(savepath+filename, dpi = 120, transparent=False, bbox_inches='tight')
+	print('================================================================================================================================================================================================================')
+	print('[MESSAGE] performance figure saved: %s' %(savepath+filename))
+	print('================================================================================================================================================================================================================')
+
+def lr_linear_decay(step, start_lr=0.001, stop_lr=0.00004, total_steps=10000): # default squeezenet: start_lr=0.04, stop_lr=0.00004, total_steps=100000
+	if step < 0:
+		return 0.
+	if step < total_steps:
+		return np.linspace(start_lr, stop_lr, num=total_steps)[step]
+	return stop_lr
+
+def lr_step_scheduler(TaskSettings, current_ep):
+	if len(TaskSettings.lr_step_ep) == 0:
+		return TaskSettings.lr
+	if len(TaskSettings.lr_step_ep) == 1:
+		if current_ep > TaskSettings.lr_step_ep[0]:
+			return TaskSettings.lr * TaskSettings.lr_step_multi[0]
+	elif len(TaskSettings.lr_step_ep) == 3:
+		if current_ep < TaskSettings.lr_step_ep[0]:
+			return TaskSettings.lr
+		elif current_ep > TaskSettings.lr_step_ep[0] and current_ep < TaskSettings.lr_step_ep[1]:
+			return TaskSettings.lr * TaskSettings.lr_step_multi[0]
+		elif current_ep > TaskSettings.lr_step_ep[1] and current_ep < TaskSettings.lr_step_ep[2]:
+			return TaskSettings.lr * TaskSettings.lr_step_multi[1]
+		else:
+			return TaskSettings.lr * TaskSettings.lr_step_multi[2]
+
+def args_to_txt(args, Paths, training_complete_info='', test_complete_info=''):
+	# prepare
+	experiment_name = args['experiment_name']
+	spec_name = args['spec_name']
+	run = args['run']
+	network = args['network']
+	task = args['task']
+	mode = args['mode']
+	# write file
+	if not os.path.exists(Paths.experiment_spec_run):
+		os.makedirs(Paths.experiment_spec_run)
+	filename = "run_info_"+str(experiment_name)+"_"+str(spec_name)+"_run_"+str(run)+".txt"
+	with open(Paths.experiment_spec_run+filename, "w+") as text_file:
+		print("{:>35}".format('RUN SETTINGS:'), file=text_file)
+		print("", file=text_file)
+		print("{:>35} {:<30}".format('experiment_name:',experiment_name), file=text_file)
+		print("{:>35} {:<30}".format('spec_name:', spec_name), file=text_file)
+		print("{:>35} {:<30}".format('run:', run), file=text_file)
+		if len(training_complete_info) > 0:
+			print("", file=text_file)
+			print("{:>35} {:<30}".format('training complete:', training_complete_info), file=text_file)
+		if len(test_complete_info) > 0:
+			print("{:>35} {:<30}".format('test complete:', test_complete_info), file=text_file)
+		print("", file=text_file)
+		print("{:>35} {:<30}".format('network:', network), file=text_file)
+		print("{:>35} {:<30}".format('task:', task), file=text_file)
+		print("{:>35} {:<30}".format('mode:', mode), file=text_file)
+		print("", file=text_file)
+		for key in args.keys():
+			if args[key] is not None and key not in ['experiment_name','spec_name','run','network','task','mode']:
+				print("{:>35} {:<30}".format(key+':', str(args[key])), file=text_file)

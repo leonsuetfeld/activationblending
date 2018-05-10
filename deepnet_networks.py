@@ -50,8 +50,12 @@ class NetSettings(object):
 			self.logit_dims = 10
 		elif self.task == 'cifar100':
 			self.logit_dims = 100
-		self.network_spec = args['network']
 		self.pre_processing = args['preprocessing']
+		self.network_spec = args['network']
+		self.optimizer_choice = args['optimizer']
+		self.lr = args['lr']
+		self.lr_step_ep = args['lr_step_ep']
+		self.lr_step_multi = args['lr_step_multi']
 		self.use_wd = args['use_wd']
 		self.wd_lambda = args['wd_lambda']
 		self.af_set = args['af_set']
@@ -59,7 +63,6 @@ class NetSettings(object):
 		self.blend_trainable = args['blend_trainable']
 		self.blend_mode = args['blend_mode']
 		self.swish_beta_trainable = args['swish_beta_trainable']
-		self.optimizer_choice = args['optimizer']
 		self.init_blendweights_from_spec_name = args['load_af_weights_from']
 		self.normalize_blend_weights_at_init = args['norm_blendw_at_init']
 		self.print_overview()
@@ -70,14 +73,21 @@ class NetSettings(object):
 		print('### NETWORK SETTINGS OVERVIEW #############')
 		print('###########################################')
 		print('')
+		print(' - network spec: %s' %(self.network_spec))
 		print(' - input image format: (%i,%i,%i)' %(self.image_x,self.image_y,self.image_z))
 		print(' - output dims: %i' %(self.logit_dims))
 		if self.mode in ['train','training','']:
 			print(' - optimizer: %s' %(self.optimizer_choice))
+			print(' - (initial) learning rate: %i' %(self.lr))
+			print(' - multiply lr after epochs: %s' %(str(self.lr_step_ep)))
+			print(' - multiply lr by: %s' %(str(self.lr_step_multi)))
+			print(' - use weight decay: %s' %(str(self.use_wd)))
+			print(' - weight decay lambda: %i' %(self.wd_lambda))
 			print(' - AF set: %s' %(self.af_set))
 			print(' - af weights initialization: %s' %(self.af_weights_init))
 			print(' - blend weights trainable: %s' %(str(self.blend_trainable)))
 			print(' - blend mode: %s' %(self.blend_mode))
+			print(' - normalize blend_weights at init: %s' %(str(self.normalize_blend_weights_at_init)))
 			if 'swish' in self.af_set:
 				print(' - swish beta trainable: %s' %(str(self.swish_beta_trainable)))
 
@@ -615,7 +625,7 @@ class Network(object):
 
 	def get_predefined_af_weights(self, layer_name, w_type='blend'):
 		# define which file to load the blend weights from
-		blend_weights_files = [f for f in os.listdir(self.Paths.af_weights) if '.pkl' in f and 'run_'+str(self.NetSettings.run) in f and self.NetSettings.init_blendweights_from_spec_name in f]
+		blend_weights_files = [f for f in os.listdir(self.Paths.af_weight_dicts) if '.pkl' in f and 'run_'+str(self.NetSettings.run) in f and self.NetSettings.init_blendweights_from_spec_name in f]
 		if len(blend_weights_files) > 0:
 			file_num = 0
 			# if there are multiple save files from different minibatches, find largest mb in list
@@ -627,8 +637,8 @@ class Network(object):
 						highest_mb_count = mb_count
 						file_num = i
 			blend_weights_file = blend_weights_files[file_num]
-			af_weights_dict = pickle.load(open(self.Paths.af_weights+blend_weights_file,'rb'))
-			print('[MESSAGE] (predefined) blend weights loaded from file "%s"' %(self.Paths.af_weights+blend_weights_file))
+			af_weights_dict = pickle.load(open(self.Paths.af_weight_dicts+blend_weights_file,'rb'))
+			print('[MESSAGE] (predefined) blend weights loaded from file "%s"' %(self.Paths.af_weight_dicts+blend_weights_file))
 		else:
 			raise ValueError('Could not find af weights file containing "%s" and "run_%i"' %(self.NetSettings.init_blendweights_from_spec_name, self.NetSettings.run))
 		# extract from dict
@@ -652,7 +662,7 @@ class Network(object):
 				af_weights_dict[name] = list(sess.run(name))
 		return af_weights_dict
 
-	def save_af_weights(self, sess, counter, print_messages=False):
+	def save_af_weights(self, sess, mb_count, print_messages=False):
 		af_weights_dict_pkl = {}
 		af_weights_dict_json = {}
 		# if trainable blend weights available put in dicts
@@ -667,32 +677,32 @@ class Network(object):
 				af_weights_dict_json[name] = str(list(sess.run(name)))
 		# save dicts in files
 		if len(af_weights_dict_pkl.keys()) > 0:
-			if not os.path.exists(self.Paths.af_weights):
-				os.makedirs(self.Paths.af_weights)
-			file_name = 'af_weights_'+self.NetSettings.spec_name+'_run_'+str(self.NetSettings.run)+'_mb_'+str(counter.mb_count_total)
-			pickle.dump(af_weights_dict_pkl, open(self.Paths.af_weights+file_name+'.pkl', 'wb'),protocol=3)
-			json.dump(af_weights_dict_json, open(self.Paths.af_weights+file_name+'.json', 'w'), sort_keys=True, indent=4)
+			if not os.path.exists(self.Paths.af_weight_dicts):
+				os.makedirs(self.Paths.af_weight_dicts)
+			file_name = 'af_weights_'+self.NetSettings.spec_name+'_run_'+str(self.NetSettings.run)+'_mb_'+str(mb_count)
+			pickle.dump(af_weights_dict_pkl, open(self.Paths.af_weight_dicts+file_name+'.pkl', 'wb'),protocol=3)
+			json.dump(af_weights_dict_json, open(self.Paths.af_weight_dicts+file_name+'.json', 'w'), sort_keys=True, indent=4)
 			if print_messages:
-				print('[MESSAGE] file saved: %s (af weights)' %(self.Paths.af_weights+file_name+'.pkl'))
+				print('[MESSAGE] file saved: %s (af weights)' %(self.Paths.af_weight_dicts+file_name+'.pkl'))
 		else:
 			if print_messages:
 				print('[WARNING] no trainable variables "blend_weights" or "swish_beta" found - no af weights saved.')
 
 	# ========================== AUXILIARY FUNCTIONS ===========================
 
-	def save_all_weights(self, sess, counter, print_messages=False):
+	def save_all_weights(self, sess, mb_count, print_messages=False):
 		if len([v for v in tf.trainable_variables()]) > 0:
 			# create dict of all trainable variables in network
 			filter_dict = {}
 			for name in [v.name for v in tf.trainable_variables()]:
 				filter_dict[name] = sess.run(name)
 			# save dict in pickle file
-			if not os.path.exists(self.Paths.weights):
-				os.makedirs(self.Paths.weights)
-			filename = 'all_weights_'+self.NetSettings.spec_name+'_run_'+str(self.NetSettings.run)+'_mb_'+str(counter.mb_count_total)+'.pkl'
-			pickle.dump(filter_dict, open(self.Paths.weights+filename,'wb'), protocol=3)
+			if not os.path.exists(self.Paths.all_weight_dicts):
+				os.makedirs(self.Paths.all_weight_dicts)
+			filename = 'all_weights_'+self.NetSettings.spec_name+'_run_'+str(self.NetSettings.run)+'_mb_'+str(mb_count)+'.pkl'
+			pickle.dump(filter_dict, open(self.Paths.all_weight_dicts+filename,'wb'), protocol=3)
 			if print_messages:
-				print('[MESSAGE] file saved: %s (all weights)' %(self.Paths.weights+filename))
+				print('[MESSAGE] file saved: %s (all weights)' %(self.Paths.all_weight_dicts+filename))
 		else:
 			if print_messages:
 				print('[WARNING] no trainable variables found - no weights saved.')
