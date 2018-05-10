@@ -166,6 +166,8 @@ def csv_lookup_spec_run(csv_path, filename, valid=['','incomplete'], preferred=[
     csv = open_csv_as_list(csv_path, filename)
     n_specs = len(csv)-1
     n_runs = len(csv[0])-1
+    print('n_specs in csv:', n_specs)
+    print('n_runs in csv:', n_runs)
     valid_spec_run_combinations = []
     preferred_spec_run_combinations = []
     for spec in range(n_specs):
@@ -227,7 +229,7 @@ def create_scheduler_csv(spec_list, n_runs, experiment_name):
 def settings():
     scheduling_subfolder = '/2_scheduling/'
     experiment_path = '/3_output_cifar/'
-    experiment_name = 'ASC_test'
+    experiment_name = 'ASC_test'                                                # change when swapping between deployed and development folders
     spec_list = ['smcn_adam_c10_I',
                  'smcn_adam_c10_alpha_I',
                  'smcn_adam_c10_relu',
@@ -253,6 +255,10 @@ if __name__ == '__main__':
     print('=====================================================================================\n')
 
     scheduling_subfolder, experiment_path, experiment_name, spec_list, n_runs = settings()
+
+    # trying to avoid parallel scheduling issue
+    sleeptime = np.random.rand(1)*50
+    time.sleep(sleeptime)
 
     csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name)
     spec, run = csv_lookup_spec_run(scheduling_subfolder, experiment_name+'.csv')

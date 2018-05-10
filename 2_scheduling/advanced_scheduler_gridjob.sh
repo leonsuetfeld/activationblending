@@ -1,6 +1,6 @@
 #!/bin/bash
-#$ -N ASC_test
-#$ -wd /net/store/ni/users/lsuetfel/activations/
+#$ -N ASC_test                                                                  # change when swapping between deployed and development folders
+#$ -wd /net/store/ni/users/lsuetfel/activations/                                # change when swapping between deployed and development folders
 ##$ -cwd
 #$ -l h_rt=01:29:59
 #$ -l mem=3G
@@ -13,16 +13,16 @@
 #$ -l cuda_cores=640
 ##$ -l h=*cippy*
 #$ -l h=!*picture*&!*isonoe*
-#$ -t 1:8 ## 1:450
+#$ -t 1:600 ## 1:450
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y
-#$ -o /net/store/ni/users/lsuetfel/activations/3_gridjob_outfiles/
+#$ -o /net/store/ni/users/lsuetfel/activations/3_gridjob_outfiles/              # change when swapping between deployed and development folders
 
 # definition of commands for later execution
 UVENV="source venvtfgpu/bin/activate"
 UAPP="python3"
-UCWD="/net/store/ni/users/lsuetfel/activations/2_scheduling/"
+UCWD="/net/store/ni/users/lsuetfel/activations/2_scheduling/"                   # change when swapping between deployed and development folders
 UMCR="advanced_scheduler.py"
 
 # write header for return files
@@ -46,7 +46,7 @@ echo "Start"
 $UVENV
 
 export THEANO_FLAGS=floatX=float32,device=gpu0,lib.cnmem=0.8
-export CUDNN_HOME=/net/store/ni/users/lsuetfel/activations/cuda
+export CUDNN_HOME=/net/store/ni/users/lsuetfel/activations_grid/cuda
 export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$CUDNN_HOME/lib64"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDNN_HOME/lib64"
 
