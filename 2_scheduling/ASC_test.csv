@@ -1,0 +1,16 @@
+ASC_test;run_1;run_2;run_3;run_4;run_5;run_6;run_7;run_8;run_9;run_10;run_11;run_12;run_13;run_14;run_15;run_16;run_17;run_18;run_19;run_20;run_21;run_22;run_23;run_24;run_25;run_26;run_27;run_28;run_29;run_30
+smcn_adam_c10_I;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_alpha_I;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_relu;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_alpha_relu;;;;;;;;;;;;;;;;;;;;;;;;running;;;;;;
+smcn_adam_c10_tanh;;;;;;;;;;;;;;;;;running;;;;;;;;;;;;;
+smcn_adam_c10_alpha_tanh;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_elu;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_alpha_elu;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_selu;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_alpha_selu;;;;;;;;;;;;;;;;;running;;;;;;;;;;;;;
+smcn_adam_c10_swish;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_alpha_swish;;;;;;running;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_ABU_TERIS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+smcn_adam_c10_ABU_N_TERIS;;;;;;;;;;;;;;;running;;;;;;;;;;;;;;;
+smcn_adam_c10_ABU_P_TERIS;;;;;;;;;;running;;;;;;;;;;;;;;;;;;;;

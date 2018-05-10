@@ -44,7 +44,7 @@ legacy
 venvtf*
 0_*
 1_*
-2_*
+# 2_* # scheduling folders allowed
 3_*
 
 # Exclude files #

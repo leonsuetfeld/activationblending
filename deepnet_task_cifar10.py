@@ -33,10 +33,6 @@ import subprocess
 from sklearn.utils import shuffle
 import deepnet_aux_cifar as aux
 
-# use this line to extract avtivations per layer in order to look at transnet outputs
-# activations = sess.run(squeezeNet.trans_state, feed_dict = {net.X: [img], net.Y: [1], net.SGD_lr: 1., net.dropout_keep_prob: 1.})
-# activations = activations[0]
-
 # ##############################################################################
 # ### TASK SETTINGS ############################################################
 # ##############################################################################
@@ -45,7 +41,9 @@ class TaskSettings(object):
 
 	def __init__(self, args):
 
+		assert args['path_relative'] is not None, 'path_relative must be specified.'
 		assert args['experiment_name'] is not None, 'experiment_name must be specified.'
+		self.path_relative = args['path_relative']
 		self.mode = args['mode']
 		self.experiment_name = args['experiment_name']
 		self.task_name = 'cifar10'
@@ -140,18 +138,19 @@ class TaskSettings(object):
 class Paths(object):
 
 	def __init__(self, TaskSettings):
+		self.relative = TaskSettings.path_relative # path from scheduler
 		# data locations
-		self.train_batches = './1_data_cifar10/train_batches/' 					# original data
-		self.test_batches = './1_data_cifar10/test_batches/'					# original data
-		self.train_set = './1_data_cifar10/train_set/'
-		self.test_set = './1_data_cifar10/test_set/'
-		self.train_set_ztrans = './1_data_cifar10/train_set_ztrans/'
-		self.test_set_ztrans = './1_data_cifar10/test_set_ztrans/'
-		self.train_set_gcn_zca = './1_data_cifar10/train_set_gcn_zca/'
-		self.test_set_gcn_zca = './1_data_cifar10/test_set_gcn_zca/'
-		self.sample_images = './1_data_cifar10/samples/'
+		self.train_batches = self.relative+'1_data_cifar10/train_batches/' 					# original data
+		self.test_batches = self.relative+'1_data_cifar10/test_batches/'					# original data
+		self.train_set = self.relative+'1_data_cifar10/train_set/'
+		self.test_set = self.relative+'1_data_cifar10/test_set/'
+		self.train_set_ztrans = self.relative+'1_data_cifar10/train_set_ztrans/'
+		self.test_set_ztrans = self.relative+'1_data_cifar10/test_set_ztrans/'
+		self.train_set_gcn_zca = self.relative+'1_data_cifar10/train_set_gcn_zca/'
+		self.test_set_gcn_zca = self.relative+'1_data_cifar10/test_set_gcn_zca/'
+		self.sample_images = self.relative+'1_data_cifar10/samples/'
 		# save paths
-		self.experiment = './2_output_cifar/'+str(TaskSettings.experiment_name)+'/'
+		self.experiment = self.relative+'3_output_cifar/'+str(TaskSettings.experiment_name)+'/'
 		self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
 		self.experiment_spec_run = self.experiment_spec+'run_'+str(TaskSettings.run)+'/'
 		# batch 1 (necessary in runs)
@@ -760,26 +759,26 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 				if Rec.mb_count_total % TaskSettings.val_to_val_mbs == 0 or Rec.mb_count_total == TaskSettings.n_minibatches:
 					validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec)
 					t_total = (time.time()-Timer.session_start_time)/60.
-					print('['+str(TaskSettings.spec_name)+', run '+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
-						  ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=50)) +
+					print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
+						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=50)) +
 						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=50)) +
-							  ' | l(v) %05.3f [%05.3f]' %(Rec.val_loss_hist[-1], Rec.get_running_average(measure='v-loss', window_length=3)) +
-							  ' | acc(v) %05.3f [%05.3f]' %(Rec.val_top1_hist[-1], Rec.get_running_average(measure='v-acc', window_length=3)) +
+						  # ' | l(v) %05.3f [%05.3f]' %(Rec.val_loss_hist[-1], Rec.get_running_average(measure='v-loss', window_length=3)) +
+						  ' | acc(v) %05.3f [%05.3f]' %(Rec.val_top1_hist[-1], Rec.get_running_average(measure='v-acc', window_length=3)) +
 						  ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
 						  ' | t_v %05.3f s' %(Timer.val_duration_list[-1]) +
-						  ' | t_tot %05.2f min' %(t_total) +
-						  ' | t_rem %05.2f min' %(t_remaining) +
-						  ' | wt_rem %05.2f min' %(TaskSettings.walltime-t_total) )
+						  ' | t_tot %05.2f m' %(t_total) +
+						  ' | t_rem %05.2f m' %(t_remaining) +
+						  ' | wt_rem %05.2f m' %(TaskSettings.walltime-t_total) )
 			else:
 				if (Rec.mb_count_total)%TaskSettings.val_to_val_mbs == 0 or Rec.mb_count_total == TaskSettings.n_minibatches:
 					t_total = (time.time()-Timer.session_start_time)/60.
-					print('['+str(TaskSettings.spec_name)+', run '+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
-						  ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=50)) +
+					print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
+						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=50)) +
 						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=50)) +
 						  ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
-						  ' | t_tot %05.2f min' %(t_total) +
-						  ' | t_rem %05.2f min' %(t_remaining) +
-						  ' | wt_rem %05.2f min' %(TaskSettings.walltime-t_total) )
+						  ' | t_tot %05.2f m' %(t_total) +
+						  ' | t_rem %05.2f m' %(t_remaining) +
+						  ' | wt_rem %05.2f m' %(TaskSettings.walltime-t_total) )
 
 			# SAVE (AF) WEIGHTS INTERMITTENTLY IF REQUESTED
 			if Rec.mb_count_total in TaskSettings.save_af_weights_at_minibatch:
@@ -889,6 +888,7 @@ def early_stopping_minibatch(val_data, val_mb, checkpoints, Paths, save_plot=Tru
 		plt.grid(False)
 		plt.ylim([max_available_val_data*0.9,max_available_val_data*1.05])
 		plt.legend(loc='lower right', prop={'size': 11})
+		plt.tight_layout()
 		plt.savefig(Paths.experiment_spec_run+'early_stopping_analysis.png', dpi=300)
 	early_stopping_mb = minibatch_max_available_val_data
 	return early_stopping_mb

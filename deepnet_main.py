@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
 	# parse input arguments
 	parser = argparse.ArgumentParser(description='Run network session.')
+	parser.add_argument('-path_relative', type=str, help='path from scheduler to main folder. put "./" if they are identical')
 	parser.add_argument('-task', type=str, help='cifar10, cifar100')
 	parser.add_argument('-preprocessing', type=str, help='none, ztrans, gcn_zca')
 	parser.add_argument('-network', type=str, help='smcn, allcnnc, ...')
