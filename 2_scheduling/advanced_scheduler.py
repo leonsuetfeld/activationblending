@@ -257,4 +257,4 @@ if __name__ == '__main__':
     csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name)
     spec, run = csv_lookup_spec_run(scheduling_subfolder, experiment_name+'.csv')
     os.system("nvidia-smi")
-    subprocess.run(get_command('exp_1_test', spec_list[spec], run), shell=True)
+    subprocess.run(get_command(experiment_name, spec_list[spec], run), shell=True)
