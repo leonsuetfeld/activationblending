@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 import math
 
-def two_sample_t_test(sample_1, sample_2, plotting=False):
+def two_sample_t_test_unpaired_data(sample_1, sample_2, plotting=False, equal_variances=False):
     # unzip
     n_1 = sample_1[0]
     mean_1 = sample_1[1]
@@ -13,14 +13,23 @@ def two_sample_t_test(sample_1, sample_2, plotting=False):
     mean_2 = sample_2[1]
     var_2 = sample_2[2]
     # get t-value
-    mvar = ( (n_1-1)*var_1 + (n_2-1)*var_2 ) / (n_1+n_2-2)
-    t_val = (mean_1 - mean_2) / (mvar * np.sqrt( 1/n_1 + 1/n_2 ))
+    if equal_variances:
+        mvar = ( (n_1-1)*var_1 + (n_2-1)*var_2 ) / (n_1+n_2-2)
+        t_val = (mean_1 - mean_2) / (np.sqrt(mvar) * np.sqrt( 1/n_1 + 1/n_2 ))
+    else:
+        t_val = (mean_1 - mean_2) / np.sqrt( var_1/n_1 + var_2/n_2 )
     # get p-value
-    df = n_1+n_2-2
-    p_val = 1.0-t.cdf(t_val, df)
+    if equal_variances:
+        df = n_1+n_2-2
+    else:
+        df = (var_1/n_1 + var_2/n_2) / ( ((var_1/n_1)**2)/(n_1-1) + ((var_2/n_2)**2)/(n_2-1) )
+    p_val = t.cdf(t_val, df)
     # print & plot
     print(sample_1[3] + ' vs. ' + sample_2[3] + ':')
-    print('t = ' + str(t_val) + ', df = ' + str(df) + ', p = ' + str(p_val))
+    if equal_variances:
+        print('t = ' + str(t_val) + ', df = ' + str(df) + ', p = ' + str(p_val) + ', std_pooled = ' +str(np.sqrt(mvar)))
+    else:
+        print('t = ' + str(t_val) + ', df = ' + str(df) + ', p = ' + str(p_val))
     print(sample_1[3] + ' var=' + str(sample_1[2]) + ', std=' + str(np.sqrt(sample_1[2])))
     print(sample_2[3] + ' var=' + str(sample_2[2]) + ', std=' + str(np.sqrt(sample_2[2])))
     if plotting:
@@ -39,9 +48,11 @@ def two_sample_t_test(sample_1, sample_2, plotting=False):
 # ### SCRIPT ################################################################# #
 # ############################################################################ #
 
-spec1 = [20, 0.813, 7*(1./10**5), 'A']
-spec2 = [20, 0.814, 7*(1./10**5), 'B']
+spec1 = [30, 0.813, 5*(1./10**5), 'A']
+spec2 = [30, 0.816, 5*(1./10**5), 'B']
 
-print('')
-t_val, p_val = two_sample_t_test(spec1, spec2, plotting=True)
-print('')
+print('\n####################################################################\n')
+t_val, p_val = two_sample_t_test_unpaired_data(spec1, spec2, plotting=False, equal_variances=True)
+print('\n####################################################################\n')
+t_val, p_val = two_sample_t_test_unpaired_data(spec1, spec2, plotting=False, equal_variances=False)
+print('\n####################################################################\n')
