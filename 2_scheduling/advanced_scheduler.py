@@ -161,7 +161,7 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, mark_runnin
                         if 'test complete:'in line and 'True' in line:
                             list_of_finished_runs.append([spec, run])
                         elif 'test complete:'in line and 'False' in line:
-                            list_of_unfinished_runs.append([spec, run])
+                            list_of_unfinished_runs.append([spec, run]) # issue: everything that isnt finished is called running
                 # check for incomplete run files
                 incomplete_files = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder) if ('run_incomplete' in f)]
                 if len(incomplete_files) > 0:
@@ -175,7 +175,14 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, mark_runnin
             if mark_running_as_incomplete:
                 csv[spec_idx][run] = 'incomplete'
             else:
-                csv[spec_idx][run] = 'running'
+                cell = csv[spec_idx][run]
+                if not 'running' in cell:
+                    csv[spec_idx][run] = 'running '+str(time.time())
+                else:
+                    timestamp = float(cell.split(' ')[-1])
+                    time_since_scheduling = time.time()-timestamp
+                    if time_since_scheduling/60 > 90.0:
+                        csv[spec_idx][run] = 'incomplete'
     if len(list_of_finished_runs) > 0:
         for entry in list_of_finished_runs:
             spec_idx = csv_spec_to_num(csv, entry[0])
@@ -190,7 +197,7 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, mark_runnin
     # check if schedule is complete
     n_runs_in_schedule = len(csv)-1 * len(csv[0])-1
     n_runs_completed = len(list_of_finished_runs)
-    return n_runs_completed == n_runs_in_schedule
+    return n_runs_in_schedule - n_runs_completed
 
 def csv_spec_to_num(csv, spec):
     for i, row in enumerate(csv):
@@ -219,7 +226,7 @@ def csv_lookup_spec_run(csv_path, filename, valid=['','incomplete'], preferred=[
             [spec_idx, run] = preferred_spec_run_combinations[0]
         else:
             [spec_idx, run] = valid_spec_run_combinations[0]
-    csv[spec_idx][run] = 'running'
+    csv[spec_idx][run] = 'running '+str(time.time())
     save_list_as_csv(csv, csv_path, filename)
     return spec_idx, run
 
@@ -295,8 +302,8 @@ if __name__ == '__main__':
     with FileLock(os.getcwd()+scheduling_subfolder+experiment_name+'.csv.lock'):
         gridjob_active = (len(sys.argv) > 1)
         gridjob_inactive = not gridjob_active
-        scheduling_complete = csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name, mark_running_as_incomplete=gridjob_inactive)
-        if not scheduling_complete:
+        n_unfinished_runs = csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name, mark_running_as_incomplete=gridjob_inactive)
+        if n_unfinished_runs > 0:
             spec_csv_idx, run = csv_lookup_spec_run(scheduling_subfolder, experiment_name+'.csv')
 
     # AT THE END OF GRIDJOB, RESCHEDULE GRIDJOB
