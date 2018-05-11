@@ -3,9 +3,9 @@
 #$ -wd /net/store/ni/users/lsuetfel/activations/                                # change when swapping between deployed and development folders
 ##$ -cwd
 #$ -l h_rt=01:29:59
-#$ -l mem=3G
-#$ -l mem_free=3G
-#$ -l nv_mem_free=2800M
+#$ -l mem=6G
+#$ -l mem_free=6G
+#$ -l nv_mem_free=2900M
 #$ -l ubuntu_version=xenial
 #$ -l cuda=1
 #$ -l cuda_capability=500
@@ -13,7 +13,7 @@
 #$ -l cuda_cores=640
 ##$ -l h=*cippy*
 #$ -l h=!*picture*&!*isonoe*
-#$ -t 1:600 ## 1:450
+#$ -t 1:100
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y

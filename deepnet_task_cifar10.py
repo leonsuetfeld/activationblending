@@ -32,6 +32,7 @@ import argparse
 import subprocess
 from sklearn.utils import shuffle
 import deepnet_aux_cifar as aux
+import psutil
 
 # ##############################################################################
 # ### TASK SETTINGS ############################################################
@@ -759,6 +760,9 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 				if Rec.mb_count_total % TaskSettings.val_to_val_mbs == 0 or Rec.mb_count_total == TaskSettings.n_minibatches:
 					validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec)
 					t_total = (time.time()-Timer.session_start_time)/60.
+					pid = os.getpid()
+					py = psutil.Process(pid)
+					memoryUse = py.memory_info()[0]/2.**30
 					print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
 						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=50)) +
 						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=50)) +
@@ -768,17 +772,22 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 						  ' | t_v %05.3f s' %(Timer.val_duration_list[-1]) +
 						  ' | t_tot %05.2f m' %(t_total) +
 						  ' | t_rem %05.2f m' %(t_remaining) +
-						  ' | wt_rem %05.2f m' %(TaskSettings.walltime-t_total) )
+						  ' | wt_rem %05.2f m' %(TaskSettings.walltime-t_total) +
+						  ' | mem %02.2f GB' %(memoryUse) )
 			else:
 				if (Rec.mb_count_total)%TaskSettings.val_to_val_mbs == 0 or Rec.mb_count_total == TaskSettings.n_minibatches:
 					t_total = (time.time()-Timer.session_start_time)/60.
+					pid = os.getpid()
+					py = psutil.Process(pid)
+					memoryUse = py.memory_info()[0]/2.**30
 					print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
 						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=50)) +
 						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=50)) +
 						  ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
 						  ' | t_tot %05.2f m' %(t_total) +
 						  ' | t_rem %05.2f m' %(t_remaining) +
-						  ' | wt_rem %05.2f m' %(TaskSettings.walltime-t_total) )
+						  ' | wt_rem %05.2f m' %(TaskSettings.walltime-t_total) +
+						  ' | mem %02.2f GB' %(memoryUse) )
 
 			# SAVE (AF) WEIGHTS INTERMITTENTLY IF REQUESTED
 			if Rec.mb_count_total in TaskSettings.save_af_weights_at_minibatch:
@@ -797,8 +806,8 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 			assert n_minibatches_remaining + Rec.mb_count_total == TaskSettings.n_minibatches, '[BUG IN CODE] minibatch counting not aligned.'
 
 			# CHECK IF SESSION (=SPLIT) CAN BE COMPLETED BEFORE WALLTIME
-			if Rec.mb_count_total in TaskSettings.checkpoints or Rec.mb_count_total == TaskSettings.n_minibatches:
-				end_session_now = False
+			end_session_now = False
+			if Rec.mb_count_total in TaskSettings.checkpoints:
 				if TaskSettings.create_checkpoints and TaskSettings.walltime > 0:
 					t_total_this_session = (time.time()-Timer.session_start_time)/60.
 					epochs_in_session_so_far = Rec.ep_count_total-Timer.ep_count_at_session_start
@@ -808,15 +817,16 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 					Timer.set_checkpoint_time()
 					t_est_for_next_checkpoint = np.maximum(t_per_checkpoint_mean, t_since_last_checkpoint)
 					t_remaining_until_walltime = TaskSettings.walltime - t_total_this_session
-
 					if t_est_for_next_checkpoint*2.0+1 > t_remaining_until_walltime:
 						end_session_now = True
-				if Rec.mb_count_total == TaskSettings.n_minibatches or end_session_now:
-					Rec.mark_end_of_session() # created incomplete_run file or sets Rec.training_completed to True
-					Rec.save_as_dict()
-					aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
-					Timer.set_session_end_time()
-					Timer.end_session()
+
+			# CHECK IF TRAINING IS COMPLETED
+			if Rec.mb_count_total == TaskSettings.n_minibatches or end_session_now:
+				Rec.mark_end_of_session() # created incomplete_run file or sets Rec.training_completed to True
+				Rec.save_as_dict()
+				aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+				Timer.set_session_end_time()
+				Timer.end_session()
 
 	# AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
 	if Rec.training_completed and not Rec.test_completed:
@@ -917,7 +927,7 @@ def save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, s
 	if tf_model:
 		if not os.path.exists(Paths.models):
 			os.makedirs(Paths.models)
-		saver.save(sess, Paths.models+'model', global_step=Rec.mb_count_total, write_meta_graph=True)
+		saver.save(sess, Paths.models+'model', global_step=Rec.mb_count_total, write_meta_graph=True) # MEMORY LEAK HAPPENING HERE. ANY IDEAS?
 	# dataset
 	if dataset:
 		TrainingHandler.save_run_datasets()

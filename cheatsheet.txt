@@ -183,6 +183,7 @@ pip3 install --upgrade patsy
 pip3 install --upgrade statsmodels
 pip3 install --upgrade plotly
 pip3 install --upgrade psutil
+pip3 install --upgrade filelock
 
 pip3 install --upgrade h5py // currently throws an annoying warning
 pip3 install --upgrade matplotlib // currently breaks the whole venv

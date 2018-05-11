@@ -455,6 +455,7 @@ def visualize_performance(TaskSettings, Paths):
 	if not os.path.exists(savepath):
 		os.makedirs(savepath)
 	plt.savefig(savepath+filename, dpi = 120, transparent=False, bbox_inches='tight')
+	plt.close('all')
 	print('================================================================================================================================================================================================================')
 	print('[MESSAGE] performance figure saved: %s' %(savepath+filename))
 	print('================================================================================================================================================================================================================')
