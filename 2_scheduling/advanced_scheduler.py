@@ -25,8 +25,12 @@ def default_spec():
             "dropout_keep_probs_inference":   '1.0',
             "optimizer":                      'Adam',
             "lr":                             '0.001',
-            "lr_step_ep":                     '0',
-            "lr_step_multi":                  '1',
+            "lr_schedule_type":               'constant',
+            "lr_decay":            			  '0.00004',
+            "lr_lin_min":            		  '0.0004',
+            "lr_lin_steps":            		  '60000',
+            "lr_step_ep":                     '200 250 300 ',
+            "lr_step_multi":                  '0.1 0.01 0.001',
             "use_wd":                         'False',
             "wd_lambda":                      '0.01',
             "create_val_set":                 'True',
@@ -40,7 +44,7 @@ def default_spec():
             "blend_trainable":                'False',
             "blend_mode":                     'unrestricted',
             "swish_beta_trainable":           'False',
-            "walltime":                       '89',
+            "walltime":                       '89.0',
             "create_checkpoints":             'True',
             "epochs_between_checkpoints":	  '8',
             "save_af_weights_at_test_mb":	  'True',
@@ -61,65 +65,76 @@ def dict_to_command_str(dict):
         command += ' -'+key+' '+value
     return command
 
-def get_command(experiment_name, spec_name, run): # to do make spec name determine the setting
+def get_command(experiment_name, spec_name, run):
     # name changes made to every dict
     changes_dict = { "experiment_name": experiment_name, "spec_name": spec_name, "run": str(run) }
+    if '_c100_' in spec_name:
+        changes_dict["task"] = 'cifar100'
+    if 'smcnb_' in spec_name:
+        changes_dict["network"] = 'smcnLin'
+    if 'smcnc_' in spec_name:
+        changes_dict["network"] = 'smcnDeep'
+    if '_sgdm_' in spec_name:
+        changes_dict["n_minibatches"] = '70000'
+        changes_dict["optimizer"] = 'Momentum'
+        changes_dict["lr"] = '0.01'
+        changes_dict["lr_schedule_type"] = 'linear'
     # I
-    if spec_name == 'smcn_adam_c10_I':
+    if '_I' in spec_name and not '_alpha_I' in spec_name:
         pass
     # alpha I
-    elif spec_name == 'smcn_adam_c10_alpha_I':
+    elif '_alpha_I' in spec_name:
         changes_dict["blend_trainable"] = 'True'
     # tanh
-    elif spec_name == 'smcn_adam_c10_tanh':
+    elif '_tanh' in spec_name and not '_alpha_tanh' in spec_name:
         changes_dict["af_set"] = '1_tanh'
     # alpha tanh
-    elif spec_name == 'smcn_adam_c10_alpha_tanh':
+    elif '_alpha_tanh' in spec_name:
         changes_dict["af_set"] = '1_tanh'
         changes_dict["blend_trainable"] = 'True'
     # relu
-    elif spec_name == 'smcn_adam_c10_relu':
+    elif '_relu' in spec_name and not '_alpha_relu' in spec_name:
         changes_dict["af_set"] = '1_relu'
     # alpha relu
-    elif spec_name == 'smcn_adam_c10_alpha_relu':
+    elif '_alpha_relu' in spec_name:
         changes_dict["af_set"] = '1_relu'
         changes_dict["blend_trainable"] = 'True'
     # elu
-    elif spec_name == 'smcn_adam_c10_elu':
+    elif '_elu' in spec_name and not '_alpha_elu' in spec_name:
         changes_dict["af_set"] = '1_jelu'
     # alpha elu
-    elif spec_name == 'smcn_adam_c10_alpha_elu':
+    elif '_alpha_elu' in spec_name:
         changes_dict["af_set"] = '1_jelu'
         changes_dict["blend_trainable"] = 'True'
     # selu
-    elif spec_name == 'smcn_adam_c10_selu':
+    elif '_selu' in spec_name and not '_alpha_selu' in spec_name:
         changes_dict["af_set"] = '1_selu'
     # alpha selu
-    elif spec_name == 'smcn_adam_c10_alpha_selu':
+    elif '_alpha_selu' in spec_name:
         changes_dict["af_set"] = '1_selu'
         changes_dict["blend_trainable"] = 'True'
     # swish
-    elif spec_name == 'smcn_adam_c10_swish':
+    elif '_swish' in spec_name and not '_alpha_swish' in spec_name:
         changes_dict["af_set"] = '1_jswish'
         changes_dict["swish_beta_trainable"] = 'True'
     # alpha swish
-    elif spec_name == 'smcn_adam_c10_alpha_swish':
+    elif '_alpha_swish' in spec_name:
         changes_dict["af_set"] = '1_jswish'
         changes_dict["blend_trainable"] = 'True'
         changes_dict["swish_beta_trainable"] = 'True'
     # ABU_TERIS
-    elif spec_name == 'smcn_adam_c10_ABU_TERIS':
+    elif '_ABU_TERIS' in spec_name:
         changes_dict["af_set"] = '5_blend5_swish'
         changes_dict["blend_trainable"] = 'True'
         changes_dict["swish_beta_trainable"] = 'True'
     # ABU_N_TERIS
-    elif spec_name == 'smcn_adam_c10_ABU_N_TERIS':
+    elif '_ABU_N_TERIS' in spec_name:
         changes_dict["af_set"] = '5_blend5_swish'
         changes_dict["blend_trainable"] = 'True'
         changes_dict["blend_mode"] = 'normalized'
         changes_dict["swish_beta_trainable"] = 'True'
     # ABU_P_TERIS
-    elif spec_name == 'smcn_adam_c10_ABU_P_TERIS':
+    elif '_ABU_P_TERIS' in spec_name:
         changes_dict["af_set"] = '5_blend5_swish'
         changes_dict["blend_trainable"] = 'True'
         changes_dict["blend_mode"] = 'posnormed'

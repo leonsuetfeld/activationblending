@@ -460,28 +460,26 @@ def visualize_performance(TaskSettings, Paths):
 	print('[MESSAGE] performance figure saved: %s' %(savepath+filename))
 	print('================================================================================================================================================================================================================')
 
-def lr_linear_decay(step, start_lr=0.001, stop_lr=0.00004, total_steps=10000): # default squeezenet: start_lr=0.04, stop_lr=0.00004, total_steps=100000
-	if step < 0:
-		return 0.
-	if step < total_steps:
-		return np.linspace(start_lr, stop_lr, num=total_steps)[step]
-	return stop_lr
-
-def lr_step_scheduler(TaskSettings, current_ep):
-	if len(TaskSettings.lr_step_ep) == 0:
+def lr_scheduler(TaskSettings, current_mb): # new variablse: TaskSettings.lr_schedule_type (constant, step, continuous), TaskSettings.lr_decay (e.g., 1e-6)
+	if TaskSettings.lr_schedule_type == 'constant':
 		return TaskSettings.lr
-	if len(TaskSettings.lr_step_ep) == 1:
-		if current_ep > TaskSettings.lr_step_ep[0]:
-			return TaskSettings.lr * TaskSettings.lr_step_multi[0]
-	elif len(TaskSettings.lr_step_ep) == 3:
-		if current_ep < TaskSettings.lr_step_ep[0]:
-			return TaskSettings.lr
-		elif current_ep > TaskSettings.lr_step_ep[0] and current_ep < TaskSettings.lr_step_ep[1]:
-			return TaskSettings.lr * TaskSettings.lr_step_multi[0]
-		elif current_ep > TaskSettings.lr_step_ep[1] and current_ep < TaskSettings.lr_step_ep[2]:
-			return TaskSettings.lr * TaskSettings.lr_step_multi[1]
+	if TaskSettings.lr_schedule_type == 'decay':
+		lr = TaskSettings.lr * (1. / (1. + TaskSettings.lr_decay * current_mb))
+		return lr
+	if TaskSettings.lr_schedule_type == 'linear':
+		if current_mb < TaskSettings.lr_lin_steps:
+			return np.linspace(TaskSettings.lr, TaskSettings.lr_lin_min, num=TaskSettings.lr_lin_steps)[current_mb] #start_lr=0.04, stop_lr=0.00004
 		else:
-			return TaskSettings.lr * TaskSettings.lr_step_multi[2]
+			return TaskSettings.lr_lin_min
+	if TaskSettings.lr_schedule_type == 'step':
+		mb_per_ep = 50000*(1-TaskSettings.val_set_fraction)//TaskSettings.minibatch_size
+		lr_step_mb = np.array(TaskSettings.lr_step_ep) * mb_per_ep
+		step_mbs_relative = lr_step_mb - current_mb
+		for i in range(len(step_mbs_relative)):
+			if step_mbs_relative[i] > 0:
+				if i == 0: return TaskSettings.lr
+				else: return TaskSettings.lr * TaskSettings.lr_step_multi[i-1]
+		return TaskSettings.lr * TaskSettings.lr_step_multi[-1]
 
 def args_to_txt(args, Paths, training_complete_info='', test_complete_info=''):
 	# prepare

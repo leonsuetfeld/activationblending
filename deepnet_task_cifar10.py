@@ -67,6 +67,10 @@ class TaskSettings(object):
 				assert args['val_set_fraction'] is not None, 'val_set_fraction must be specified for training.'
 				assert args['dropout_keep_probs'] is not None, 'dropout_keep_probs must be specified for training.'
 				assert args['lr'] is not None, 'lr must be specified for training.'
+				assert args['lr_schedule_type'] is not None, 'lr_schedule_type must be specified for training.'
+				assert args['lr_decay'] is not None, 'lr_decay must be specified for training.'
+				assert args['lr_lin_min'] is not None, 'lr_lin_min must be specified for training.'
+				assert args['lr_lin_steps'] is not None, 'lr_lin_steps must be specified for training.'
 				assert args['lr_step_ep'] is not None, 'lr_step_ep must be specified for training.'
 				assert args['lr_step_multi'] is not None, 'lr_step_multi must be specified for training.'
 				assert args['preprocessing'] is not None, 'preprocessing must be specified for training.'
@@ -84,6 +88,10 @@ class TaskSettings(object):
 				self.restore_model = True
 				self.dropout_keep_probs = args['dropout_keep_probs']
 				self.lr = args['lr']
+				self.lr_schedule_type = args['lr_schedule_type'] 				# (constant, linear, step, decay)
+				self.lr_decay = args['lr_decay']								# (e.g., 1e-6)
+				self.lr_lin_min = args['lr_lin_min']							# (e.g., 4*1e-5)
+				self.lr_lin_steps = args['lr_lin_steps']						# (e.g., 60000)
 				self.lr_step_ep = args['lr_step_ep']
 				self.lr_step_multi = args['lr_step_multi']
 				if args['blend_trainable'] or args['swish_beta_trainable']:
@@ -717,7 +725,8 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 			imageBatch, labelBatch = TrainingHandler.get_train_minibatch()
 
 			# SESSION RUN
-			input_dict = {Network.X: imageBatch, Network.Y: labelBatch, Network.lr: aux.lr_step_scheduler(TaskSettings, Rec.ep_count_total), Network.dropout_keep_prob: TaskSettings.dropout_keep_probs}
+			current_lr = aux.lr_scheduler(TaskSettings, Rec.mb_count_total)
+			input_dict = {Network.X: imageBatch, Network.Y: labelBatch, Network.lr: current_lr, Network.dropout_keep_prob: TaskSettings.dropout_keep_probs}
 			run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 			run_metadata = tf.RunMetadata()
 			# different options w.r.t. summaries and tracer
@@ -764,10 +773,11 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 					py = psutil.Process(pid)
 					memoryUse = py.memory_info()[0]/2.**30
 					print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
-						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=50)) +
-						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=50)) +
-						  # ' | l(v) %05.3f [%05.3f]' %(Rec.val_loss_hist[-1], Rec.get_running_average(measure='v-loss', window_length=3)) +
-						  ' | acc(v) %05.3f [%05.3f]' %(Rec.val_top1_hist[-1], Rec.get_running_average(measure='v-acc', window_length=3)) +
+						  ' | lr %0.5f' %(current_lr) +
+						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=100)) +
+						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=100)) +
+						  # ' | l(v) %05.3f [%05.3f]' %(Rec.val_loss_hist[-1], Rec.get_running_average(measure='v-loss', window_length=10)) +
+						  ' | acc(v) %05.3f [%05.3f]' %(Rec.val_top1_hist[-1], Rec.get_running_average(measure='v-acc', window_length=10)) +
 						  ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
 						  ' | t_v %05.3f s' %(Timer.val_duration_list[-1]) +
 						  ' | t_tot %05.2f m' %(t_total) +
@@ -781,8 +791,9 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 					py = psutil.Process(pid)
 					memoryUse = py.memory_info()[0]/2.**30
 					print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
-						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=50)) +
-						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=50)) +
+  						  ' | lr %0.5f' %(current_lr) +
+						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=100)) +
+						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=100)) +
 						  ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
 						  ' | t_tot %05.2f m' %(t_total) +
 						  ' | t_rem %05.2f m' %(t_remaining) +

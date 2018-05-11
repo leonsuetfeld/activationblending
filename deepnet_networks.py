@@ -33,6 +33,13 @@ class NetSettings(object):
 		assert args['load_af_weights_from'] is not None, 'load_af_weights_from must be specified.'
 		assert args['norm_blendw_at_init'] is not None, 'norm_blendw_at_init must be specified.'
 		assert args['optimizer'] is not None, 'optimizer must be specified.'
+		assert args['lr'] is not None, 'lr must be specified for training.'
+		assert args['lr_schedule_type'] is not None, 'lr_schedule_type must be specified for training.'
+		assert args['lr_decay'] is not None, 'lr_decay must be specified for training.'
+		assert args['lr_lin_min'] is not None, 'lr_lin_min must be specified for training.'
+		assert args['lr_lin_steps'] is not None, 'lr_lin_steps must be specified for training.'
+		assert args['lr_step_ep'] is not None, 'lr_step_ep must be specified for training.'
+		assert args['lr_step_multi'] is not None, 'lr_step_multi must be specified for training.'
 		assert args['use_wd'] is not None, 'use_wd must be specified.'
 		assert args['wd_lambda'] is not None, 'wd_lambda must be specified.'
 		assert args['preprocessing'] is not None, 'preprocessing must be specified.'
@@ -54,6 +61,10 @@ class NetSettings(object):
 		self.network_spec = args['network']
 		self.optimizer_choice = args['optimizer']
 		self.lr = args['lr']
+		self.lr_schedule_type = args['lr_schedule_type'] 				# (constant, linear, step, decay)
+		self.lr_decay = args['lr_decay']								# (e.g., 1e-6)
+		self.lr_lin_min = args['lr_lin_min']							# (e.g., 4*1e-5)
+		self.lr_lin_steps = args['lr_lin_steps']						# (e.g., 60000)
 		self.lr_step_ep = args['lr_step_ep']
 		self.lr_step_multi = args['lr_step_multi']
 		self.use_wd = args['use_wd']
@@ -735,10 +746,3 @@ def variable_summaries(var, label):
 		tf.summary.scalar('max', tf.reduce_max(var))
 		tf.summary.scalar('min', tf.reduce_min(var))
 		tf.summary.histogram('histogram', var)
-
-def lr_linear_decay(step, start_lr=0.001, stop_lr=0.00004, total_steps=100000): # default squeezenet: start_lr=0.04, stop_lr=0.00004, total_steps=100000
-	if step < 0:
-		return 0.
-	if step < total_steps:
-		return np.linspace(start_lr, stop_lr, num=total_steps)[step]
-	return stop_lr

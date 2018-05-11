@@ -32,13 +32,13 @@ import subprocess
 ################################################################################
 """
 
-for run in range(5):
+for run in range(1):
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
-			  " -experiment_name "  			+ 'debug_new_version' + \
+			  " -experiment_name "  			+ 'debug_sgdm_smooth_decay' + \
 			  " -spec_name "        			+ 'spec_one' + \
-			  " -run "              			+ '2' + \
+			  " -run "              			+ '3' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
@@ -47,10 +47,14 @@ for run in range(5):
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'Adam' + \
+			  " -optimizer "            		+ 'Momentum' + \
 			  " -lr "               			+ '0.001' + \
-			  " -lr_step_ep "           		+ '0' + \
-			  " -lr_step_multi "        		+ '1' + \
+			  " -lr_schedule_type "            	+ 'decay' + \
+			  " -lr_decay "            			+ '0.00004' + \
+			  " -lr_lin_min "            		+ '0.0004' + \
+			  " -lr_lin_steps "            		+ '60000' + \
+			  " -lr_step_ep "           		+ '200 250 300' + \
+			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
 			  " -use_wd "        				+ 'False' + \
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -create_val_set "				+ 'True' + \
@@ -64,7 +68,7 @@ for run in range(5):
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'False' + \
-			  " -walltime "						+ '12' + \
+			  " -walltime "						+ '12.0' + \
 			  " -create_checkpoints "			+ 'True' + \
 			  " -epochs_between_checkpoints "	+ '8' + \
 			  " -save_af_weights_at_test_mb "	+ 'True' + \
