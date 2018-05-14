@@ -74,11 +74,22 @@ def get_command(experiment_name, spec_name, run):
 		changes_dict["network"] = 'smcnLin'
 	if 'smcnc_' in spec_name:
 		changes_dict["network"] = 'smcnDeep'
-	if '_sgdm_' in spec_name:
-		changes_dict["n_minibatches"] = '70000'
+	if '_sgdm_l_' in spec_name:
 		changes_dict["optimizer"] = 'Momentum'
 		changes_dict["lr"] = '0.01'
 		changes_dict["lr_schedule_type"] = 'linear'
+		changes_dict["lr_lin_min"] = '0.0004'
+		changes_dict["lr_lin_step"] = '60000'
+	if '_sgdm_d1_' in spec_name:
+		changes_dict["optimizer"] = 'Momentum'
+		changes_dict["lr"] = '0.01'
+		changes_dict["lr_schedule_type"] = 'decay'
+		changes_dict["lr_decay"] = '0.0003'
+	if '_sgdm_d2_' in spec_name:
+		changes_dict["optimizer"] = 'Momentum'
+		changes_dict["lr"] = '0.01'
+		changes_dict["lr_schedule_type"] = 'decay'
+		changes_dict["lr_decay"] = '0.00003'
 	# I
 	if '_I' in spec_name and not '_alpha_I' in spec_name:
 		pass
@@ -283,23 +294,11 @@ def create_scheduler_csv(spec_list, n_runs, experiment_name, path_relative='/2_s
 def get_settings():
 	scheduling_subfolder = '/2_scheduling/'
 	experiment_path = '/3_output_cifar/'
-	experiment_name = 'ASC_main'                                                # change when swapping between deployed and development folders
-	spec_list = ['smcn_adam_c10_I',
-				 'smcn_adam_c10_alpha_I',
-				 'smcn_adam_c10_relu',
-				 'smcn_adam_c10_alpha_relu',
-				 'smcn_adam_c10_tanh',
-				 'smcn_adam_c10_alpha_tanh',
-				 'smcn_adam_c10_elu',
-				 'smcn_adam_c10_alpha_elu',
-				 'smcn_adam_c10_selu',
-				 'smcn_adam_c10_alpha_selu',
-				 'smcn_adam_c10_swish',
-				 'smcn_adam_c10_alpha_swish',
-				 'smcn_adam_c10_ABU_TERIS',
-				 'smcn_adam_c10_ABU_N_TERIS',
-				 'smcn_adam_c10_ABU_P_TERIS']
-	n_runs = 30
+	experiment_name = 'ASC_test_lr_schedule'                                    # change when swapping between deployed and development folders
+	spec_list = ['smcn_sgdm_l_c10_relu',
+				 'smcn_sgdm_d1_c10_relu',
+				 'smcn_sgdm_d2_c10_relu']
+	n_runs = 10
 	gridjob_command = 'qsub 2_scheduling/advanced_scheduler_gridjob.sh'
 	return scheduling_subfolder, experiment_path, experiment_name, spec_list, n_runs, gridjob_command
 
@@ -322,7 +321,7 @@ if __name__ == '__main__':
 
 	# AT THE END OF GRIDJOB, RESCHEDULE GRIDJOB
 	if len(sys.argv) > 1:
-		if int(sys.argv[1]) == 100 and n_unfinished_runs > 0:
+		if int(sys.argv[1]) == 10 and n_unfinished_runs > 0:
 			os.system(gridjob_command)
 
 	if spec_csv_idx == -1 and run == -1:

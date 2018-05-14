@@ -1,0 +1,4 @@
+ASC_test_lr_schedule;run_1;run_2;run_3;run_4;run_5;run_6;run_7;run_8;run_9;run_10
+smcn_sgdm_l_c10_relu;;running 1526323178.386532;;running 1526323179.4672472;;;running 1526323178.5906553;;;running 1526323178.8662758
+smcn_sgdm_d1_c10_relu;;;running 1526323178.5082083;running 1526323178.8262584;running 1526323178.4539177;;;;running 1526323178.4279647;running 1526323178.2546666
+smcn_sgdm_d2_c10_relu;;;;;;running 1526323178.7831502;;;;

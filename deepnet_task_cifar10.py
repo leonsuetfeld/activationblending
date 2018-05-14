@@ -661,7 +661,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 	# tf.set_random_seed(1)
 
 		# INITIALIZATION OF VARIABLES/ GRAPH, SAVER, SUMMARY WRITER
-		saver = tf.train.Saver()# , write_version=tf.train.SaverDef.V1)
+		saver = tf.train.Saver(max_to_keep=100)# , write_version=tf.train.SaverDef.V1)
 		sess.run(tf.global_variables_initializer()) # initialize all variables (must be done after the graph is constructed and the session is started)
 		merged_summary_op = tf.summary.merge_all()
 		if TaskSettings.write_summary:
