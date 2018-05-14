@@ -1,6 +1,6 @@
 #!/bin/bash
-#$ -N ASC_test                                                                  # change when swapping between deployed and development folders
-#$ -wd /net/store/ni/users/lsuetfel/activations/                                # change when swapping between deployed and development folders
+#$ -N ASC_main                                                                  # change when swapping between deployed and development folders
+#$ -wd /net/store/ni/users/lsuetfel/activations_grid/                           # change when swapping between deployed and development folders
 ##$ -cwd
 #$ -l h_rt=01:29:59
 #$ -l mem=6G
@@ -12,17 +12,17 @@
 #$ -l cuda_driver=8000.000000
 #$ -l cuda_cores=640
 ##$ -l h=*cippy*
-#$ -l h=!*picture*&!*isonoe*
+#$ -l h=!*picture*&!*isonoe*&!*kalyke*
 #$ -t 1:100
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y
-#$ -o /net/store/ni/users/lsuetfel/activations/3_gridjob_outfiles/              # change when swapping between deployed and development folders
+#$ -o /net/store/ni/users/lsuetfel/activations_grid/3_gridjob_outfiles/         # change when swapping between deployed and development folders
 
 # definition of commands for later execution
 UVENV="source venvtfgpu/bin/activate"
 UAPP="python3"
-UCWD="/net/store/ni/users/lsuetfel/activations/2_scheduling/"                   # change when swapping between deployed and development folders
+UCWD="/net/store/ni/users/lsuetfel/activations_grid/2_scheduling/"              # change when swapping between deployed and development folders
 UMCR="advanced_scheduler.py"
 
 # write header for return files

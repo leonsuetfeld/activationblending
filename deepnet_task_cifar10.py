@@ -158,23 +158,24 @@ class Paths(object):
 		self.train_set_gcn_zca = self.relative+'1_data_cifar10/train_set_gcn_zca/'
 		self.test_set_gcn_zca = self.relative+'1_data_cifar10/test_set_gcn_zca/'
 		self.sample_images = self.relative+'1_data_cifar10/samples/'
-		# save paths
+		# save paths (experiment level)
 		self.experiment = self.relative+'3_output_cifar/'+str(TaskSettings.experiment_name)+'/'
-		self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
-		self.experiment_spec_run = self.experiment_spec+'run_'+str(TaskSettings.run)+'/'
-		# batch 1 (necessary in runs)
-		self.info_files = self.experiment_spec_run
-		self.recorder_files = self.experiment_spec_run
-		self.incomplete_run_info = self.experiment_spec_run
-		self.run_learning_curves = self.experiment_spec_run
-		self.run_datasets = self.experiment_spec_run+'datasets/'				# corresponds to TaskSettings.keep_train_val_datasets
-		self.models = self.experiment_spec_run+'models/'						# corresponds to TaskSettings.save_models
-		# batch 2 (analysis, debugging)
 		self.af_weight_dicts = self.experiment+'0_af_weights/' 					# corresponds to TaskSettings.save_af_weights
 		self.all_weight_dicts = self.experiment+'0_all_weights/' 			 	# corresponds to TaskSettings.save_weights
 		self.analysis = self.experiment+'0_analysis/'							# path for analysis files, not used during training
 		self.summaries = self.experiment+'0_summaries/'							# corresponds to TaskSettings.keep_train_val_datasets
 		self.chrome_tls = self.experiment+'0_chrome_timelines/' 				# corresponds to TaskSettings.run_tracer
+		# save paths (spec / run level)
+		if TaskSettings.mode != 'analysis':
+			self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
+			self.experiment_spec_run = self.experiment_spec+'run_'+str(TaskSettings.run)+'/'
+			# sub-paths (run level)
+			self.info_files = self.experiment_spec_run
+			self.recorder_files = self.experiment_spec_run
+			self.incomplete_run_info = self.experiment_spec_run
+			self.run_learning_curves = self.experiment_spec_run
+			self.run_datasets = self.experiment_spec_run+'datasets/'				# corresponds to TaskSettings.keep_train_val_datasets
+			self.models = self.experiment_spec_run+'models/'						# corresponds to TaskSettings.save_models
 
 # ##############################################################################
 # ### DATA HANDLER #############################################################
@@ -714,7 +715,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 		# save overview of the run as a txt file
 		aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 
-		if TaskSettings.create_val_set:
+		if TaskSettings.create_val_set and Rec.mb_count_total == 0:
 			validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec)
 
 		while n_minibatches_remaining > 0 and Timer.session_shut_down == False:

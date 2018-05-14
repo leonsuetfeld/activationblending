@@ -39,8 +39,8 @@ for run in range(1):
 			  " -experiment_name "  			+ 'debug_sgdm_smooth_decay' + \
 			  " -spec_name "        			+ 'spec_one' + \
 			  " -run "              			+ '3' + \
-			  " -task="             			+ 'cifar100' + \
-			  " -preprocessing="				+ 'none' +\
+			  " -task="             			+ 'cifar10' + \
+			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '20000' + \

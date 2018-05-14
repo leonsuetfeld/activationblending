@@ -23,11 +23,11 @@ from matplotlib import cm
 import matplotlib.mlab as mlab
 
 def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
-	experiment_name = Paths.exp_folder.split('/')[-2]
+	experiment_name = Paths.experiment.split('/')[-2]
 	# get spec spec names from their respective folder names
-	spec_list = [f for f in os.listdir(Paths.exp_folder) if (os.path.isdir(os.path.join(Paths.exp_folder,f)) and not f.startswith('_'))]
+	spec_list = [f for f in os.listdir(Paths.experiment) if (os.path.isdir(os.path.join(Paths.experiment,f)) and not f.startswith('0_'))]
 	# put the pieces together and call spec_analysis() for each spec of the experiment
-	spec_name_list, n_runs_list, mb_list, early_stopping_mb_mean, early_stopping_mb_std = [], [], [], [], []
+	spec_name_list, n_runs_list, mb_list, test_earlys_mb_mean, test_earlys_mb_std = [], [], [], [], []
 	median_run_per_spec, best_run_per_spec, mean_run_per_spec, worst_run_per_spec, std_per_spec = [], [], [], [], []
 	t_min_per_spec, t_max_per_spec, t_median_per_spec, t_mean_per_spec, t_var_per_spec, t_std_per_spec = [], [], [], [], [], []
 	v_min_per_spec, v_max_per_spec, v_median_per_spec, v_mean_per_spec, v_var_per_spec, v_std_per_spec = [], [], [], [], [], []
@@ -36,15 +36,15 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 	print('================================================================================================================================================================================================================')
 	spec_list_filtered = [] # will only contain specs that actually have completed runs
 	for spec_name in spec_list:
-		path = Paths.exp_folder+spec_name+'/'+Paths.performance_sub
-		spec_perf_dict = spec_analysis(TaskSettings, Paths, spec_name=spec_name, perf_files_path=path, make_plot=True)
+		spec_path = Paths.experiment+spec_name+'/'
+		spec_perf_dict = spec_analysis(TaskSettings, Paths, spec_name, spec_path, make_plot=True)
 		# general info about spec
 		if spec_perf_dict:
 			spec_list_filtered.append(spec_name)
 			spec_name_list.append(spec_perf_dict['spec_name'])
 			n_runs_list.append(spec_perf_dict['n_runs'])
-			early_stopping_mb_mean.append(spec_perf_dict['early_stopping_mb_mean'])
-			early_stopping_mb_std.append(spec_perf_dict['early_stopping_mb_std'])
+			test_earlys_mb_mean.append(spec_perf_dict['test_mb_n_mean'])
+			test_earlys_mb_std.append(spec_perf_dict['test_mb_n_std'])
 			# full runs for plotting
 			mb_list.append(spec_perf_dict['v_mb'])
 			median_run_per_spec.append(spec_perf_dict['v_top1_median_run'])
@@ -71,6 +71,7 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 			test_median_per_spec.append(spec_perf_dict['test_top1_median'])
 			test_var_per_spec.append(spec_perf_dict['test_top1_var'])
 			test_std_per_spec.append(spec_perf_dict['test_top1_std'])
+		print('[MESSAGE] spec analysis complete:', spec_name)
 	print('================================================================================================================================================================================================================')
 
 	# BIG FINAL PLOT
@@ -106,6 +107,7 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 		if not os.path.exists(savepath):
 			os.makedirs(savepath)
 		plt.savefig(savepath+plot_filename, dpi = 120, transparent=False, bbox_inches='tight')
+		plt.close()
 		print('[MESSAGE] file saved: %s (performance analysis plot for experiment "%s")' %(savepath+plot_filename, experiment_name))
 
 	# HUMAN READABLE TEXT FILE:
@@ -114,60 +116,62 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 		hrtf_filename = 'main_performance_analysis.csv'
 		with open(savepath+hrtf_filename, 'w') as csvfile:
 			writer = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			writer.writerow(['spec_name','n_runs', 'early stopping mb mean', 'early stopping mb std',
-							 't_top1_median','t_top1_mean','t_top1_var','t_top1_std','t_top1_max','t_top1_min',
-							 'v_top1_median','v_top1_mean','v_top1_var','v_top1_std','v_top1_max','v_top1_min',
-							 'test_top1_median','test_top1_mean','test_top1_var','test_top1_std','test_top1_max','test_top1_min'])
+			writer.writerow(['spec_name','n_runs', 'test / e.s. mb [mean]', 'test / e.s. mb [std]'
+							 'train acc [median]','train acc [mean]','train acc [var]','train acc [std]','train acc [max]','train acc [min]',
+							 'val acc [median]','val acc [mean]','val acc [var]','val acc [std]','val acc [max]','val acc [min]',
+							 'test acc [median]','test acc [mean]','test acc [var]','test acc [std]','test acc [max]','test acc [min]'])
 			for spec in range(len(spec_name_list)):
-				writer.writerow([spec_name_list[spec], n_runs_list[spec], early_stopping_mb_mean[spec], early_stopping_mb_std[spec],
+				writer.writerow([spec_name_list[spec], n_runs_list[spec], test_earlys_mb_mean[spec], test_earlys_mb_std[spec],
 								t_median_per_spec[spec], t_mean_per_spec[spec], t_var_per_spec[spec], t_std_per_spec[spec], t_max_per_spec[spec], t_min_per_spec[spec],
 								v_median_per_spec[spec], v_mean_per_spec[spec], v_var_per_spec[spec], v_std_per_spec[spec], v_max_per_spec[spec], v_min_per_spec[spec],
 								test_median_per_spec[spec], test_mean_per_spec[spec], test_var_per_spec[spec], test_std_per_spec[spec], test_max_per_spec[spec], test_min_per_spec[spec]])
 		print('[MESSAGE] file saved: %s (performance analysis csv for experiment "%s")' %(savepath+hrtf_filename, experiment_name))
 
-def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axis_2='af_weights', make_plot=False, return_loss=False):
+def spec_analysis(TaskSettings, Paths, spec_name, spec_path, axis_2='af_weights', make_plot=False, return_loss=False):
 	assert (axis_2 in ['af_weights', 'loss']) or axis_2 is None, 'axis_2 needs to be defined as None, \'af_weights\', or \'loss\'.'
 	analysis_savepath = Paths.analysis
-	if spec_name is None:
-		spec_name = TaskSettings.spec_name
-
 	# get list of all performance files (pickle dicts) within a spec
-	if perf_files_path == None:
-		perf_files_path = Paths.performance
-	perf_files_list = []
-	if os.path.isdir(perf_files_path):
-		perf_files_list = [f for f in os.listdir(perf_files_path) if (os.path.isfile(os.path.join(perf_files_path, f)) and ('.pkl' in f) and not ('test_performance_' in f))]
+	rec_files_list = []
+	if os.path.isdir(spec_path):
+		run_folder_list = [f for f in os.listdir(spec_path) if (os.path.isdir(os.path.join(spec_path, f)) and ('run_' in f))]
+		for run_folder in run_folder_list:
+			run_dir = os.path.join(spec_path, run_folder)+'/'
+			relative_path_perf_file = [f for f in os.listdir(run_dir) if (('.pkl' in f) and ('record' in f)) ]
+			if len(relative_path_perf_file) > 1:
+				print('[WARNING] more than one record file found in %s. Using first file (%s).' %(run_dir, relative_path_perf_file[0]))
+			if len(relative_path_perf_file) > 0:
+				rec_files_list.append(os.path.join(run_dir, relative_path_perf_file[0]))
 
 	# prepare extraction from dicts
-	afw_hist_store, run_number_store, early_stopping_mb_store = [], [], []
+	afw_hist_store, run_number_store = [], []
 	train_mb_n_hist_store, train_top1_hist_store, train_loss_hist_store = [], [], []
 	val_mb_n_hist_store, val_top1_hist_store, val_loss_hist_store = [], [], []
-	test_top1_store, test_loss_store = [], []
+	test_mb_n_hist_store, test_top1_store, test_loss_store = [], [], []
 
 	# criteria for exclusion: incomplete runs. this section makes a list of all completed runs
 	n_val_samples_list = []
-	for run_file in perf_files_list:
-		rec_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
-		run_number = int(run_file.split('run_')[1].split('.')[0])
+	for rec_file in rec_files_list:
+		rec_dict = pickle.load( open( rec_file, "rb" ) )
+		run_number = int(rec_file.split('/')[-2].split('run_')[-1])
 		n_val_samples = len(rec_dict['val_mb_n_hist'])
 		n_val_samples_list.append(n_val_samples)
 	if len(n_val_samples_list) > 0:
 		run_length = np.max(n_val_samples_list)
 	complete_runs = []
-	for run_file in perf_files_list:
-		rec_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
-		run_number = int(run_file.split('run_')[1].split('.')[0])
-		if len(rec_dict['test_top1'])> 0: # put 'if len(rec_dict['val_mb_n_hist']) == run_length:' for runs without test
-			complete_runs.append(run_file)
-
+	for rec_file in rec_files_list:
+		if os.path.getsize(rec_file) > 0:
+			rec_dict = pickle.load( open( rec_file, "rb" ) )
+			run_number = int(rec_file.split('/')[-2].split('run_')[-1])
+			if len(rec_dict['test_top1'])> 0: # put 'if len(rec_dict['val_mb_n_hist']) == run_length:' for runs without test
+				complete_runs.append(rec_file)
 	if len(complete_runs) == 0:
 		print('[WARNING] No complete run found for spec %s' %(spec_name))
 		return {}
 
 	# extract data from files
-	for run_file in complete_runs:
-		rec_dict = pickle.load( open( perf_files_path+run_file, "rb" ) )
-		run_number = int(run_file.split('run_')[1].split('.')[0])
+	for rec_file in complete_runs:
+		rec_dict = pickle.load( open( rec_file, "rb" ) )
+		run_number = int(rec_file.split('/')[-2].split('run_')[-1])
 		n_val_samples = len(rec_dict['val_mb_n_hist'])
 		run_val_mean = np.mean(rec_dict['val_top1_hist'])
 		test_t1 = rec_dict['test_top1'][0]
@@ -180,13 +184,18 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 			train_mb_n_hist_store.append(np.array(rec_dict['train_mb_n_hist']))
 			train_top1_hist_store.append(np.array(rec_dict['train_top1_hist']))
 			train_loss_hist_store.append(np.array(rec_dict['train_loss_hist']))
-			val_mb_n_hist_store.append(np.array(rec_dict['val_mb_n_hist']))
-			val_top1_hist_store.append(np.array(rec_dict['val_top1_hist']))
-			val_loss_hist_store.append(np.array(rec_dict['val_loss_hist']))
+			test_mb_n_hist_store.append(rec_dict['test_mb_n_hist'])
 			test_loss_store.append(rec_dict['test_loss'])
 			test_top1_store.append(rec_dict['test_top1'])
 			run_number_store.append(run_number)
-			early_stopping_mb_store.append(rec_dict['early_stopping_mb_hist'])
+			# special treatment for validation data: remove double mb counts from initial validation after restore
+			vmb_hist = rec_dict['val_mb_n_hist']
+			vt1_hist = rec_dict['val_top1_hist']
+			vlo_hist = rec_dict['val_loss_hist']
+			vmb_hist, vt1_hist, vlo_hist = remove_double_logs(vmb_hist, vt1_hist, vlo_hist)
+			val_mb_n_hist_store.append(np.array(vmb_hist))
+			val_top1_hist_store.append(np.array(vt1_hist))
+			val_loss_hist_store.append(np.array(vlo_hist))
 
 	# if more than one run was done in this spec, build spec performance summary dict
 	v_run_max_list = []
@@ -295,12 +304,12 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 							'test_top1_std': np.std(test_top1_store),
 
 							# early stopping minibatches
-							'early_stopping_mb_list': early_stopping_mb_store,
-							'early_stopping_mb_min': np.amin(early_stopping_mb_store),
-							'early_stopping_mb_max': np.amax(early_stopping_mb_store),
-							'early_stopping_mb_mean': np.mean(early_stopping_mb_store),
-							'early_stopping_mb_median': np.median(early_stopping_mb_store),
-							'early_stopping_mb_std': np.std(early_stopping_mb_store) }
+							'test_mb_n_hist': test_mb_n_hist_store,
+							'test_mb_n_min': np.amin(test_mb_n_hist_store),
+							'test_mb_n_max': np.amax(test_mb_n_hist_store),
+							'test_mb_n_mean': np.mean(test_mb_n_hist_store),
+							'test_mb_n_median': np.median(test_mb_n_hist_store),
+							'test_mb_n_std': np.std(test_mb_n_hist_store) }
 
 		# save dict as pickle file
 		if not os.path.exists(analysis_savepath):
@@ -337,6 +346,7 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 			if not os.path.exists(analysis_savepath):
 				os.makedirs(analysis_savepath)
 			plt.savefig(analysis_savepath+filename, dpi = 120, transparent=False, bbox_inches='tight')
+			plt.close()
 			print('[MESSAGE] file saved: %s (performance analysis plot for spec "%s")' %(spec_name, analysis_savepath+filename))
 
 	# if validation was done and more than one run was done in this spec, make spec plot
@@ -379,10 +389,20 @@ def spec_analysis(TaskSettings, Paths, spec_name=None, perf_files_path=None, axi
 			if not os.path.exists(analysis_savepath):
 				os.makedirs(analysis_savepath)
 			plt.savefig(analysis_savepath+filename, dpi = 120, transparent=False, bbox_inches='tight')
+			plt.close()
 			print('[MESSAGE] file saved: %s (performance analysis plot for spec "%s")' %(spec_name, analysis_savepath+filename))
 
 	# return spec_perf_dict
 	return spec_perf_dict
+
+def remove_double_logs(vmb_hist, vt1_hist, vlo_hist):
+	vmb_new, vt1_new, vlo_new = [], [], []
+	for i in range(len(vmb_hist)):
+		if not vmb_hist[i] in vmb_new:
+			vmb_new.append(vmb_hist[i])
+			vt1_new.append(vt1_hist[i])
+			vlo_new.append(vlo_hist[i])
+	return vmb_new, vt1_new, vlo_new
 
 def get_statistics(data_array):
 	# function gets a all full runs of a spec (train / val) and returns stats. do not use this for single values as in test.
