@@ -162,8 +162,10 @@ def spec_analysis(TaskSettings, Paths, spec_name, spec_path, axis_2='af_weights'
 		if os.path.getsize(rec_file) > 0:
 			rec_dict = pickle.load( open( rec_file, "rb" ) )
 			run_number = int(rec_file.split('/')[-2].split('run_')[-1])
-			if len(rec_dict['test_top1'])> 0: # put 'if len(rec_dict['val_mb_n_hist']) == run_length:' for runs without test
+			if len(rec_dict['test_top1']) > 0: # put 'if len(rec_dict['val_mb_n_hist']) == run_length:' for runs without test
 				complete_runs.append(rec_file)
+			else:
+				print('[WARNING] spec %s run %i found to be incomplete (no test accuracy data found), excluded from analysis.'%(spec_name, run_number))
 	if len(complete_runs) == 0:
 		print('[WARNING] No complete run found for spec %s' %(spec_name))
 		return {}

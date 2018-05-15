@@ -352,7 +352,7 @@ if __name__ == '__main__':
 
 	if n_unfinished_runs == 0:
 		print('[MESSAGE] Experiment already complete. Please check if %s.csv shows every run to be finished.' %(scheduling_subfolder+experiment_name))
-	else:
+	elif run > 0:
 		print('\n=================================================================================================================================================================================')
 		print('SCHEDULING: EXPERIMENT "%s" / SPEC "%s" / RUN "%i"' %(experiment_name, spec_list[spec_csv_idx-1], run))
 		print('=================================================================================================================================================================================\n')
