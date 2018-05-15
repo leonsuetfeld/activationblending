@@ -90,6 +90,20 @@ def get_command(experiment_name, spec_name, run):
 		changes_dict["lr"] = '0.01'
 		changes_dict["lr_schedule_type"] = 'decay'
 		changes_dict["lr_decay"] = '0.00003'
+	if '_sgdm_d3_' in spec_name:
+		changes_dict["optimizer"] = 'Momentum'
+		changes_dict["lr"] = '0.01'
+		changes_dict["lr_schedule_type"] = 'decay'
+		changes_dict["lr_decay"] = '0.00001'
+	if '_sgdm_d4_' in spec_name:
+		changes_dict["optimizer"] = 'Momentum'
+		changes_dict["lr"] = '0.01'
+		changes_dict["lr_schedule_type"] = 'decay'
+		changes_dict["lr_decay"] = '0.000001'
+	if '_sgdm_c_' in spec_name:
+		changes_dict["optimizer"] = 'Momentum'
+		changes_dict["lr"] = '0.01'
+		changes_dict["lr_schedule_type"] = 'constant'
 	# I
 	if '_I' in spec_name and not '_alpha_I' in spec_name:
 		pass
@@ -297,7 +311,10 @@ def get_settings():
 	experiment_name = 'ASC_test_lr_schedule'                                    # change when swapping between deployed and development folders
 	spec_list = ['smcn_sgdm_l_c10_relu',
 				 'smcn_sgdm_d1_c10_relu',
-				 'smcn_sgdm_d2_c10_relu']
+				 'smcn_sgdm_d2_c10_relu',
+				 'smcn_sgdm_d3_c10_relu',
+				 'smcn_sgdm_d4_c10_relu',
+				 'smcn_sgdm_c_c10_relu']
 	n_runs = 10
 	gridjob_command = 'qsub 2_scheduling/advanced_scheduler_gridjob.sh'
 	return scheduling_subfolder, experiment_path, experiment_name, spec_list, n_runs, gridjob_command

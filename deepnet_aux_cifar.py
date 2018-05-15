@@ -116,7 +116,7 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
 		hrtf_filename = 'main_performance_analysis.csv'
 		with open(savepath+hrtf_filename, 'w') as csvfile:
 			writer = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			writer.writerow(['spec_name','n_runs', 'test / e.s. mb [mean]', 'test / e.s. mb [std]'
+			writer.writerow(['spec_name','n_runs', 'test / e.s. mb [mean]', 'test / e.s. mb [std]',
 							 'train acc [median]','train acc [mean]','train acc [var]','train acc [std]','train acc [max]','train acc [min]',
 							 'val acc [median]','val acc [mean]','val acc [var]','val acc [std]','val acc [max]','val acc [min]',
 							 'test acc [median]','test acc [mean]','test acc [var]','test acc [std]','test acc [max]','test acc [min]'])
