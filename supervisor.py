@@ -37,13 +37,13 @@ for run in range(1):
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
 			  " -experiment_name "  			+ 'debug_normalization' + \
-			  " -spec_name "        			+ 'ABU_N' + \
+			  " -spec_name "        			+ 'ABU_P' + \
 			  " -run "              			+ '1' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '10000' + \
+			  " -n_minibatches "    			+ '1000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -66,7 +66,7 @@ for run in range(1):
 			  " -safe_af_ws_n "  				+ '10' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
-			  " -blend_mode "       			+ 'normalized' + \
+			  " -blend_mode "       			+ 'posnormed' + \
 			  " -swish_beta_trainable " 		+ 'True' + \
 			  " -walltime "						+ '1000.0' + \
 			  " -create_checkpoints "			+ 'True' + \

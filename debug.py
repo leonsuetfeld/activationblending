@@ -424,23 +424,17 @@ def plot_ABU2(mean_alphas_C10, mean_swish_beta_C10, mean_alphas_C100, mean_swish
 path_finalweights = './3_output_cifar/debug_normalization/0_af_weights/'
 
 # get files from folder
-mb_step = 10000
-blend5n_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_N_' in f) and ('_mb_'+str(mb_step) in f))]
-print('- created list of ABU_N final weight files at minibatche %i (%i runs in total)' %(mb_step, len(blend5n_fw_files)))
-# blend5p_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_P_' in f) and ('_mb_'+str(mb_step) in f))]
-# print('- created list of ABU_P final weight files at minibatche %i (%i runs in total)' %(mb_step, len(blend5p_fw_files)))
-
-print(blend5n_fw_files)
+blend5n_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_N_' in f) and ('_mb_1000' in f))]
+print('- created list of ABU_N final weight files at minibatch X (%i runs in total)' %(len(blend5n_fw_files)))
+blend5p_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_P_' in f) and ('_mb_1000' in f))]
+print('- created list of ABU_P final weight files at minibatch Y (%i runs in total)' %(len(blend5p_fw_files)))
 
 # extract weights from files
 blend5n_wd, blend5n_swishbeta = smcn_extract_weights(path_finalweights, blend5n_fw_files)
-# blend5p_wd, blend5p_swishbeta = smcn_extract_weights(path_finalweights, blend5p_fw_files)
-
-for key, value in blend5n_wd.items():
-    print(key, value)
+blend5p_wd, blend5p_swishbeta = smcn_extract_weights(path_finalweights, blend5p_fw_files)
 
 # print mean and std for all weights
 smcn_print_mean_std(blend5n_wd, 'ABU_N-TERIS alpha')
 smcn_print_mean_std(blend5n_swishbeta, 'ABU_N-TERIS SwB')
-# smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
-# smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')
+smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
+smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')

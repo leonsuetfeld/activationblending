@@ -733,14 +733,22 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 			# different options w.r.t. summaries and tracer
 			if TaskSettings.write_summary:
 				if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
-					_, _, loss, top1, summary = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+					# _, _, loss, top1, summary = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+					_, loss, top1, summary = sess.run([Network.update, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+					_ = sess.run([Network.normalize_bw])
 				else:
-					_, _, loss, top1, summary = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict)
+					# _, _, loss, top1, summary = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict)
+					_, loss, top1, summary = sess.run([Network.update, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict)
+					_ = sess.run([Network.normalize_bw])
 			else:
 				if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
-					_, _, loss, top1 = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+					# _, _, loss, top1 = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+					_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+					_ = sess.run([Network.normalize_bw])
 				else:
-					_, _, loss, top1 = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1], feed_dict = input_dict)
+					# _, _, loss, top1 = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1], feed_dict = input_dict)
+					_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict)
+					_ = sess.run([Network.normalize_bw])
 
 			# WRITE SUMMARY AND TRACER FILE
 			if TaskSettings.write_summary:

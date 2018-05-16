@@ -112,10 +112,7 @@ class Network(object):
 		self.NetSettings = NetSettings
 		self.Paths = Paths
 		# --- input  --------------------------------------------------
-		if NetSettings.pre_processing == 'old':
-			self.X = tf.placeholder(tf.float32, [NetSettings.minibatch_size, 3072], name='images') # old way, remove once new way provides same results
-		else:
-			self.X = tf.placeholder(tf.float32, [NetSettings.minibatch_size, 32,32,3], name='images')
+		self.X = tf.placeholder(tf.float32, [NetSettings.minibatch_size, 32,32,3], name='images')
 		self.Y = tf.placeholder(tf.int64, [None], name='labels')
 		self.lr = tf.placeholder(tf.float32, name='learning_rate')
 		self.dropout_keep_prob = tf.placeholder(tf.float32, [None], name='dropout_keep_prob')
@@ -185,10 +182,10 @@ class Network(object):
 			for layer, bw_vector_name in enumerate(bw_vector_names):
 				if NetSettings.blend_mode == 'normalized':
 					blend_weights = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name==bw_vector_name][0]
-					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.norm(blend_weights, keep_dims=True)))
+					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.reduce_sum(blend_weights, keep_dims=True)))
 				elif NetSettings.blend_mode == 'posnormed':
 					blend_weights = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name==bw_vector_name][0]
-					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.norm(tf.clip_by_value(blend_weights, 0.0, 10.0), keep_dims=True)))
+					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.reduce_sum(tf.clip_by_value(blend_weights, 0.0, 10.0), keep_dims=True)))
 				else:
 					norm_op = tf.no_op
 				self.bw_normalizers.append(norm_op)
