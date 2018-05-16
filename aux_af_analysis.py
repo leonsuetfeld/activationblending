@@ -259,7 +259,7 @@ def plot_all_runs_alphas(af_dict, title, saveplot_path, saveplot_filename, af_di
     plt.close()
 
 def plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means, title, saveplot_path, saveplot_filename, ylim=[-0.4,0.8], swish_betas_by_layers_means=np.array([0])):
-    linewidth_default = '3'
+    linewidth_default = '2'
     fig = plt.figure(figsize=(9,6))
     ax = fig.add_subplot(111)
     ax.plot([0,7],[1./5.,1./5.], '-', color='#000000', linewidth='1', alpha=0.5)
@@ -552,7 +552,7 @@ plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'final_sc
 # plot mean alpha over layers for adaptively scaled functions
 af_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd, swish_swishbeta]
 name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$', r'$\alpha Swish\ \beta$']
-plot_mean_alpha_by_layers(af_list, name_list, 'CIFAR10', './3_result_plots/', scaled_AFs_figname, includes_beta=True)
+plot_mean_alpha_by_layers(af_list, name_list, 'mean alphas ASU', './3_result_plots/', scaled_AFs_figname, includes_beta=True)
 
 # plot mean alpha over layers for adaptively scaled functions & plot resulting AFs:
 # ABU
