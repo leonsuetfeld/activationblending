@@ -347,8 +347,8 @@ def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, nor
             resulting_AF_layer_i_normed += af(x, 'identity')*norm_vec_alpha_layer_i[4]
         # plot AF
         ax = fig.add_subplot(1,6,layer_i+1)
-        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color=col, alpha=0.5)
-        plt.plot([0,0],[-100,100], '--', linewidth=1, color=col, alpha=0.5)
+        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color='black', alpha=0.5)
+        plt.plot([0,0],[-100,100], '--', linewidth=1, color='black', alpha=0.5)
         if add_normalized_weights:
             plt.plot(x,resulting_AF_layer_i, linewidth='3', color=col, alpha=0.3)
             plt.plot(x,resulting_AF_layer_i_normed, linewidth='3', color=col)
