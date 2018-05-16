@@ -172,10 +172,27 @@ class Network(object):
 			varlist = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
 			self.gradients = self.optimizer.compute_gradients(self.loss, var_list=varlist)
 			self.update = self.optimizer.apply_gradients(grads_and_vars=self.gradients)
+
 			for grad, var in self.gradients:
 				summary_label = var.name+'_gradient'
 				summary_label = summary_label.replace('/','_').replace(':','_')
 				variable_summaries(grad, summary_label)
+
+		# NORMALIZE BLEND WEIGHTS
+		with tf.name_scope('bw_normalizer'):
+			self.bw_normalizers = []
+			bw_vector_names = [v.name for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if 'blend_weight' in v.name]
+			for layer, bw_vector_name in enumerate(bw_vector_names):
+				if NetSettings.blend_mode == 'normalized':
+					blend_weights = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name==bw_vector_name][0]
+					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.norm(blend_weights, keep_dims=True)))
+				elif NetSettings.blend_mode == 'posnormed':
+					blend_weights = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name==bw_vector_name][0]
+					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.norm(tf.clip_by_value(blend_weights, 0.0, 10.0), keep_dims=True)))
+				else:
+					norm_op = tf.no_op
+				self.bw_normalizers.append(norm_op)
+			self.normalize_bw = tf.group(*self.bw_normalizers)
 
 	# ========================== NETWORK ARCHITECTURES =========================
 
@@ -476,15 +493,6 @@ class Network(object):
 			except Exception:
 				raise IOError('\n[ERROR] Couldn\'t restore predefined blend weights, stopping run.\n')
 		blend_weights = tf.get_variable("blend_weights", trainable=W_blend_trainable, initializer=af_weights_initializer)
-
-		# NORMALIZE BLEND WEIGHTS
-		if AF_blend_mode == 'unrestricted':
-			pass
-		elif AF_blend_mode == 'normalized':
-			blend_weights /= tf.reduce_sum(blend_weights)
-		elif AF_blend_mode == 'posnormed':
-			blend_weights = tf.clip_by_value(blend_weights, 0.0, 1.0)
-			blend_weights /= tf.reduce_sum(blend_weights)
 
 		# SWISH BLOCK
 		if 'swish' in AF_set:

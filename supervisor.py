@@ -36,20 +36,20 @@ for run in range(1):
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
-			  " -experiment_name "  			+ 'debug_sgdm_smooth_decay' + \
-			  " -spec_name "        			+ 'spec_one' + \
-			  " -run "              			+ '3' + \
+			  " -experiment_name "  			+ 'debug_normalization' + \
+			  " -spec_name "        			+ 'ABU_N' + \
+			  " -run "              			+ '1' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '20000' + \
+			  " -n_minibatches "    			+ '10000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
-			  " -optimizer "            		+ 'Momentum' + \
+			  " -optimizer "            		+ 'Adam' + \
 			  " -lr "               			+ '0.001' + \
-			  " -lr_schedule_type "            	+ 'decay' + \
+			  " -lr_schedule_type "            	+ 'constant' + \
 			  " -lr_decay "            			+ '0.00004' + \
 			  " -lr_lin_min "            		+ '0.0004' + \
 			  " -lr_lin_steps "            		+ '60000' + \
@@ -59,18 +59,18 @@ for run in range(1):
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -create_val_set "				+ 'True' + \
 			  " -val_set_fraction "				+ '0.05' + \
-			  " -af_set "           			+ '1_relu' +\
+			  " -af_set "           			+ '5_blend5_swish' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
 			  " -safe_af_ws_n "  				+ '10' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
-			  " -blend_mode "       			+ 'unrestricted' + \
-			  " -swish_beta_trainable " 		+ 'False' + \
-			  " -walltime "						+ '12.0' + \
+			  " -blend_mode "       			+ 'normalized' + \
+			  " -swish_beta_trainable " 		+ 'True' + \
+			  " -walltime "						+ '1000.0' + \
 			  " -create_checkpoints "			+ 'True' + \
-			  " -epochs_between_checkpoints "	+ '8' + \
+			  " -epochs_between_checkpoints "	+ '3' + \
 			  " -save_af_weights_at_test_mb "	+ 'True' + \
 			  " -save_all_weights_at_test_mb "	+ 'True' + \
 			  " -create_lc_on_the_fly "			+ 'True'

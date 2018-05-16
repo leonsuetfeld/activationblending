@@ -421,144 +421,26 @@ def plot_ABU2(mean_alphas_C10, mean_swish_beta_C10, mean_alphas_C100, mean_swish
 # ### SCRIPT CIFAR 10 ##########################################################
 # ##############################################################################
 
-path_finalweights = './3_output_cifar/ASC_main/0_af_weights/'
-scaled_AFs_figname = 'smcn_c10_adam_mean_alphas_ASU.png'
-
-ABU_figname = 'smcn_c10_adam_mean_alphas_ABU.png'
-ABU_N_figname = 'smcn_c10_adam_mean_alphas_ABU_N.png'
-ABU_P_figname = 'smcn_c10_adam_mean_alphas_ABU_P.png'
-
-ABU_AF_figname = 'smcn_c10_adam_resulting_AFs_ABU.png'
-ABU_N_AF_figname = 'smcn_c10_adam_resulting_AFs_ABU_N.png'
-ABU_P_AF_figname = 'smcn_c10_adam_resulting_AFs_ABU_P.png'
-
-ABU_AF_norm_figname = 'smcn_c10_adam_resulting_AFnormed_ABU.png'
+path_finalweights = './3_output_cifar/debug_normalization/0_af_weights/'
 
 # get files from folder
-mb_step = 60000
-mb_step_2 = 6103
-mb_step_3 = 1018
-linu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_alpha_I_' in f) and ('_mb_'+str(mb_step) in f))]
-linu_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_alpha_I_' in f) and ('_mb_'+str(mb_step_2) in f))]
-linu_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_alpha_I_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of linu final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(linu_fw_files)))
-tanh_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_tanh_' in f) and ('_mb_'+str(mb_step) in f))]
-tanh_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_tanh_' in f) and ('_mb_'+str(mb_step_2) in f))]
-tanh_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_tanh_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of tanh final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(tanh_fw_files)))
-relu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_relu_' in f) and ('_mb_'+str(mb_step) in f))]
-relu_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_relu_' in f) and ('_mb_'+str(mb_step_2) in f))]
-relu_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_relu_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of relu final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(relu_fw_files)))
-elu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_elu_' in f) and ('_mb_'+str(mb_step) in f))]
-elu_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_elu_' in f) and ('_mb_'+str(mb_step_2) in f))]
-elu_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_elu_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of elu final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(elu_fw_files)))
-selu_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_selu_' in f) and ('_mb_'+str(mb_step) in f))]
-selu_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_selu_' in f) and ('_mb_'+str(mb_step_2) in f))]
-selu_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_selu_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of selu final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(selu_fw_files)))
-swish_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_swish_' in f) and ('_mb_'+str(mb_step) in f))]
-swish_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_swish_' in f) and ('_mb_'+str(mb_step_2) in f))]
-swish_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('alpha_swish_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of swish final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(swish_fw_files)))
-blend5u_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_TERIS_' in f) and ('_mb_'+str(mb_step) in f))]
-blend5u_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_TERIS_' in f) and ('_mb_'+str(mb_step_2) in f))]
-blend5u_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_TERIS_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of ABU final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(blend5u_fw_files)))
-blend5n_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_N_TERIS_' in f) and ('_mb_'+str(mb_step) in f))]
-blend5n_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_N_TERIS_' in f) and ('_mb_'+str(mb_step_2) in f))]
-blend5n_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_N_TERIS_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of ABU_N final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(blend5n_fw_files)))
-blend5p_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_P_TERIS_' in f) and ('_mb_'+str(mb_step) in f))]
-blend5p_fw_files_2 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_P_TERIS_' in f) and ('_mb_'+str(mb_step_2) in f))]
-blend5p_fw_files_3 = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_P_TERIS_' in f) and ('_mb_'+str(mb_step_3) in f))]
-print('- created list of ABU_P final weight files at minibatches %i, %i, and %i (%i runs in total)' %(mb_step, mb_step_2, mb_step_3, len(blend5p_fw_files)))
+mb_step = 10000
+blend5n_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_N_' in f) and ('_mb_'+str(mb_step) in f))]
+print('- created list of ABU_N final weight files at minibatche %i (%i runs in total)' %(mb_step, len(blend5n_fw_files)))
+# blend5p_fw_files = [f for f in os.listdir(path_finalweights) if (os.path.isfile(os.path.join(path_finalweights, f)) and ('.pkl' in f) and ('_ABU_P_' in f) and ('_mb_'+str(mb_step) in f))]
+# print('- created list of ABU_P final weight files at minibatche %i (%i runs in total)' %(mb_step, len(blend5p_fw_files)))
+
+print(blend5n_fw_files)
 
 # extract weights from files
-linu_wd, _ = smcn_extract_weights(path_finalweights, linu_fw_files)
-linu_wd_2, _ = smcn_extract_weights(path_finalweights, linu_fw_files_2)
-linu_wd_3, _ = smcn_extract_weights(path_finalweights, linu_fw_files_3)
-tanh_wd, _ = smcn_extract_weights(path_finalweights, tanh_fw_files)
-tanh_wd_2, _ = smcn_extract_weights(path_finalweights, tanh_fw_files_2)
-tanh_wd_3, _ = smcn_extract_weights(path_finalweights, tanh_fw_files_3)
-relu_wd, _ = smcn_extract_weights(path_finalweights, relu_fw_files)
-relu_wd_2, _ = smcn_extract_weights(path_finalweights, relu_fw_files_2)
-relu_wd_3, _ = smcn_extract_weights(path_finalweights, relu_fw_files_3)
-elu_wd, _ = smcn_extract_weights(path_finalweights, elu_fw_files)
-elu_wd_2, _ = smcn_extract_weights(path_finalweights, elu_fw_files_2)
-elu_wd_3, _ = smcn_extract_weights(path_finalweights, elu_fw_files_3)
-selu_wd, _ = smcn_extract_weights(path_finalweights, selu_fw_files)
-selu_wd_2, _ = smcn_extract_weights(path_finalweights, selu_fw_files_2)
-selu_wd_3, _ = smcn_extract_weights(path_finalweights, selu_fw_files_3)
-swish_wd, swish_swishbeta = smcn_extract_weights(path_finalweights, swish_fw_files)
-swish_wd_2, swish_swishbeta_2 = smcn_extract_weights(path_finalweights, swish_fw_files_2)
-swish_wd_3, swish_swishbeta_3 = smcn_extract_weights(path_finalweights, swish_fw_files_3)
-blend5u_wd, blend5u_swishbeta = smcn_extract_weights(path_finalweights, blend5u_fw_files)
-blend5u_wd_2, blend5u_swishbeta_2 = smcn_extract_weights(path_finalweights, blend5u_fw_files_2)
-blend5u_wd_3, blend5u_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5u_fw_files_3)
 blend5n_wd, blend5n_swishbeta = smcn_extract_weights(path_finalweights, blend5n_fw_files)
-blend5n_wd_2, blend5n_swishbeta_2 = smcn_extract_weights(path_finalweights, blend5n_fw_files_2)
-blend5n_wd_3, blend5n_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5n_fw_files_3)
-blend5p_wd, blend5p_swishbeta = smcn_extract_weights(path_finalweights, blend5p_fw_files)
-blend5p_wd_2, blend5p_swishbeta_2 = smcn_extract_weights(path_finalweights, blend5p_fw_files_2)
-blend5p_wd_3, blend5p_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5p_fw_files_3)
+# blend5p_wd, blend5p_swishbeta = smcn_extract_weights(path_finalweights, blend5p_fw_files)
+
+for key, value in blend5n_wd.items():
+    print(key, value)
 
 # print mean and std for all weights
-smcn_print_mean_std(linu_wd, 'alpha-I alpha')
-smcn_print_mean_std(tanh_wd, 'alpha-tanh alpha')
-smcn_print_mean_std(relu_wd, 'alpha-ReLU alpha')
-smcn_print_mean_std(elu_wd, 'alpha-ELU alpha')
-smcn_print_mean_std(selu_wd, 'alpha-SELU alpha')
-smcn_print_mean_std(swish_wd, 'alpha-Swish alpha')
-smcn_print_mean_std(swish_swishbeta, 'alpha-Swish beta')
-smcn_print_mean_std(blend5u_wd, 'ABU-TERIS alpha')
-smcn_print_mean_std(blend5u_swishbeta, 'ABU-TERIS SwB')
 smcn_print_mean_std(blend5n_wd, 'ABU_N-TERIS alpha')
 smcn_print_mean_std(blend5n_swishbeta, 'ABU_N-TERIS SwB')
-smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
-smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')
-
-# plot all alphas for individual AFs
-plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'final_scaling_weights_I_3.png', af_dict_2=linu_wd_2, af_dict_3=linu_wd_3)
-plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'final_scaling_weights_tanh_3.png', af_dict_2=tanh_wd_2, af_dict_3=tanh_wd_3) # ylim=[0.0,1.8]
-plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'final_scaling_weights_ReLU_3.png', af_dict_2=relu_wd_2, af_dict_3=relu_wd_3)
-plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'final_scaling_weights_ELU_3.png', af_dict_2=elu_wd_2, af_dict_3=elu_wd_3)
-plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'final_scaling_weights_SELU_3.png', af_dict_2=selu_wd_2, af_dict_3=selu_wd_3)
-plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'final_scaling_weights_Swish_3.png', af_dict_2=swish_wd_2, af_dict_3=swish_wd_3, beta=swish_swishbeta, beta_2=swish_swishbeta_2, beta_3=swish_swishbeta_3)
-
-# plot all alphas for individual AFs
-plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'final_scaling_weights_I_2.png', af_dict_2=linu_wd_2)
-plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'final_scaling_weights_tanh_2.png', af_dict_2=tanh_wd_2) # ylim=[0.0,1.8]
-plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'final_scaling_weights_ReLU_2.png', af_dict_2=relu_wd_2)
-plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'final_scaling_weights_ELU_2.png', af_dict_2=elu_wd_2)
-plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'final_scaling_weights_SELU_2.png', af_dict_2=selu_wd_2)
-plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'final_scaling_weights_Swish_2.png', af_dict_2=swish_wd_2, beta=swish_swishbeta, beta_2=swish_swishbeta_2)
-
-# plot all alphas for individual AFs
-plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'final_scaling_weights_I.png')
-plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'final_scaling_weights_tanh.png') # ylim=[0.0,1.8]
-plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'final_scaling_weights_ReLU.png')
-plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'final_scaling_weights_ELU.png')
-plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'final_scaling_weights_SELU.png')
-plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'final_scaling_weights_Swish.png', beta=swish_swishbeta)
-
-# plot mean alpha over layers for adaptively scaled functions
-af_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd, swish_swishbeta]
-name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$', r'$\alpha Swish\ \beta$']
-plot_mean_alpha_by_layers(af_list, name_list, 'CIFAR10', './3_result_plots/', scaled_AFs_figname, includes_beta=True)
-
-# plot mean alpha over layers for adaptively scaled functions & plot resulting AFs:
-# ABU
-ABU_AF_names, ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5u_wd, blend5u_swishbeta)
-plot_mean_alpha_by_layers_ABU(ABU_AF_names, ABU_afs_by_layers_means_C10, 'mean alphas ABU', './3_result_plots/', ABU_figname, swish_betas_by_layers_means=ABU_swish_betas_by_layers_means_C10, ylim=[-0.4,0.6])
-plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-1.5, 2.5])
-plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_AF_norm_figname, normalize_weights=True, ylim=[-1.5, 2.5])
-# ABU_N
-ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5n_wd, blend5n_swishbeta)
-plot_mean_alpha_by_layers_ABU(ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, 'mean alphas ABU_N', './3_result_plots/', ABU_N_figname, swish_betas_by_layers_means=ABU_N_swish_betas_by_layers_means_C10, ylim=[-0.6,2.0])
-plot_ABU(ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_N_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-1.5, 2.5])
-# ABU_P
-ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5p_wd, blend5p_swishbeta)
-plot_mean_alpha_by_layers_ABU(ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, 'mean alphas ABU_P', './3_result_plots/', ABU_P_figname, swish_betas_by_layers_means=ABU_P_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
-plot_ABU(ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_P_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-1.5, 2.5])
+# smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
+# smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')
