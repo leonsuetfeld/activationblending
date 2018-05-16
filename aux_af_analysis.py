@@ -98,12 +98,12 @@ def smcn_print_mean_std(input_dict, info):
     print('')
     if input_dict['conv1'].shape[1] > 1:
         print(info + '           [mean] (sum of means) [std]')
-        print(info + ' - conv1: ', np.mean(input_dict['conv1'], axis=0), '(sum:', np.sum(np.mean(input_dict['conv1'], axis=0)),')', np.std(input_dict['conv1'], axis=0))
-        print(info + ' - conv2: ', np.mean(input_dict['conv2'], axis=0), '(sum:', np.sum(np.mean(input_dict['conv2'], axis=0)),')', np.std(input_dict['conv2'], axis=0))
-        print(info + ' - conv3: ', np.mean(input_dict['conv3'], axis=0), '(sum:', np.sum(np.mean(input_dict['conv3'], axis=0)),')', np.std(input_dict['conv3'], axis=0))
-        print(info + ' - conv4: ', np.mean(input_dict['conv4'], axis=0), '(sum:', np.sum(np.mean(input_dict['conv4'], axis=0)),')', np.std(input_dict['conv4'], axis=0))
-        print(info + ' - dense5:', np.mean(input_dict['dense5'], axis=0), '(sum:', np.sum(np.mean(input_dict['dense5'], axis=0)),')', np.std(input_dict['dense5'], axis=0))
-        print(info + ' - dense6:', np.mean(input_dict['dense6'], axis=0), '(sum:', np.sum(np.mean(input_dict['dense6'], axis=0)),')', np.std(input_dict['dense6'], axis=0))
+        print(info + ' - conv1:  %s (sum: %.4f) | %s' %( str(np.mean(input_dict['conv1'], axis=0)), float(np.sum(np.mean(input_dict['conv1'], axis=0))), str(np.std(input_dict['conv1'], axis=0)) ))
+        print(info + ' - conv2:  %s (sum: %.4f) | %s' %( str(np.mean(input_dict['conv2'], axis=0)), float(np.sum(np.mean(input_dict['conv2'], axis=0))), str(np.std(input_dict['conv2'], axis=0)) ))
+        print(info + ' - conv3:  %s (sum: %.4f) | %s' %( str(np.mean(input_dict['conv3'], axis=0)), float(np.sum(np.mean(input_dict['conv3'], axis=0))), str(np.std(input_dict['conv3'], axis=0)) ))
+        print(info + ' - conv4:  %s (sum: %.4f) | %s' %( str(np.mean(input_dict['conv4'], axis=0)), float(np.sum(np.mean(input_dict['conv4'], axis=0))), str(np.std(input_dict['conv4'], axis=0)) ))
+        print(info + ' - dense5: %s (sum: %.4f) | %s' %( str(np.mean(input_dict['dense5'], axis=0)), float(np.sum(np.mean(input_dict['dense5'], axis=0))), str(np.std(input_dict['dense5'], axis=0)) ))
+        print(info + ' - dense6: %s (sum: %.4f) | %s' %( str(np.mean(input_dict['dense6'], axis=0)), float(np.sum(np.mean(input_dict['dense6'], axis=0))), str(np.std(input_dict['dense6'], axis=0)) ))
     else:
         print(info + '           mean    | std')
         print(info + ' - conv1:  %.5f | %.5f' %(np.mean(input_dict['conv1'], axis=0), np.std(input_dict['conv1'], axis=0)))
@@ -131,7 +131,7 @@ def plot_mean_alpha_by_layers(af_list, name_list, title, saveplot_path, saveplot
     if includes_beta:
         n_afs -= 1
     # figure
-    linewidth_default = '3'
+    linewidth_default = '2'
     fig = plt.figure(figsize=(9,6))
     ax = fig.add_subplot(111)
     ax.plot([0,7],[1,1], '-', color='#000000', linewidth='1', alpha=0.5)
@@ -144,9 +144,9 @@ def plot_mean_alpha_by_layers(af_list, name_list, title, saveplot_path, saveplot
     color_list = ['#66c2a5', '#fc8d62', '#8c9fcb', '#e78ac3', '#a5d853', '#b4b4b4', '#ffd82e', '#e4c494']
     x = np.arange(6)+1
     for af in range(n_afs):
-        ax.plot(x, afs_by_layers_means[af,:], linewidth=linewidth_default, color=color_list[af], label=name_list[af], alpha=1.0)
+        ax.plot(x, afs_by_layers_means[af,:], linewidth=linewidth_default, color=color_list[af], label=name_list[af], alpha=1.0, marker='.', markersize=12)
     if includes_beta:
-        ax.plot(x, afs_by_layers_means[-1,:], '--', linewidth=linewidth_default, color=color_list[af], label=name_list[n_afs], alpha=1.0)
+        ax.plot(x, afs_by_layers_means[-1,:], '--', linewidth=linewidth_default, color=color_list[af], label=name_list[n_afs], alpha=1.0, marker='.', markersize=12)
     ax.set_ylim([0.0,1.4])
     ax.set_xlim([0.8,6.2])
     ax.set_xticklabels(['','conv1','conv2','conv3','conv4','dense1','dense2'])
@@ -278,7 +278,7 @@ def plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means, title, saveplot
         ax2.set_ylim([0.0,1.3])
         ax2.set_xlim([0.8,6.2])
     for af in range(len(AF_names)):
-        ax.plot(x, afs_by_layers_means[:,af], linewidth=linewidth_default, color=color_list[af], label=AF_names[af], alpha=1.0)
+        ax.plot(x, afs_by_layers_means[:,af], linewidth=linewidth_default, color=color_list[af], label=AF_names[af], alpha=1.0, marker='.', markersize=14)
     ax.set_ylim(ylim)
     ax.set_xlim([0.8,6.2])
     ax.set_xticklabels(['','conv1','conv2','conv3','conv4','dense1','dense2'])
@@ -318,7 +318,7 @@ def get_mean_alphas_by_layers_ABU(weight_dict, swish_beta={}):
         swish_betas_by_layers_means[5] = np.mean(swish_beta['dense6'], axis=0)[0]
     return AF_names, afs_by_layers_means, swish_betas_by_layers_means
 
-def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, normalize_weights=False, add_normalized_weights=False, ylim=[-1.5, 2.5]):
+def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, normalize_weights=False, add_normalized_weights=False, ylim=[-1.5, 2.5], col='black'):
     mean_alphas = np.copy(mean_alphas)
     mean_swish_beta = np.copy(mean_swish_beta)
     assert mean_alphas.shape[0] == 6 and mean_alphas.shape[1] == 5, 'got wrong mean_alphas matrix. expected [6 layers x 5 AFs].'
@@ -347,11 +347,13 @@ def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, nor
             resulting_AF_layer_i_normed += af(x, 'identity')*norm_vec_alpha_layer_i[4]
         # plot AF
         ax = fig.add_subplot(1,6,layer_i+1)
-        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color='black', alpha=0.5)
-        plt.plot([0,0],[-100,100], '--', linewidth=1, color='black', alpha=0.5)
-        plt.plot(x,resulting_AF_layer_i, linewidth='3', color='black')
+        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color=col, alpha=0.5)
+        plt.plot([0,0],[-100,100], '--', linewidth=1, color=col, alpha=0.5)
         if add_normalized_weights:
-            plt.plot(x,resulting_AF_layer_i_normed, linewidth='3', color='black', alpha=0.5)
+            plt.plot(x,resulting_AF_layer_i, linewidth='3', color=col, alpha=0.3)
+            plt.plot(x,resulting_AF_layer_i_normed, linewidth='3', color=col)
+        else:
+            plt.plot(x,resulting_AF_layer_i, linewidth='3', color=col)
         plt.xlim(show_range[0], show_range[1])
         plt.ylim(ylim)
         plt.title(layer_names[layer_i])
@@ -497,12 +499,14 @@ swish_wd_3, swish_swishbeta_3 = smcn_extract_weights(path_finalweights, swish_fw
 blend5u_wd, blend5u_swishbeta = smcn_extract_weights(path_finalweights, blend5u_fw_files)
 blend5u_wd_2, blend5u_swishbeta_2 = smcn_extract_weights(path_finalweights, blend5u_fw_files_2)
 blend5u_wd_3, blend5u_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5u_fw_files_3)
-blend5n_wd, blend5n_swishbeta = smcn_extract_weights(path_finalweights, blend5n_fw_files)
-blend5n_wd_2, blend5n_swishbeta_2 = smcn_extract_weights(path_finalweights, blend5n_fw_files_2)
-blend5n_wd_3, blend5n_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5n_fw_files_3)
-blend5p_wd, blend5p_swishbeta = smcn_extract_weights(path_finalweights, blend5p_fw_files)
-blend5p_wd_2, blend5p_swishbeta_2 = smcn_extract_weights(path_finalweights, blend5p_fw_files_2)
-blend5p_wd_3, blend5p_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5p_fw_files_3)
+if len(blend5n_fw_files) > 0:
+    blend5n_wd, blend5n_swishbeta = smcn_extract_weights(path_finalweights, blend5n_fw_files)
+    blend5n_wd_2, blend5n_swishbeta_2 = smcn_extract_weights(path_finalweights, blend5n_fw_files_2)
+    blend5n_wd_3, blend5n_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5n_fw_files_3)
+if len(blend5p_fw_files) > 0:
+    blend5p_wd, blend5p_swishbeta = smcn_extract_weights(path_finalweights, blend5p_fw_files)
+    blend5p_wd_2, blend5p_swishbeta_2 = smcn_extract_weights(path_finalweights, blend5p_fw_files_2)
+    blend5p_wd_3, blend5p_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5p_fw_files_3)
 
 # print mean and std for all weights
 smcn_print_mean_std(linu_wd, 'alpha-I alpha')
@@ -514,10 +518,12 @@ smcn_print_mean_std(swish_wd, 'alpha-Swish alpha')
 smcn_print_mean_std(swish_swishbeta, 'alpha-Swish beta')
 smcn_print_mean_std(blend5u_wd, 'ABU-TERIS alpha')
 smcn_print_mean_std(blend5u_swishbeta, 'ABU-TERIS SwB')
-smcn_print_mean_std(blend5n_wd, 'ABU_N-TERIS alpha')
-smcn_print_mean_std(blend5n_swishbeta, 'ABU_N-TERIS SwB')
-smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
-smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')
+if len(blend5n_fw_files) > 0:
+    smcn_print_mean_std(blend5n_wd, 'ABU_N-TERIS alpha')
+    smcn_print_mean_std(blend5n_swishbeta, 'ABU_N-TERIS SwB')
+if len(blend5p_fw_files) > 0:
+    smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
+    smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')
 
 # plot all alphas for individual AFs
 plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'final_scaling_weights_I_3.png', af_dict_2=linu_wd_2, af_dict_3=linu_wd_3)
@@ -552,13 +558,17 @@ plot_mean_alpha_by_layers(af_list, name_list, 'CIFAR10', './3_result_plots/', sc
 # ABU
 ABU_AF_names, ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5u_wd, blend5u_swishbeta)
 plot_mean_alpha_by_layers_ABU(ABU_AF_names, ABU_afs_by_layers_means_C10, 'mean alphas ABU', './3_result_plots/', ABU_figname, swish_betas_by_layers_means=ABU_swish_betas_by_layers_means_C10, ylim=[-0.4,0.6])
-plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-1.5, 2.5])
-plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_AF_norm_figname, normalize_weights=True, ylim=[-1.5, 2.5])
-# ABU_N
-ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5n_wd, blend5n_swishbeta)
-plot_mean_alpha_by_layers_ABU(ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, 'mean alphas ABU_N', './3_result_plots/', ABU_N_figname, swish_betas_by_layers_means=ABU_N_swish_betas_by_layers_means_C10, ylim=[-0.6,2.0])
-plot_ABU(ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_N_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-1.5, 2.5])
-# ABU_P
-ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5p_wd, blend5p_swishbeta)
-plot_mean_alpha_by_layers_ABU(ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, 'mean alphas ABU_P', './3_result_plots/', ABU_P_figname, swish_betas_by_layers_means=ABU_P_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
-plot_ABU(ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_P_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-1.5, 2.5])
+plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-3.0, 4.0], col='blue')
+plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_AF_norm_figname, normalize_weights=True, ylim=[-3.0, 4.0], col='blue')
+
+if len(blend5n_fw_files) > 0:
+    # ABU_N
+    ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5n_wd, blend5n_swishbeta)
+    plot_mean_alpha_by_layers_ABU(ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, 'mean alphas ABU_N', './3_result_plots/', ABU_N_figname, swish_betas_by_layers_means=ABU_N_swish_betas_by_layers_means_C10, ylim=[-0.6,2.0])
+    plot_ABU(ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_N_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-3.0, 4.0], col='blue')
+
+if len(blend5p_fw_files) > 0:
+    # ABU_P
+    ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5p_wd, blend5p_swishbeta)
+    plot_mean_alpha_by_layers_ABU(ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, 'mean alphas ABU_P', './3_result_plots/', ABU_P_figname, swish_betas_by_layers_means=ABU_P_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
+    plot_ABU(ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_P_AF_figname, normalize_weights=False, add_normalized_weights=True, ylim=[-3.0, 4.0], col='blue')
