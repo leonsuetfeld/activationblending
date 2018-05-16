@@ -273,7 +273,7 @@ def plot_mean_alpha_by_layers_ABU(AF_names, afs_by_layers_means, title, saveplot
     x = np.arange(6)+1
     if swish_betas_by_layers_means.shape[0]>1:
         ax2 = ax.twinx()
-        ax2.plot(x, swish_betas_by_layers_means, '--', linewidth=linewidth_default, color=color_list[3], label=r'$Swish\ \beta$', alpha=1.0)
+        ax2.plot(x, swish_betas_by_layers_means, '--', linewidth=linewidth_default, color=color_list[3], label=r'$Swish\ \beta$', marker='.', markersize=12, alpha=1.0)
         ax2.set_ylabel(r'$Swish\ \beta$')
         ax2.set_ylim([0.0,1.3])
         ax2.set_xlim([0.8,6.2])
