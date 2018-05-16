@@ -824,11 +824,13 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 					t_total_this_session = (time.time()-Timer.session_start_time)/60.
 					epochs_in_session_so_far = Rec.ep_count_total-Timer.ep_count_at_session_start
 					checkpoints_in_session_so_far = epochs_in_session_so_far // TaskSettings.epochs_between_checkpoints
-					t_per_checkpoint_mean = t_total_this_session / checkpoints_in_session_so_far
-					t_since_last_checkpoint = (time.time() - Timer.last_checkpoint_time)/60.
 					Timer.set_checkpoint_time()
-					t_est_for_next_checkpoint = np.maximum(t_per_checkpoint_mean, t_since_last_checkpoint)
+					t_since_last_checkpoint = (time.time() - Timer.last_checkpoint_time)/60.
 					t_remaining_until_walltime = TaskSettings.walltime - t_total_this_session
+					t_est_for_next_checkpoint = t_since_last_checkpoint
+					if checkpoints_in_session_so_far > 0:
+						t_per_checkpoint_mean = t_total_this_session / checkpoints_in_session_so_far
+						t_est_for_next_checkpoint = np.maximum(t_per_checkpoint_mean, t_since_last_checkpoint)
 					if t_est_for_next_checkpoint*2.0+1 > t_remaining_until_walltime:
 						end_session_now = True
 

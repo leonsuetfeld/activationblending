@@ -158,23 +158,24 @@ class Paths(object):
 		self.train_set_gcn_zca = self.relative+'1_data_cifar100/train_set_gcn_zca/'
 		self.test_set_gcn_zca = self.relative+'1_data_cifar100/test_set_gcn_zca/'
 		self.sample_images = self.relative+'1_data_cifar100/samples/'
-		# save paths
+		# save paths (experiment level)
 		self.experiment = self.relative+'3_output_cifar/'+str(TaskSettings.experiment_name)+'/'
-		self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
-		self.experiment_spec_run = self.experiment_spec+'run_'+str(TaskSettings.run)+'/'
-		# batch 1 (necessary in runs)
-		self.info_files = self.experiment_spec_run
-		self.recorder_files = self.experiment_spec_run
-		self.incomplete_run_info = self.experiment_spec_run
-		self.run_learning_curves = self.experiment_spec_run
-		self.run_datasets = self.experiment_spec_run+'datasets/'				# corresponds to TaskSettings.keep_train_val_datasets
-		self.models = self.experiment_spec_run+'models/'						# corresponds to TaskSettings.save_models
-		# batch 2 (analysis, debugging)
 		self.af_weight_dicts = self.experiment+'0_af_weights/' 					# corresponds to TaskSettings.save_af_weights
 		self.all_weight_dicts = self.experiment+'0_all_weights/' 			 	# corresponds to TaskSettings.save_weights
 		self.analysis = self.experiment+'0_analysis/'							# path for analysis files, not used during training
 		self.summaries = self.experiment+'0_summaries/'							# corresponds to TaskSettings.keep_train_val_datasets
 		self.chrome_tls = self.experiment+'0_chrome_timelines/' 				# corresponds to TaskSettings.run_tracer
+		# save paths (spec / run level)
+		if TaskSettings.mode != 'analysis':
+			self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
+			self.experiment_spec_run = self.experiment_spec+'run_'+str(TaskSettings.run)+'/'
+			# sub-paths (run level)
+			self.info_files = self.experiment_spec_run
+			self.recorder_files = self.experiment_spec_run
+			self.incomplete_run_info = self.experiment_spec_run
+			self.run_learning_curves = self.experiment_spec_run
+			self.run_datasets = self.experiment_spec_run+'datasets/'				# corresponds to TaskSettings.keep_train_val_datasets
+			self.models = self.experiment_spec_run+'models/'						# corresponds to TaskSettings.save_models
 
 # ##############################################################################
 # ### DATA HANDLER #############################################################
@@ -660,7 +661,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 	# tf.set_random_seed(1)
 
 		# INITIALIZATION OF VARIABLES/ GRAPH, SAVER, SUMMARY WRITER
-		saver = tf.train.Saver()# , write_version=tf.train.SaverDef.V1)
+		saver = tf.train.Saver(max_to_keep=100)# , write_version=tf.train.SaverDef.V1)
 		sess.run(tf.global_variables_initializer()) # initialize all variables (must be done after the graph is constructed and the session is started)
 		merged_summary_op = tf.summary.merge_all()
 		if TaskSettings.write_summary:
@@ -714,7 +715,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 		# save overview of the run as a txt file
 		aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 
-		if TaskSettings.create_val_set:
+		if TaskSettings.create_val_set and Rec.mb_count_total == 0:
 			validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec)
 
 		while n_minibatches_remaining > 0 and Timer.session_shut_down == False:
@@ -823,11 +824,13 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 					t_total_this_session = (time.time()-Timer.session_start_time)/60.
 					epochs_in_session_so_far = Rec.ep_count_total-Timer.ep_count_at_session_start
 					checkpoints_in_session_so_far = epochs_in_session_so_far // TaskSettings.epochs_between_checkpoints
-					t_per_checkpoint_mean = t_total_this_session / checkpoints_in_session_so_far
-					t_since_last_checkpoint = (time.time() - Timer.last_checkpoint_time)/60.
 					Timer.set_checkpoint_time()
-					t_est_for_next_checkpoint = np.maximum(t_per_checkpoint_mean, t_since_last_checkpoint)
+					t_since_last_checkpoint = (time.time() - Timer.last_checkpoint_time)/60.
 					t_remaining_until_walltime = TaskSettings.walltime - t_total_this_session
+					t_est_for_next_checkpoint = t_since_last_checkpoint
+					if checkpoints_in_session_so_far > 0:
+						t_per_checkpoint_mean = t_total_this_session / checkpoints_in_session_so_far
+						t_est_for_next_checkpoint = np.maximum(t_per_checkpoint_mean, t_since_last_checkpoint)
 					if t_est_for_next_checkpoint*2.0+1 > t_remaining_until_walltime:
 						end_session_now = True
 
