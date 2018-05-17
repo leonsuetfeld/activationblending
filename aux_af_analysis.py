@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -6,6 +8,7 @@ import pickle
 import scipy
 from numpy import ma
 from scipy.stats import norm
+plt.rcParams["font.family"] = ["FreeSerif"]
 
 # ##############################################################################
 # ### FUNCTIONS ################################################################

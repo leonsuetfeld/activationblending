@@ -36,12 +36,12 @@ for run in range(1):
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
-			  " -experiment_name "  			+ 'debug_normalization' + \
-			  " -spec_name "        			+ 'ABU_P' + \
-			  " -run "              			+ '3' + \
+			  " -experiment_name "  			+ 'batchnorm_test' + \
+			  " -spec_name "        			+ 'alpha_ReLU_batchnorm' + \
+			  " -run "              			+ '1' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcn' + \
+			  " -network="          			+ 'smcnBN' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '3000' + \
 			  " -minibatch_size "   			+ '256' + \
@@ -59,14 +59,14 @@ for run in range(1):
 			  " -wd_lambda "        			+ '0.01' + \
 			  " -create_val_set "				+ 'True' + \
 			  " -val_set_fraction "				+ '0.05' + \
-			  " -af_set "           			+ '5_blend5_swish' +\
+			  " -af_set "           			+ '1_relu' +\
 			  " -af_weights_init "  			+ 'default' + \
 			  " -load_af_weights_from "  		+ 'none' + \
 			  " -norm_blendw_at_init "  		+ 'False' + \
 			  " -safe_af_ws_n "  				+ '10' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
-			  " -blend_mode "       			+ 'posnormed' + \
+			  " -blend_mode "       			+ 'unrestricted' + \
 			  " -swish_beta_trainable " 		+ 'True' + \
 			  " -walltime "						+ '1000.0' + \
 			  " -create_checkpoints "			+ 'True' + \
@@ -74,4 +74,5 @@ for run in range(1):
 			  " -save_af_weights_at_test_mb "	+ 'True' + \
 			  " -save_all_weights_at_test_mb "	+ 'True' + \
 			  " -create_lc_on_the_fly "			+ 'True'
+
 	subprocess.run(command, shell=True)

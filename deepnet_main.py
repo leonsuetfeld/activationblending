@@ -31,7 +31,7 @@ if __name__ == '__main__':
 	parser.add_argument('-path_relative', type=str, help='path from scheduler to main folder. put "./" if they are identical')
 	parser.add_argument('-task', type=str, help='cifar10, cifar100')
 	parser.add_argument('-preprocessing', type=str, help='none, ztrans, gcn_zca')
-	parser.add_argument('-network', type=str, help='smcn, allcnnc, ...')
+	parser.add_argument('-network', type=str, help='smcn, ...')
 	parser.add_argument('-mode', type=str, help='(optional) training, analysis, test')
 	parser.add_argument('-n_minibatches', type=int)
 	parser.add_argument('-experiment_name', type=str)
