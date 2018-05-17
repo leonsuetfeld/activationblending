@@ -185,7 +185,7 @@ class Network(object):
 					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.reduce_sum(blend_weights, keep_dims=True)))
 				elif NetSettings.blend_mode == 'posnormed':
 					blend_weights = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name==bw_vector_name][0]
-					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.reduce_sum(tf.clip_by_value(blend_weights, 0.0, 10.0), keep_dims=True)))
+					norm_op = blend_weights.assign(tf.divide(tf.clip_by_value(blend_weights, 0.0001, 5.0), tf.reduce_sum(tf.clip_by_value(blend_weights, 0.0001, 5.0), keep_dims=True)))
 				else:
 					norm_op = tf.no_op
 				self.bw_normalizers.append(norm_op)

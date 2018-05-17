@@ -38,12 +38,12 @@ for run in range(1):
 			  " -path_relative "                + './' + \
 			  " -experiment_name "  			+ 'debug_normalization' + \
 			  " -spec_name "        			+ 'ABU_P' + \
-			  " -run "              			+ '1' + \
+			  " -run "              			+ '3' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '1000' + \
+			  " -n_minibatches "    			+ '3000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
