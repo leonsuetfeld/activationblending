@@ -162,6 +162,66 @@ def plot_mean_alpha_by_layers_over_time(alpha_dict, ts_list, layer_list, title, 
         os.makedirs(saveplot_path)
     fig.savefig(saveplot_path+saveplot_filename, bbox_extra_artists=(lgd,), bbox_inches='tight', dpi=150)
 
+def plot_mean_alpha_by_layers_over_time_grouped(alpha_list, af_name_list, ts_listoflists, layer_list, saveplot_path, saveplot_filename, xlim=[0,60000], ylim_list=[[0.0,1.8]]):
+
+    fig = plt.figure(figsize=(14,3))
+    n_layers = len(layer_list)
+    n_AFs = len(alpha_list)
+    linewidth_default = '2'
+    if len(ylim_list) == 1:
+        tmp = ylim_list[0]
+        for i in range(n_AFs-1):
+            ylim_list.append(tmp)
+
+    for i, alpha_dict in enumerate(alpha_list):
+        ts_list = ts_listoflists[i]
+        n_ts = len(ts_list)
+        ax = fig.add_subplot(1,6,i+1)
+
+        # extract means from alpha_dict
+        alphas_by_layers = np.zeros((n_layers,n_ts))
+        alphas_by_layers[0,:] = np.squeeze(np.mean(alpha_dict['conv1'], axis=0))
+        alphas_by_layers[1,:] = np.squeeze(np.mean(alpha_dict['conv2'], axis=0))
+        alphas_by_layers[2,:] = np.squeeze(np.mean(alpha_dict['conv3'], axis=0))
+        alphas_by_layers[3,:] = np.squeeze(np.mean(alpha_dict['conv4'], axis=0))
+        alphas_by_layers[4,:] = np.squeeze(np.mean(alpha_dict['dense5'], axis=0))
+        alphas_by_layers[5,:] = np.squeeze(np.mean(alpha_dict['dense6'], axis=0))
+        # figure
+        ax.plot([0,xlim[1]],[0.2,0.2], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[0.4,0.4], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[0.6,0.6], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[0.8,0.8], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[1.0,1.0], '-', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[1.2,1.2], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[1.4,1.4], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[1.6,1.6], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[1.8,1.8], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[2.0,2.0], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[2.2,2.2], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[2.4,2.4], ':', color='#000000', linewidth='1', alpha=0.5)
+        color_list = ['#66c2a5', '#fc8d62', '#8c9fcb', '#e78ac3', '#a5d853', '#b4b4b4', '#ffd82e', '#e4c494']
+        for layer in range(n_layers):
+            ax.plot(np.array(ts_list), alphas_by_layers[layer,:], linewidth=linewidth_default, color=color_list[layer], label=layer_list[layer], alpha=1.0)
+        ax.set_ylim(ylim_list[i])
+        ax.set_xlim(xlim)
+        if i == 0:
+            ax.set_ylabel('mean '+r'$\alpha_i$')
+        ax.set_yticks(np.linspace(ylim_list[i][0], ylim_list[i][1], num=7))
+        ax.set_title(af_name_list[i])
+        ax.tick_params(axis='x', which='both', bottom='on', top='off')
+        ax.set_xticklabels(['0','','20k','','40k','','60k'])
+        ax.tick_params(axis='y', which='both', left='on', right='off')
+        if i+1 == n_AFs:
+            handles, labels = ax.get_legend_handles_labels()
+            lgd = ax.legend(handles, labels, loc='center left',  bbox_to_anchor=(1,0.5), fancybox=False, shadow=False)
+        ax.tick_params(axis='x', which='both', bottom='off', top='off')
+
+    # save plot as image
+    plt.tight_layout()
+    if not os.path.exists(saveplot_path):
+        os.makedirs(saveplot_path)
+    fig.savefig(saveplot_path+saveplot_filename, bbox_extra_artists=(lgd,), bbox_inches='tight', dpi=150)
+
 def plot_mean_ABU_alphas_over_time(alpha_dict, ts_list, layer_list, af_list, title, saveplot_path, saveplot_filename, xlim=[0,60000], ylim=[-.3,.6]):
     n_ts = len(ts_list)
     n_layers = len(layer_list)
@@ -176,8 +236,8 @@ def plot_mean_ABU_alphas_over_time(alpha_dict, ts_list, layer_list, af_list, tit
     alphas_by_layers[5,:,:] = np.squeeze(np.mean(alpha_dict['dense6'], axis=0))
 
     # figure
-    linewidth_default = '3'
-    fig = plt.figure(figsize=(25,5))
+    linewidth_default = '2'
+    fig = plt.figure(figsize=(14,3))
     for layer in range(n_layers):
         ax = fig.add_subplot(1,n_layers,layer+1)
         ax.plot([0,xlim[1]],[-.2,-.2], ':', color='#000000', linewidth='1', alpha=0.5)
@@ -186,18 +246,21 @@ def plot_mean_ABU_alphas_over_time(alpha_dict, ts_list, layer_list, af_list, tit
         ax.plot([0,xlim[1]],[0.4,0.4], ':', color='#000000', linewidth='1', alpha=0.5)
         ax.plot([0,xlim[1]],[0.6,0.6], ':', color='#000000', linewidth='1', alpha=0.5)
         ax.plot([0,xlim[1]],[0.8,0.8], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[1.0,1.0], ':', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[1.2,1.2], ':', color='#000000', linewidth='1', alpha=0.5)
         color_list = ['#66c2a5', '#fc8d62', '#8c9fcb', '#e78ac3', '#a5d853', '#b4b4b4', '#ffd82e', '#e4c494']
         for af in range(n_AFs):
             ax.plot(np.array(ts_list), alphas_by_layers[layer,:,af], linewidth=linewidth_default, color=color_list[af], label=af_list[af], alpha=1.0)
         ax.set_ylim(ylim)
         if layer == 0:
-            ax.set_ylabel('mean '+r'$\alpha_i$')
-        ax.set_xlabel('iteration')
+            ax.set_ylabel(title)
+        # ax.set_xlabel('iteration')
         ax.set_title(layer_list[layer])
         ax.tick_params(axis='x', which='both', bottom='on', top='off')
         ax.set_xticklabels(['0','','20k','','40k','','60k'])
         ax.tick_params(axis='y', which='both', left='on', right='off')
-        # ax.set_yticklabels(['0','','','','','10k'])
+        if layer > 0:
+            ax.set_yticklabels([])
         if layer+1 == n_layers:
             handles, labels = ax.get_legend_handles_labels()
             lgd = ax.legend(handles, labels, loc='center left',  bbox_to_anchor=(1,0.5), fancybox=False, shadow=False)
@@ -288,132 +351,147 @@ def get_alpha_means(alpha_dict):
     return np.array([c1, c2, c3, c4, d5, d6])
 
 # ##############################################################################
-# ### SCRIPT DEFAULT INIT ######################################################
+# ### SCRIPT ###################################################################
 # ##############################################################################
 
-path_af_weights = './3_output_cifar/ASC_main/0_af_weights/'
-path_all_weights = './3_output_cifar/ASC_main/0_all_weights/'
-layer_list = ['conv1', 'conv2', 'conv3', 'conv4', 'dense1', 'dense2']
-abu_af_list = ['ReLU', 'ELU', 'tanh', 'Swish', 'I']
+sections = [2]
 
-# extract weights from files
-ts_linu, alphas_linu, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_I_', 60000, 60)
-ts_tanh, alphas_tanh, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_tanh_', 60000, 60)
-ts_relu, alphas_relu, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_relu_', 60000, 60)
-ts_elu, alphas_elu, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_elu_', 60000, 60)
-ts_selu, alphas_selu, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_selu_', 60000, 60)
-ts_swish, alphas_swish, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_swish_', 60000, 60)
-
-ts_b5u, alphas_b5u, betas_b5u = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_T', 60000, 60)
-ts_b5n, alphas_b5n, betas_b5n = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_N_', 60000, 60)
-ts_b5p, alphas_b5p, betas_b5p = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_P_', 60000, 60)
-
-# plot weights over time
-plot_mean_alpha_by_layers_over_time(alphas_linu, ts_linu, layer_list, r'$\alpha_i$ over time ($\alpha$I)', './3_result_plots/', 'over_time_linu_alphas_default_init', ylim=[0.,1.2])
-plot_mean_alpha_by_layers_over_time(alphas_relu, ts_relu, layer_list, r'$\alpha_i$ over time ($\alpha$ReLU)', './3_result_plots/', 'over_time_relu_alphas_default_init', ylim=[0.,1.2])
-plot_mean_alpha_by_layers_over_time(alphas_tanh, ts_tanh, layer_list, r'$\alpha_i$ over time ($\alpha$tanh)', './3_result_plots/', 'over_time_tanh_alphas_default_init', ylim=[0.,2.4])
-plot_mean_alpha_by_layers_over_time(alphas_elu, ts_elu, layer_list, r'$\alpha_i$ over time ($\alpha$ELU)', './3_result_plots/', 'over_time_elu_alphas_default_init', ylim=[0.,1.2])
-plot_mean_alpha_by_layers_over_time(alphas_selu, ts_selu, layer_list, r'$\alpha_i$ over time ($\alpha$SELU)', './3_result_plots/', 'over_time_selu_alphas_default_init', ylim=[0.,1.2])
-plot_mean_alpha_by_layers_over_time(alphas_swish, ts_swish, layer_list, r'$\alpha_i$ over time ($\alpha$Swish)', './3_result_plots/', 'over_time_swish_alphas_default_init', ylim=[0.,1.2])
-
-plot_mean_ABU_alphas_over_time(alphas_b5u, ts_b5u, layer_list, abu_af_list, 'ABU', './3_result_plots/', 'over_time_ABU_alphas_default_init', ylim=[-.4,.6])
-plot_mean_ABU_alphas_over_time(alphas_b5n, ts_b5n, layer_list, abu_af_list, 'ABU_N', './3_result_plots/', 'over_time_ABU_N_alphas_default_init', ylim=[-.4,.8])
-plot_mean_ABU_alphas_over_time(alphas_b5p, ts_b5p, layer_list, abu_af_list, 'ABU_P', './3_result_plots/', 'over_time_ABU_P_alphas_default_init', ylim=[-.1,1.2])
-
-"""
-print('')
-# identity: Do the regular weights compensate for the alphas?
-linu_af_weights_final_stats = []
-for key, value in alphas_linu.items():
-    linu_af_weights_final_stats.append([key, np.mean(value[:,-1,0]), np.std(value[:,-1,0])])
-w_stats_linu_start, w_stats_linu_end, he_stds = smcn_extract_wstats_1_and_10k(path_all_weights, '_linu_pretrain', layer_list)
-std_linu_start = w_stats_linu_start[:,-1]
-std_linu_end = w_stats_linu_end[:,-1]
-alpha_means_linu_start = np.ones((6,1))
-alpha_means_linu_end = get_alpha_means(alphas_linu)
-print('identity:')
-print('stds (he):         ', he_stds[1:])
-print('std (start):       ', np.squeeze(std_linu_start[1:]))
-print('alphas*std (end):  ', np.squeeze(alpha_means_linu_end)*std_linu_end[1:])
-print('std (end):         ', np.squeeze(std_linu_end[1:]))
-print('alphas (end):      ', np.squeeze(alpha_means_linu_end))
-print('')
-
-# tanh: Do the regular weights compensate for the alphas?
-tanh_af_weights_final_stats = []
-for key, value in alphas_tanh.items():
-    tanh_af_weights_final_stats.append([key, np.mean(value[:,-1,0]), np.std(value[:,-1,0])])
-w_stats_tanh_start, w_stats_tanh_end, he_stds = smcn_extract_wstats_1_and_10k(path_all_weights, '_tanh_pretrain', layer_list)
-std_tanh_start = w_stats_tanh_start[:,-1]
-std_tanh_end = w_stats_tanh_end[:,-1]
-alpha_means_tanh_start = np.ones((6,1))
-alpha_means_tanh_end = get_alpha_means(alphas_tanh)
-print('tanh:')
-print('stds (he):         ', he_stds[1:])
-print('std (start):       ', np.squeeze(std_tanh_start[1:]))
-print('alphas*std (end):  ', np.squeeze(alpha_means_tanh_end)*std_tanh_end[1:])
-print('std (end):         ', np.squeeze(std_tanh_end[1:]))
-print('alphas (end):      ', np.squeeze(alpha_means_tanh_end))
-print('')
-
-# ReLU: Do the regular weights compensate for the alphas?
-relu_af_weights_final_stats = []
-for key, value in alphas_relu.items():
-    relu_af_weights_final_stats.append([key, np.mean(value[:,-1,0]), np.std(value[:,-1,0])])
-w_stats_relu_start, w_stats_relu_end, he_stds = smcn_extract_wstats_1_and_10k(path_all_weights, '_relu_pretrain', layer_list)
-std_relu_start = w_stats_relu_start[:,-1]
-std_relu_end = w_stats_relu_end[:,-1]
-alpha_means_relu_start = np.ones((6,1))
-alpha_means_relu_end = get_alpha_means(alphas_relu)
-print('ReLU:')
-print('stds (he):         ', he_stds[1:])
-print('std (start):       ', np.squeeze(std_relu_start[1:]))
-print('alphas*std (end):  ', np.squeeze(alpha_means_relu_end)*std_relu_end[1:])
-print('std (end):         ', np.squeeze(std_relu_end[1:]))
-print('alphas (end):      ', np.squeeze(alpha_means_relu_end))
-print('')
-
-# ELU: Do the regular weights compensate for the alphas?
-elu_af_weights_final_stats = []
-for key, value in alphas_elu.items():
-    elu_af_weights_final_stats.append([key, np.mean(value[:,-1,0]), np.std(value[:,-1,0])])
-w_stats_elu_start, w_stats_elu_end, he_stds = smcn_extract_wstats_1_and_10k(path_all_weights, '_elu_pretrain', layer_list)
-std_elu_start = w_stats_elu_start[:,-1]
-std_elu_end = w_stats_elu_end[:,-1]
-alpha_means_elu_start = np.ones((6,1))
-alpha_means_elu_end = get_alpha_means(alphas_elu)
-print('ELU:')
-print('stds (he):         ', he_stds[1:])
-print('std (start):       ', np.squeeze(std_elu_start[1:]))
-print('alphas*std (end):  ', np.squeeze(alpha_means_elu_end)*std_elu_end[1:])
-print('std (end):         ', np.squeeze(std_elu_end[1:]))
-print('alphas (end):      ', np.squeeze(alpha_means_elu_end))
-print('')
-"""
 # ##############################################################################
-# ### SCRIPT PRE-TRAINED INIT ##################################################
+# ### SCRIPT: ASU ##############################################################
 # ##############################################################################
-"""
-path_af_weights = './2_output_cifar/SBF_9b/_af_weights/'
-n_runs = 10
 
-# extract weights from files
-ts_linu, alphas_linu, _ = smcn_extract_af_weights_over_time(path_af_weights, '_linu_pretrained', n_runs)
-ts_tanh, alphas_tanh, _ = smcn_extract_af_weights_over_time(path_af_weights, '_tanh_pretrained', n_runs)
-ts_relu, alphas_relu, _ = smcn_extract_af_weights_over_time(path_af_weights, '_relu_pretrained', n_runs)
-ts_elu, alphas_elu, _ = smcn_extract_af_weights_over_time(path_af_weights, '_elu_pretrained', n_runs)
-ts_b5u, alphas_b5u, betas_b5u = smcn_extract_af_weights_over_time(path_af_weights, '_blend5_unrest_pretrained', n_runs)
-ts_b5n, alphas_b5n, betas_b5n = smcn_extract_af_weights_over_time(path_af_weights, '_blend5_normalized_pretrained', n_runs)
-ts_b5p, alphas_b5p, betas_b5p = smcn_extract_af_weights_over_time(path_af_weights, '_blend5_posnormed_pretrained', n_runs)
+if 1 in sections:
 
-# plot weights over time
-layer_list = ['conv1', 'conv2', 'conv3', 'conv4', 'dense1', 'dense2']
-plot_mean_alpha_by_layers_over_time(alphas_linu, ts_linu, layer_list, r'$\alpha_i$ over time ($\alpha$I)', './2_result_plots/', 'over_time_linu_alphas_pretrained_init', ylim=[0.,1.2])
-plot_mean_alpha_by_layers_over_time(alphas_relu, ts_relu, layer_list, r'$\alpha_i$ over time ($\alpha$ReLU)', './2_result_plots/', 'over_time_relu_alphas_pretrained_init', ylim=[0.,1.5])
-plot_mean_alpha_by_layers_over_time(alphas_tanh, ts_tanh, layer_list, r'$\alpha_i$ over time ($\alpha$tanh)', './2_result_plots/', 'over_time_tanh_alphas_pretrained_init', ylim=[0.,2.0])
-plot_mean_alpha_by_layers_over_time(alphas_elu, ts_elu, layer_list, r'$\alpha_i$ over time ($\alpha$ELU)', './2_result_plots/', 'over_time_elu_alphas_pretrained_init', ylim=[0.,1.2])
-af_list = ['ReLU', 'ELU', 'tanh', 'Swish', 'I']
-plot_mean_ABU_alphas_over_time(alphas_b5u, ts_b5u, layer_list, af_list, 'needs title', './2_result_plots/', 'over_time_b5u_alphas_pretrained_init', ylim=[-.4,.7])
-plot_mean_ABU_alphas_over_time(alphas_b5n, ts_b5n, layer_list, af_list, 'needs title', './2_result_plots/', 'over_time_b5n_alphas_pretrained_init', ylim=[-.4,.8])
-plot_mean_ABU_alphas_over_time(alphas_b5p, ts_b5p, layer_list, af_list, 'needs title', './2_result_plots/', 'over_time_b5p_alphas_pretrained_init', ylim=[-.2,.8])
-"""
+    path_af_weights = './3_output_cifar/ASC_main/0_af_weights/'
+    path_all_weights = './3_output_cifar/ASC_main/0_all_weights/'
+    layer_list = ['c1', 'c2', 'c3', 'c4', 'd1', 'd2']
+    abu_af_list = ['ReLU', 'ELU', 'tanh', 'Swish', 'I']
+
+    # extract weights from files
+    ts_linu, alphas_linu, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_I_', 60000, 60)
+    print('AF weights extracted for I')
+    ts_tanh, alphas_tanh, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_tanh_', 60000, 60)
+    print('AF weights extracted for tanh')
+    ts_relu, alphas_relu, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_relu_', 60000, 60)
+    print('AF weights extracted for relu')
+    ts_elu, alphas_elu, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_elu_', 60000, 60)
+    print('AF weights extracted for elu')
+    ts_selu, alphas_selu, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_selu_', 60000, 60)
+    print('AF weights extracted for selu')
+    ts_swish, alphas_swish, _ = smcn_extract_af_weights_over_time(path_af_weights, 'alpha_swish_', 60000, 60)
+    print('AF weights extracted for swish')
+
+    # plot weights over time
+    alphas_list = [alphas_linu, alphas_tanh, alphas_relu, alphas_elu, alphas_selu, alphas_swish]
+    af_name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
+    ts_list = [ts_linu, ts_tanh, ts_relu, ts_elu, ts_selu, ts_swish]
+    ylim_list = [[0.,1.2], [0.,2.4], [0.,1.2], [0.,1.2], [0.,1.2], [0.,1.2]]
+    plot_mean_alpha_by_layers_over_time_grouped(alphas_list, af_name_list, ts_list, layer_list, './3_result_plots/', 'MAIN_ASU_over_time', ylim_list=ylim_list)
+
+    # plot_mean_alpha_by_layers_over_time(alphas_linu, ts_linu, layer_list, r'$\alpha_i$ over time ($\alpha$I)', './3_result_plots/', 'over_time_linu_alphas_default_init', ylim=[0.,1.2])
+    # plot_mean_alpha_by_layers_over_time(alphas_relu, ts_relu, layer_list, r'$\alpha_i$ over time ($\alpha$ReLU)', './3_result_plots/', 'over_time_relu_alphas_default_init', ylim=[0.,1.2])
+    # plot_mean_alpha_by_layers_over_time(alphas_tanh, ts_tanh, layer_list, r'$\alpha_i$ over time ($\alpha$tanh)', './3_result_plots/', 'over_time_tanh_alphas_default_init', ylim=[0.,2.4])
+    # plot_mean_alpha_by_layers_over_time(alphas_elu, ts_elu, layer_list, r'$\alpha_i$ over time ($\alpha$ELU)', './3_result_plots/', 'over_time_elu_alphas_default_init', ylim=[0.,1.2])
+    # plot_mean_alpha_by_layers_over_time(alphas_selu, ts_selu, layer_list, r'$\alpha_i$ over time ($\alpha$SELU)', './3_result_plots/', 'over_time_selu_alphas_default_init', ylim=[0.,1.2])
+    # plot_mean_alpha_by_layers_over_time(alphas_swish, ts_swish, layer_list, r'$\alpha_i$ over time ($\alpha$Swish)', './3_result_plots/', 'over_time_swish_alphas_default_init', ylim=[0.,1.2])
+
+# ##############################################################################
+# ### SCRIPT: ABU ##############################################################
+# ##############################################################################
+
+if 2 in sections:
+
+    path_af_weights = './3_output_cifar/ASC_main/0_af_weights/'
+    path_all_weights = './3_output_cifar/ASC_main/0_all_weights/'
+    layer_list = ['conv1', 'conv2', 'conv3', 'conv4', 'dense1', 'dense2']
+    abu_af_list = ['ReLU', 'ELU', 'tanh', 'Swish', 'I']
+
+    ts_b5u, alphas_b5u, betas_b5u = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_T', 60000, 60)
+    print('AF weights extracted for ABU')
+    ts_b5n, alphas_b5n, betas_b5n = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_N_', 60000, 60)
+    print('AF weights extracted for ABU_N')
+    ts_b5p, alphas_b5p, betas_b5p = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_P_', 60000, 60)
+    print('AF weights extracted for ABU_P')
+
+    plot_mean_ABU_alphas_over_time(alphas_b5u, ts_b5u, layer_list, abu_af_list, r'$ABU$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_alphas_default_init', ylim=[-.4,.6])
+    plot_mean_ABU_alphas_over_time(alphas_b5n, ts_b5n, layer_list, abu_af_list, r'$ABU_N$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_N_alphas_default_init', ylim=[-.4,.8])
+    plot_mean_ABU_alphas_over_time(alphas_b5p, ts_b5p, layer_list, abu_af_list, r'$ABU_P$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_P_alphas_default_init', ylim=[-.1,1.2])
+
+# ##############################################################################
+# ### SCRIPT: ABU ##############################################################
+# ##############################################################################
+
+if 3 in sections:
+
+    pass
+
+    """
+    print('')
+    # identity: Do the regular weights compensate for the alphas?
+    linu_af_weights_final_stats = []
+    for key, value in alphas_linu.items():
+        linu_af_weights_final_stats.append([key, np.mean(value[:,-1,0]), np.std(value[:,-1,0])])
+    w_stats_linu_start, w_stats_linu_end, he_stds = smcn_extract_wstats_1_and_10k(path_all_weights, '_linu_pretrain', layer_list)
+    std_linu_start = w_stats_linu_start[:,-1]
+    std_linu_end = w_stats_linu_end[:,-1]
+    alpha_means_linu_start = np.ones((6,1))
+    alpha_means_linu_end = get_alpha_means(alphas_linu)
+    print('identity:')
+    print('stds (he):         ', he_stds[1:])
+    print('std (start):       ', np.squeeze(std_linu_start[1:]))
+    print('alphas*std (end):  ', np.squeeze(alpha_means_linu_end)*std_linu_end[1:])
+    print('std (end):         ', np.squeeze(std_linu_end[1:]))
+    print('alphas (end):      ', np.squeeze(alpha_means_linu_end))
+    print('')
+
+    # tanh: Do the regular weights compensate for the alphas?
+    tanh_af_weights_final_stats = []
+    for key, value in alphas_tanh.items():
+        tanh_af_weights_final_stats.append([key, np.mean(value[:,-1,0]), np.std(value[:,-1,0])])
+    w_stats_tanh_start, w_stats_tanh_end, he_stds = smcn_extract_wstats_1_and_10k(path_all_weights, '_tanh_pretrain', layer_list)
+    std_tanh_start = w_stats_tanh_start[:,-1]
+    std_tanh_end = w_stats_tanh_end[:,-1]
+    alpha_means_tanh_start = np.ones((6,1))
+    alpha_means_tanh_end = get_alpha_means(alphas_tanh)
+    print('tanh:')
+    print('stds (he):         ', he_stds[1:])
+    print('std (start):       ', np.squeeze(std_tanh_start[1:]))
+    print('alphas*std (end):  ', np.squeeze(alpha_means_tanh_end)*std_tanh_end[1:])
+    print('std (end):         ', np.squeeze(std_tanh_end[1:]))
+    print('alphas (end):      ', np.squeeze(alpha_means_tanh_end))
+    print('')
+
+    # ReLU: Do the regular weights compensate for the alphas?
+    relu_af_weights_final_stats = []
+    for key, value in alphas_relu.items():
+        relu_af_weights_final_stats.append([key, np.mean(value[:,-1,0]), np.std(value[:,-1,0])])
+    w_stats_relu_start, w_stats_relu_end, he_stds = smcn_extract_wstats_1_and_10k(path_all_weights, '_relu_pretrain', layer_list)
+    std_relu_start = w_stats_relu_start[:,-1]
+    std_relu_end = w_stats_relu_end[:,-1]
+    alpha_means_relu_start = np.ones((6,1))
+    alpha_means_relu_end = get_alpha_means(alphas_relu)
+    print('ReLU:')
+    print('stds (he):         ', he_stds[1:])
+    print('std (start):       ', np.squeeze(std_relu_start[1:]))
+    print('alphas*std (end):  ', np.squeeze(alpha_means_relu_end)*std_relu_end[1:])
+    print('std (end):         ', np.squeeze(std_relu_end[1:]))
+    print('alphas (end):      ', np.squeeze(alpha_means_relu_end))
+    print('')
+
+    # ELU: Do the regular weights compensate for the alphas?
+    elu_af_weights_final_stats = []
+    for key, value in alphas_elu.items():
+        elu_af_weights_final_stats.append([key, np.mean(value[:,-1,0]), np.std(value[:,-1,0])])
+    w_stats_elu_start, w_stats_elu_end, he_stds = smcn_extract_wstats_1_and_10k(path_all_weights, '_elu_pretrain', layer_list)
+    std_elu_start = w_stats_elu_start[:,-1]
+    std_elu_end = w_stats_elu_end[:,-1]
+    alpha_means_elu_start = np.ones((6,1))
+    alpha_means_elu_end = get_alpha_means(alphas_elu)
+    print('ELU:')
+    print('stds (he):         ', he_stds[1:])
+    print('std (start):       ', np.squeeze(std_elu_start[1:]))
+    print('alphas*std (end):  ', np.squeeze(alpha_means_elu_end)*std_elu_end[1:])
+    print('std (end):         ', np.squeeze(std_elu_end[1:]))
+    print('alphas (end):      ', np.squeeze(alpha_means_elu_end))
+    print('')
+    """
