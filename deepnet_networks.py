@@ -336,6 +336,12 @@ class Network(object):
 				raise IOError('\n[ERROR] Couldn\'t restore predefined blend weights, stopping run.\n')
 		blend_weights = tf.get_variable("blend_weights", trainable=W_blend_trainable, initializer=af_weights_initializer)
 
+		# # normalization in forward pass // CAUSES WEIRD BEHAVIOR, DO NOT USE AS IS
+		# if AF_blend_mode == 'posnormed':
+		# 	blend_weights = tf.clip_by_value(blend_weights, 0.0001, 5.0)
+		# if AF_blend_mode in ('normalized', 'posnormed'):
+		# 	blend_weights = tf.divide(blend_weights, tf.reduce_sum(blend_weights))
+
 		# SWISH BLOCK
 		if 'swish' in AF_set:
 			if af_weights_init == 'default':

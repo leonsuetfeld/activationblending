@@ -36,14 +36,14 @@ for run in range(1):
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
-			  " -experiment_name "  			+ 'graph_test' + \
+			  " -experiment_name "  			+ 'norm_in_graph_test' + \
 			  " -spec_name "        			+ 'ABU_N' + \
-			  " -run "              			+ '2' + \
+			  " -run "              			+ '4' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '200' + \
+			  " -n_minibatches "    			+ '60000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -67,7 +67,7 @@ for run in range(1):
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
 			  " -blend_mode "       			+ 'normalized' + \
-			  " -swish_beta_trainable " 		+ 'False' + \
+			  " -swish_beta_trainable " 		+ 'True' + \
 			  " -walltime "						+ '1000.0' + \
 			  " -create_checkpoints "			+ 'True' + \
 			  " -epochs_between_checkpoints "	+ '3' + \
