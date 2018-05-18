@@ -1083,8 +1083,6 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
 	config.gpu_options.allow_growth = True
 	with tf.Session(config = config) as sess:
 
-		print('debug, testing saved model %i' %(model_mb))
-
 		# INITIALIZATION OF VARIABLES/ GRAPH, SAVER, SUMMARY WRITER, COUNTERS
 		saver = tf.train.Saver()# , write_version=tf.train.SaverDef.V1)
 		sess.run(tf.global_variables_initializer()) # initialize all variables (must be done after the graph is constructed and the session is started)

@@ -163,7 +163,6 @@ class Paths(object):
 		self.af_weight_dicts = self.experiment+'0_af_weights/' 					# corresponds to TaskSettings.save_af_weights
 		self.all_weight_dicts = self.experiment+'0_all_weights/' 			 	# corresponds to TaskSettings.save_weights
 		self.analysis = self.experiment+'0_analysis/'							# path for analysis files, not used during training
-		self.summaries = self.experiment+'0_summaries/'							# corresponds to TaskSettings.keep_train_val_datasets
 		self.chrome_tls = self.experiment+'0_chrome_timelines/' 				# corresponds to TaskSettings.run_tracer
 		# save paths (spec / run level)
 		if TaskSettings.mode != 'analysis':
@@ -176,6 +175,7 @@ class Paths(object):
 			self.run_learning_curves = self.experiment_spec_run
 			self.run_datasets = self.experiment_spec_run+'datasets/'				# corresponds to TaskSettings.keep_train_val_datasets
 			self.models = self.experiment_spec_run+'models/'						# corresponds to TaskSettings.save_models
+			self.summaries = self.experiment_spec_run+'0_summaries/'							# corresponds to TaskSettings.keep_train_val_datasets
 
 # ##############################################################################
 # ### DATA HANDLER #############################################################
@@ -666,6 +666,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 		merged_summary_op = tf.summary.merge_all()
 		if TaskSettings.write_summary:
 			summary_writer = tf.summary.FileWriter(Paths.summaries, sess.graph)
+			summary_writer.add_graph(sess.graph)
 		n_minibatches_remaining = TaskSettings.n_minibatches
 
 		# RESTORE
@@ -800,7 +801,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 					py = psutil.Process(pid)
 					memoryUse = py.memory_info()[0]/2.**30
 					print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
-  						  ' | lr %0.5f' %(current_lr) +
+						  ' | lr %0.5f' %(current_lr) +
 						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=100)) +
 						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=100)) +
 						  ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
@@ -849,6 +850,9 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 				aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 				Timer.set_session_end_time()
 				Timer.end_session()
+				if TaskSettings.write_summary:
+					summary_writer.close()
+
 
 	# AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
 	if Rec.training_completed and not Rec.test_completed:
@@ -890,6 +894,10 @@ def delete_all_models_but_one(Paths, keep_model_mb):
 				os.remove(Paths.models+filename)
 
 def early_stopping_minibatch(val_data, val_mb, checkpoints, Paths, save_plot=True):
+	# catch cases in which the smoothing wouldnt really work
+	if val_mb[-1] < 1000:
+		print('[MESSAGE] no early stopping evaluation performed due to very short run. returning last minibatch (%i).' %(val_mb[-1]))
+		return val_mb[-1]
 	# calculate size of smoothing window & smoothe data
 	val_steps_total = len(val_data)
 	mb_per_val = val_mb[-1] // val_steps_total
