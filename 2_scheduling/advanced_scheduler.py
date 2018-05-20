@@ -164,13 +164,13 @@ def get_command(experiment_name, spec_name, run):
 		changes_dict["blend_trainable"] = 'True'
 		changes_dict["blend_mode"] = 'posnormed'
 		changes_dict["swish_beta_trainable"] = 'True'
-	# ABU_P_TERIS
+	# ABU_A_TERIS
 	elif '_ABU_A_TERIS' in spec_name:
 		changes_dict["af_set"] = '5_blend5_swish'
 		changes_dict["blend_trainable"] = 'True'
 		changes_dict["blend_mode"] = 'absnormed'
 		changes_dict["swish_beta_trainable"] = 'True'
-	# ABU_P_TERIS
+	# ABU_S_TERIS
 	elif '_ABU_S_TERIS' in spec_name:
 		changes_dict["af_set"] = '5_blend5_swish'
 		changes_dict["blend_trainable"] = 'True'
@@ -178,6 +178,14 @@ def get_command(experiment_name, spec_name, run):
 		changes_dict["swish_beta_trainable"] = 'True'
 	else:
 		raise IOError('\n[ERROR] Requested spec not found (%s).'%(spec_name))
+	if '_pre' in spec_name:
+		changes_dict["load_af_weights_from"] = spec_name.split('_pre_')[0]
+	if '_prenorm' in spec_name:
+		changes_dict["load_af_weights_from"] = spec_name.split('_pre_')[0]
+		changes_dict["norm_blendw_at_init"] = True
+	if '_notrain' in spec_name:
+		changes_dict["blend_trainable"] = 'False'
+		changes_dict["swish_beta_trainable"] = 'False'
 	return dict_to_command_str(get_spec_dict(changes_dict))
 
 def csv_update(csv_path, filename, experiment_path, experiment_name, mark_running_as_incomplete=False):
