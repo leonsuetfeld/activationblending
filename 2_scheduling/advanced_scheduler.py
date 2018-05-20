@@ -207,11 +207,12 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, mark_runnin
 					unfinished_list.append([spec, run])
 	# update csv
 	csv = open_csv_as_list(csv_path, filename)
-	if len(unfinished_list) > 0:
+	if len(finished_list) > 0:
 		for entry in finished_list:
 			spec_idx = csv_spec_to_num(csv, entry[0])
 			run = entry[1]
 			csv[spec_idx][run] = 'finished'
+	if len(unfinished_list) > 0:
 		for entry in unfinished_list:
 			spec_idx = csv_spec_to_num(csv, entry[0])
 			run = entry[1]
@@ -225,7 +226,7 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, mark_runnin
 				else:
 					csv[spec_idx][run] = 'incomplete'
 	save_list_as_csv(csv, csv_path, filename)
-	return ((np.array(csv).shape[0]-1)*(np.array(csv).shape[0]-1)) - len(finished_list)
+	return ((np.array(csv).shape[0]-1)*(np.array(csv).shape[1]-1)) - len(finished_list)
 
 def csv_spec_to_num(csv, spec):
 	for i, row in enumerate(csv):
