@@ -1,5 +1,5 @@
 ASC_test_normalization;run_1;run_2;run_3;run_4;run_5
-smcn_adam_c10_ABU_N_TERIS;;;;;running 1526834693.0522885
-smcn_adam_c10_ABU_P_TERIS;;running 1526834122.9477718;incomplete;incomplete;running 1526834513.0192292
-smcn_adam_c10_ABU_A_TERIS;;incomplete;running 1526834138.7924285;running 1526834589.2649994;
-smcn_adam_c10_ABU_S_TERIS;;running 1526833988.5756497;incomplete;;
+smcn_adam_c10_ABU_N_TERIS;;;;;finished
+smcn_adam_c10_ABU_P_TERIS;;running 1526834122.9477718;running 1526835787.9251325;running 1526835233.0374835;finished
+smcn_adam_c10_ABU_A_TERIS;running 1526835997.9659417;running 1526835772.9006402;running 1526834138.7924285;finished;
+smcn_adam_c10_ABU_S_TERIS;;running 1526833988.5756497;finished;;

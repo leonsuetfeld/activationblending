@@ -616,7 +616,7 @@ if 1 in steps:
     smcn_print_mean_std(swish_wd, 'alpha-Swish alpha')
     smcn_print_mean_std(swish_swishbeta, 'alpha-Swish beta')
 
-    # plot all alphas for individual AFs
+    # plot all alphas for individual AFs (only plot final states)
     af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
     beta_list = [None, None, None, None, None, swish_swishbeta]
     title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
@@ -628,40 +628,40 @@ if 1 in steps:
     # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU.png')
     # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish.png', beta=swish_swishbeta)
 
-    # # plot all alphas for individual AFs
-    # af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
-    # af_dict_list_2 = [linu_wd_2, tanh_wd_2, relu_wd_2, elu_wd_2, selu_wd_2, swish_wd_2]
-    # beta_list = [None, None, None, None, None, swish_swishbeta]
-    # beta_list_2 = [None, None, None, None, None, swish_swishbeta_2]
-    # title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
-    # plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_2.png', af_dict_list_2=linu_wd_2, beta_list=beta_list, beta_list_2=beta_list_2)
-    # # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I_2.png', af_dict_2=linu_wd_2)
-    # # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh_2.png', af_dict_2=tanh_wd_2) # ylim=[0.0,1.8]
-    # # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU_2.png', af_dict_2=relu_wd_2)
-    # # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU_2.png', af_dict_2=elu_wd_2)
-    # # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU_2.png', af_dict_2=selu_wd_2)
-    # # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish_2.png', af_dict_2=swish_wd_2, beta=swish_swishbeta, beta_2=swish_swishbeta_2)
-    #
-    # # plot all alphas for individual AFs
-    # af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
-    # af_dict_list_2 = [linu_wd_2, tanh_wd_2, relu_wd_2, elu_wd_2, selu_wd_2, swish_wd_2]
-    # af_dict_list_3 = [linu_wd_3, tanh_wd_3, relu_wd_3, elu_wd_3, selu_wd_3, swish_wd_3]
-    # beta_list = [None, None, None, None, None, swish_swishbeta]
-    # beta_list_2 = [None, None, None, None, None, swish_swishbeta_2]
-    # beta_list_3 = [None, None, None, None, None, swish_swishbeta_3]
-    # title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
-    # plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_3.png', af_dict_list_2=linu_wd_2, af_dict_list_3=linu_wd_3, beta_list=beta_list, beta_list_2=beta_list_2, beta_list_3=beta_list_3)
-    # # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I_3.png', af_dict_2=linu_wd_2, af_dict_3=linu_wd_3)
-    # # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh_3.png', af_dict_2=tanh_wd_2, af_dict_3=tanh_wd_3) # ylim=[0.0,1.8]
-    # # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU_3.png', af_dict_2=relu_wd_2, af_dict_3=relu_wd_3)
-    # # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU_3.png', af_dict_2=elu_wd_2, af_dict_3=elu_wd_3)
-    # # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU_3.png', af_dict_2=selu_wd_2, af_dict_3=selu_wd_3)
-    # # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish_3.png', af_dict_2=swish_wd_2, af_dict_3=swish_wd_3, beta=swish_swishbeta, beta_2=swish_swishbeta_2, beta_3=swish_swishbeta_3)
-    #
-    # # plot mean alpha over layers for adaptively scaled functions
-    # af_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd, swish_swishbeta]
-    # name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$', r'$\alpha Swish\ \beta$']
-    # plot_mean_alpha_by_layers(af_list, name_list, 'mean alphas ASU', './3_result_plots/', scaled_AFs_figname, includes_beta=True)
+    # plot all alphas for individual AFs (plot @ 6k and @60k)
+    af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
+    af_dict_list_2 = [linu_wd_2, tanh_wd_2, relu_wd_2, elu_wd_2, selu_wd_2, swish_wd_2]
+    beta_list = [None, None, None, None, None, swish_swishbeta]
+    beta_list_2 = [None, None, None, None, None, swish_swishbeta_2]
+    title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
+    plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_2.png', af_dict_list_2=linu_wd_2, beta_list=beta_list, beta_list_2=beta_list_2)
+    # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I_2.png', af_dict_2=linu_wd_2)
+    # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh_2.png', af_dict_2=tanh_wd_2) # ylim=[0.0,1.8]
+    # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU_2.png', af_dict_2=relu_wd_2)
+    # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU_2.png', af_dict_2=elu_wd_2)
+    # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU_2.png', af_dict_2=selu_wd_2)
+    # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish_2.png', af_dict_2=swish_wd_2, beta=swish_swishbeta, beta_2=swish_swishbeta_2)
+
+    # plot all alphas for individual AFs (plot @ 1k, 6k and @60k)
+    af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
+    af_dict_list_2 = [linu_wd_2, tanh_wd_2, relu_wd_2, elu_wd_2, selu_wd_2, swish_wd_2]
+    af_dict_list_3 = [linu_wd_3, tanh_wd_3, relu_wd_3, elu_wd_3, selu_wd_3, swish_wd_3]
+    beta_list = [None, None, None, None, None, swish_swishbeta]
+    beta_list_2 = [None, None, None, None, None, swish_swishbeta_2]
+    beta_list_3 = [None, None, None, None, None, swish_swishbeta_3]
+    title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
+    plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_3.png', af_dict_list_2=linu_wd_2, af_dict_list_3=linu_wd_3, beta_list=beta_list, beta_list_2=beta_list_2, beta_list_3=beta_list_3)
+    # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I_3.png', af_dict_2=linu_wd_2, af_dict_3=linu_wd_3)
+    # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh_3.png', af_dict_2=tanh_wd_2, af_dict_3=tanh_wd_3) # ylim=[0.0,1.8]
+    # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU_3.png', af_dict_2=relu_wd_2, af_dict_3=relu_wd_3)
+    # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU_3.png', af_dict_2=elu_wd_2, af_dict_3=elu_wd_3)
+    # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU_3.png', af_dict_2=selu_wd_2, af_dict_3=selu_wd_3)
+    # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish_3.png', af_dict_2=swish_wd_2, af_dict_3=swish_wd_3, beta=swish_swishbeta, beta_2=swish_swishbeta_2, beta_3=swish_swishbeta_3)
+
+    # plot mean alpha over layers for adaptively scaled functions
+    af_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd, swish_swishbeta]
+    name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$', r'$\alpha Swish\ \beta$']
+    plot_mean_alpha_by_layers(af_list, name_list, 'mean alphas ASU', './3_result_plots/', scaled_AFs_figname, includes_beta=True)
 
 # ##############################################################################
 # ### SCRIPT ASU ###############################################################
