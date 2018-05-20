@@ -59,7 +59,7 @@ if __name__ == '__main__':
 	parser.add_argument('-load_af_weights_from', type=str, help='define the spec name from which to load pre-trained weights (requires that spec to have completed a run with the same run number and saved the weights)')
 	parser.add_argument('-norm_blendw_at_init', type=str2bool, help='normalize weights once at init')
 	parser.add_argument('-blend_trainable', type=str2bool, help='enables adaptive blend / AF weights')
-	parser.add_argument('-blend_mode',  type=str, help='\'unrestricted\', \'normalized\', \'posnormed\'')
+	parser.add_argument('-blend_mode',  type=str, help='\'unrestricted\', \'normalized\', \'posnormed\', \'absnormed\', \'softmaxed\'')
 	parser.add_argument('-swish_beta_trainable', type=str2bool)
 	parser.add_argument('-walltime', type=float, help='walltime in minutes (max length of a split), usually 89')
 	parser.add_argument('-create_checkpoints', type=str2bool)

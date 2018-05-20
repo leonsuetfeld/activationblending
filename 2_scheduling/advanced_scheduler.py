@@ -164,77 +164,68 @@ def get_command(experiment_name, spec_name, run):
 		changes_dict["blend_trainable"] = 'True'
 		changes_dict["blend_mode"] = 'posnormed'
 		changes_dict["swish_beta_trainable"] = 'True'
+	# ABU_P_TERIS
+	elif '_ABU_A_TERIS' in spec_name:
+		changes_dict["af_set"] = '5_blend5_swish'
+		changes_dict["blend_trainable"] = 'True'
+		changes_dict["blend_mode"] = 'absnormed'
+		changes_dict["swish_beta_trainable"] = 'True'
+	# ABU_P_TERIS
+	elif '_ABU_S_TERIS' in spec_name:
+		changes_dict["af_set"] = '5_blend5_swish'
+		changes_dict["blend_trainable"] = 'True'
+		changes_dict["blend_mode"] = 'softmaxed'
+		changes_dict["swish_beta_trainable"] = 'True'
 	else:
 		raise IOError('\n[ERROR] Requested spec not found (%s).'%(spec_name))
 	return dict_to_command_str(get_spec_dict(changes_dict))
 
 def csv_update(csv_path, filename, experiment_path, experiment_name, mark_running_as_incomplete=False):
-	list_of_incomplete_runs = []
-	list_of_finished_runs = []
-	list_of_unfinished_runs = []
-	# look through incomplete run files and run info files
+	finished_list = []
+	unfinished_list = []
+	# look through recorder files
 	if os.path.exists(os.getcwd()+experiment_path+experiment_name+'/'):
 		spec_folders = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/') if os.path.isdir(os.path.join(os.getcwd()+experiment_path+experiment_name+'/',f))]
 		for spec in spec_folders:
 			run_folders = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec) if os.path.isdir(os.path.join(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/',f))]
 			for run_folder in run_folders:
 				run = int(run_folder.split('_')[-1])
-				# check for finished and unfinished ('running') runs
-				info_files = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder) if ('run_info' in f)]
-				test_completed_files = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder) if ('test_completed_' in f)]
-				if len(test_completed_files) > 0:
-					list_of_finished_runs.append([spec, run])
-				elif len(info_files) > 0:
-					for line in open(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder+'/'+info_files[0],'r'):
-						if 'test complete:'in line and 'True' in line:
-							list_of_finished_runs.append([spec, run])
-						elif 'test complete:'in line and 'False' in line:
-							list_of_unfinished_runs.append([spec, run])
-				# check for incomplete run files
-				incomplete_files = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder) if ('run_incomplete' in f)]
-				if len(incomplete_files) > 0:
-					list_of_incomplete_runs.append([spec, run])
-				if os.path.exists(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder+'/datasets/'):
-					run_dataset_files = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder+'/datasets/') if ('datasets_' in f)]
-					if len(run_dataset_files) > 0:
-						list_of_unfinished_runs.append([spec, run])
-				elif os.path.exists(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder+'datasets/'):
-					run_dataset_files = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder+'datasets/') if ('datasets_' in f)] # either this or the previous one should work
-					if len(run_dataset_files) > 0:
-						list_of_unfinished_runs.append([spec, run])
+				run_info_files = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder) if ('run_info_' in f)]
+				if len(run_info_files) > 0:
+					training_complete = False
+					test_complete = False
+					for line in open(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder+'/'+run_info_files[0],'r'):
+						if 'training complete: True' in line:
+							training_complete = True
+						if 'test complete: True' in line:
+							test_complete = True
+					if training_complete and test_complete:
+						finished_list.append([spec, run])
+					else:
+						unfinished_list.append([spec, run])
+				else:
+					unfinished_list.append([spec, run])
 	# update csv
 	csv = open_csv_as_list(csv_path, filename)
-	if len(list_of_unfinished_runs) > 0:
-		for entry in list_of_unfinished_runs:
+	if len(unfinished_list) > 0:
+		for entry in finished_list:
+			spec_idx = csv_spec_to_num(csv, entry[0])
+			run = entry[1]
+			csv[spec_idx][run] = 'finished'
+		for entry in unfinished_list:
 			spec_idx = csv_spec_to_num(csv, entry[0])
 			run = entry[1]
 			if mark_running_as_incomplete:
 				csv[spec_idx][run] = 'incomplete'
 			else:
 				cell = csv[spec_idx][run]
-				if 'running' in cell: # i.e., if cell is marked as running+timestamp
-					timestamp = float(cell.split(' ')[-1])
-					time_since_scheduling = time.time()-timestamp
-					if time_since_scheduling/60 > 90.0:
+				if 'running' in cell:
+					if (time.time()-float(cell.split(' ')[-1]))/60. > 90.0:
 						csv[spec_idx][run] = 'incomplete'
-				elif not 'incomplete' in cell: # if we evaluate this cell for the first time (and find that the run has been started before) make sure not to double schedule
-					csv[spec_idx][run] = 'running '+str(time.time())
-	if len(list_of_finished_runs) > 0:
-		for entry in list_of_finished_runs:
-			spec_idx = csv_spec_to_num(csv, entry[0])
-			run = entry[1]
-			csv[spec_idx][run] = 'finished'
-	if len(list_of_incomplete_runs) > 0:
-		for entry in list_of_incomplete_runs:
-			spec_idx = csv_spec_to_num(csv, entry[0])
-			run = entry[1]
-			csv[spec_idx][run] = 'incomplete'
+				else:
+					csv[spec_idx][run] = 'incomplete'
 	save_list_as_csv(csv, csv_path, filename)
-	# check if schedule is complete
-	n_runs_in_schedule = (len(csv)-1) * (len(csv[0])-1)
-	n_runs_completed = len(list_of_finished_runs)
-	n_unfinished_runs = n_runs_in_schedule - n_runs_completed
-	return n_unfinished_runs
+	return ((np.array(csv).shape[0]-1)*(np.array(csv).shape[0]-1)) - len(finished_list)
 
 def csv_spec_to_num(csv, spec):
 	for i, row in enumerate(csv):
@@ -308,14 +299,12 @@ def create_scheduler_csv(spec_list, n_runs, experiment_name, path_relative='/2_s
 def get_settings():
 	scheduling_subfolder = '/2_scheduling/'
 	experiment_path = '/3_output_cifar/'
-	experiment_name = 'ASC_test_lr_schedule'                                    # change when swapping between deployed and development folders
-	spec_list = ['smcn_sgdm_l_c10_relu',
-				 'smcn_sgdm_d1_c10_relu',
-				 'smcn_sgdm_d2_c10_relu',
-				 'smcn_sgdm_d3_c10_relu',
-				 'smcn_sgdm_d4_c10_relu',
-				 'smcn_sgdm_c_c10_relu']
-	n_runs = 10
+	experiment_name = 'ASC_test_normalization'                                    # change when swapping between deployed and development folders
+	spec_list = ['smcn_adam_c10_ABU_N_TERIS',
+				 'smcn_adam_c10_ABU_P_TERIS',
+				 'smcn_adam_c10_ABU_A_TERIS',
+				 'smcn_adam_c10_ABU_S_TERIS']
+	n_runs = 5
 	gridjob_command = 'qsub 2_scheduling/advanced_scheduler_gridjob.sh'
 	return scheduling_subfolder, experiment_path, experiment_name, spec_list, n_runs, gridjob_command
 
@@ -338,7 +327,7 @@ if __name__ == '__main__':
 
 	# AT THE END OF GRIDJOB, RESCHEDULE GRIDJOB
 	if len(sys.argv) > 1:
-		if int(sys.argv[1]) == 10 and n_unfinished_runs > 0:
+		if int(sys.argv[1]) == 5 and n_unfinished_runs > 0:
 			os.system(gridjob_command)
 
 	if spec_csv_idx == -1 and run == -1:

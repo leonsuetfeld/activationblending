@@ -163,6 +163,7 @@ class Paths(object):
 		self.af_weight_dicts = self.experiment+'0_af_weights/' 					# corresponds to TaskSettings.save_af_weights
 		self.all_weight_dicts = self.experiment+'0_all_weights/' 			 	# corresponds to TaskSettings.save_weights
 		self.analysis = self.experiment+'0_analysis/'							# path for analysis files, not used during training
+		self.summaries = self.experiment+'0_summaries/'							# corresponds to TaskSettings.keep_train_val_datasets
 		self.chrome_tls = self.experiment+'0_chrome_timelines/' 				# corresponds to TaskSettings.run_tracer
 		# save paths (spec / run level)
 		if TaskSettings.mode != 'analysis':
@@ -175,7 +176,6 @@ class Paths(object):
 			self.run_learning_curves = self.experiment_spec_run
 			self.run_datasets = self.experiment_spec_run+'datasets/'				# corresponds to TaskSettings.keep_train_val_datasets
 			self.models = self.experiment_spec_run+'models/'						# corresponds to TaskSettings.save_models
-			self.summaries = self.experiment_spec_run+'0_summaries/'							# corresponds to TaskSettings.keep_train_val_datasets
 
 # ##############################################################################
 # ### DATA HANDLER #############################################################
@@ -530,7 +530,7 @@ class Recorder(object):
 			print('================================================================================================================================================================================================================')
 			print('[MESSAGE] recorder dict saved: %s'%(savepath+filename))
 
-	def restore_from_dict(self, Timer):
+	def restore_from_dict(self, Timer, mb_to_restore):
 		# restore dict
 		restore_dict_filename = self.Paths.recorder_files+'record_'+str(self.TaskSettings.spec_name)+'_run_'+str(self.TaskSettings.run)+'.pkl'
 		if os.path.exists(restore_dict_filename):
@@ -570,6 +570,7 @@ class Recorder(object):
 			self.mbs_per_epoch = recorder_dict['mbs_per_epoch']
 			self.training_completed = recorder_dict['training_completed']
 			self.test_completed = recorder_dict['test_completed']
+			self.set_record_back_to_mb(mb_to_restore)
 			# set Timer
 			Timer.set_ep_count_at_session_start(self.ep_count_total)
 			# return
@@ -577,6 +578,38 @@ class Recorder(object):
 			print('[MESSAGE] performance recorder restored from file: %s' %(restore_dict_filename))
 			return True
 		return False
+
+	def set_record_back_to_mb(self, mb_to_restore):
+		if len(self.train_mb_n_hist) > 0:
+			idx_train_hist = np.argmin(np.abs(np.array(self.train_mb_n_hist) - mb_to_restore))+1
+			self.train_mb_n_hist = self.train_mb_n_hist[:idx_train_hist]
+			self.train_loss_hist = self.train_loss_hist[:idx_train_hist]
+			self.train_top1_hist = self.train_top1_hist[:idx_train_hist]
+		# validation performance
+		if len(self.val_mb_n_hist) > 0:
+			idx_val_hist = np.argmin(np.abs(np.array(self.val_mb_n_hist) - mb_to_restore))+1
+			self.val_loss_hist = self.val_loss_hist[:idx_val_hist]
+			self.val_top1_hist = self.val_top1_hist[:idx_val_hist]
+			self.val_apc_hist = self.val_apc_hist[:idx_val_hist] # accuracy per class
+			self.val_af_weights_hist = self.val_af_weights_hist[:idx_val_hist]
+			self.val_mb_n_hist = self.val_mb_n_hist[:idx_val_hist]
+		# test performance
+		if len(self.test_mb_n_hist) > 0:
+			idx_test_hist = np.argmin(np.abs(np.array(self.test_mb_n_hist) - mb_to_restore))+1
+			self.test_loss_hist = self.test_loss_hist[:idx_test_hist]
+			self.test_top1_hist = self.test_top1_hist[:idx_test_hist]
+			self.test_apc_hist = self.test_apc_hist[:idx_test_hist]
+			self.test_mb_n_hist = self.test_mb_n_hist[:idx_test_hist]
+		# splits
+		idx_checkpoints = np.argmin(np.abs(np.array(self.checkpoints) - mb_to_restore))+1
+		self.completed_ckpt_list = self.completed_ckpt_list[:idx_checkpoints]
+		self.completed_ckpt_mbs = self.completed_ckpt_mbs[:idx_checkpoints]
+		self.completed_ckpt_epochs = self.completed_ckpt_epochs[:idx_checkpoints]
+		# counter
+		self.mb_count_total = mb_to_restore
+		self.ep_count_total = 1 + (self.mb_count_total-1) // self.mbs_per_epoch
+		# print debug
+		assert self.mb_count_total == self.val_mb_n_hist[-1], 'something wrong here. %i %i' %(self.mb_count_total, self.val_mb_n_hist[-1])
 
 class SessionTimer(object):
 
@@ -666,7 +699,6 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 		merged_summary_op = tf.summary.merge_all()
 		if TaskSettings.write_summary:
 			summary_writer = tf.summary.FileWriter(Paths.summaries, sess.graph)
-			summary_writer.add_graph(sess.graph)
 		n_minibatches_remaining = TaskSettings.n_minibatches
 
 		# RESTORE
@@ -736,20 +768,20 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 				if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
 					# _, _, loss, top1, summary = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
 					_, loss, top1, summary = sess.run([Network.update, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
-					_ = sess.run([Network.normalize_bw])
+					# _ = sess.run([Network.normalize_bw])
 				else:
 					# _, _, loss, top1, summary = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict)
 					_, loss, top1, summary = sess.run([Network.update, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict)
-					_ = sess.run([Network.normalize_bw])
+					# _ = sess.run([Network.normalize_bw])
 			else:
 				if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
 					# _, _, loss, top1 = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
 					_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
-					_ = sess.run([Network.normalize_bw])
+					# _ = sess.run([Network.normalize_bw])
 				else:
 					# _, _, loss, top1 = sess.run([Network.update, Network.normalize_bw, Network.loss, Network.top1], feed_dict = input_dict)
 					_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict)
-					_ = sess.run([Network.normalize_bw])
+					# _ = sess.run([Network.normalize_bw])
 
 			# WRITE SUMMARY AND TRACER FILE
 			if TaskSettings.write_summary:
@@ -801,7 +833,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 					py = psutil.Process(pid)
 					memoryUse = py.memory_info()[0]/2.**30
 					print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
-						  ' | lr %0.5f' %(current_lr) +
+  						  ' | lr %0.5f' %(current_lr) +
 						  # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=100)) +
 						  ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=100)) +
 						  ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
@@ -850,9 +882,6 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 				aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 				Timer.set_session_end_time()
 				Timer.end_session()
-				if TaskSettings.write_summary:
-					summary_writer.close()
-
 
 	# AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
 	if Rec.training_completed and not Rec.test_completed:
@@ -894,10 +923,6 @@ def delete_all_models_but_one(Paths, keep_model_mb):
 				os.remove(Paths.models+filename)
 
 def early_stopping_minibatch(val_data, val_mb, checkpoints, Paths, save_plot=True):
-	# catch cases in which the smoothing wouldnt really work
-	if val_mb[-1] < 1000:
-		print('[MESSAGE] no early stopping evaluation performed due to very short run. returning last minibatch (%i).' %(val_mb[-1]))
-		return val_mb[-1]
 	# calculate size of smoothing window & smoothe data
 	val_steps_total = len(val_data)
 	mb_per_val = val_mb[-1] // val_steps_total

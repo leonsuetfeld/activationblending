@@ -66,7 +66,7 @@ for run in range(1):
 			  " -safe_af_ws_n "  				+ '10' + \
 			  " -safe_all_ws_n "  				+ '2' + \
 			  " -blend_trainable "  			+ 'True' + \
-			  " -blend_mode "       			+ 'normalized' + \
+			  " -blend_mode "       			+ 'softmaxed' + \
 			  " -swish_beta_trainable " 		+ 'True' + \
 			  " -walltime "						+ '1000.0' + \
 			  " -create_checkpoints "			+ 'True' + \

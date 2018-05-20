@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -N ASC_test_lrs                                                                  # change when swapping between deployed and development folders
+#$ -N ASC_norm                                                                  # change when swapping between deployed and development folders
 #$ -wd /net/store/ni/users/lsuetfel/activations/                                # change when swapping between deployed and development folders
 ##$ -cwd
 #$ -l h_rt=01:29:59
@@ -10,10 +10,10 @@
 #$ -l cuda=1
 #$ -l cuda_capability=500
 #$ -l cuda_driver=8000.000000
-#$ -l cuda_cores=640
+#$ -l cuda_cores=3000
 ##$ -l h=*cippy*
 #$ -l h=!*picture*&!*isonoe*&!*kalyke*
-#$ -t 1:10
+#$ -t 1:5
 #$ -p 0 ## priority, only negative integers allowed
 ##$ -cwd
 #$ -j y
