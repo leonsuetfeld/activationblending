@@ -169,24 +169,6 @@ class Network(object):
 				summary_label = summary_label.replace('/','_').replace(':','_')
 				variable_summaries(grad, summary_label)
 
-		# NORMALIZE BLEND WEIGHTS
-		with tf.name_scope('bw_normalizer'):
-			# if NetSettings.blend_mode in ['normalized', 'posnormed']:
-			self.bw_normalizers = []
-			bw_vector_names = [v.name for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if 'blend_weight' in v.name]
-			for layer, bw_vector_name in enumerate(bw_vector_names):
-				if NetSettings.blend_mode == 'normalized':
-					blend_weights = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name==bw_vector_name][0]
-					norm_op = blend_weights.assign(tf.divide(blend_weights, tf.reduce_sum(blend_weights, keep_dims=True)))
-				elif NetSettings.blend_mode == 'posnormed':
-					blend_weights = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name==bw_vector_name][0]
-					norm_op = blend_weights.assign(tf.divide(tf.clip_by_value(blend_weights, 0.0001, 5.0), tf.reduce_sum(tf.clip_by_value(blend_weights, 0.0001, 5.0), keep_dims=True)))
-				else:
-					blend_weights = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if v.name==bw_vector_name][0]
-					norm_op = blend_weights.assign(blend_weights)
-				self.bw_normalizers.append(norm_op)
-			self.normalize_bw = tf.group(*self.bw_normalizers)
-
 	# ========================== NETWORK ARCHITECTURES =========================
 
 	# simple modular convnet
@@ -255,39 +237,61 @@ class Network(object):
 			self.logits = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[self.NetSettings.logit_dims], AF_set=None, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, reuse=self.reuse, swish_beta_trainable=self.NetSettings.swish_beta_trainable, varscope=namescope+'/denseout')
 			return self.logits
 
-	# simple modular convnet
-	def smcnBN(self, namescope=None):
+	# simple modular convnet with post-blend batch-norm
+	def smcnPBBN(self, namescope=None):
 		with tf.name_scope(namescope):
 			# input block
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.Xp, W_shape=[5,5,3,64], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv1')
-			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_c1')
+			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_c1', training=True)
 			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,64,64], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv2')
-			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_c2')
+			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_c2', training=True)
 			# pooling layer
 			self.state = tf.nn.max_pool(self.state, ksize=[1,3,3,1], strides=[1,2,2,1], padding='SAME', name=namescope+'/pool2')
-			self.state = tf.layers.batch_normalization(self.state)
 			# standard block
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,64,64], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv3')
-			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_c3')
+			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_c3', training=True)
 			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout3')
 			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[5,5,64,64], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, reuse=self.reuse, varscope=namescope+'/conv4')
-			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_c4')
+			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_c4', training=True)
 			# pooling layer
 			self.state = tf.nn.max_pool(self.state, ksize=[1,3,3,1], strides=[1,2,2,1], padding='SAME', name=namescope+'/pool4')
 			# output block
 			self.state = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[384], AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, reuse=self.reuse, swish_beta_trainable=self.NetSettings.swish_beta_trainable, varscope=namescope+'/dense5')
-			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_d5')
+			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_d5', training=True)
 			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout5')
 			self.state = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[192], AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, reuse=self.reuse, swish_beta_trainable=self.NetSettings.swish_beta_trainable, varscope=namescope+'/dense6')
-			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_d6')
+			self.state = tf.layers.batch_normalization(self.state, name=namescope+'/bn_d6', training=True)
+			# output layer
+			self.logits = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[self.NetSettings.logit_dims], AF_set=None, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, reuse=self.reuse, swish_beta_trainable=self.NetSettings.swish_beta_trainable, varscope=namescope+'/denseout')
+			return self.logits
+
+	# simple modular convnet with (pre-blend) batch-norm
+	def smcnBN(self, namescope=None):
+		with tf.name_scope(namescope):
+			# input block
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.Xp, W_shape=[5,5,3,64], strides=[1,1,1,1], padding='SAME', bias_init=0.0, AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preblend_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv1')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout1')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[3,3,64,64], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preblend_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv2')
+			# pooling layer
+			self.state = tf.nn.max_pool(self.state, ksize=[1,3,3,1], strides=[1,2,2,1], padding='SAME', name=namescope+'/pool2')
+			# standard block
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[1,1,64,64], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preblend_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv3')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout3')
+			self.state = self.conv2d_parallel_act_layer(layer_input=self.state, W_shape=[5,5,64,64], strides=[1,1,1,1], padding='SAME', AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preblend_batchnorm=True, reuse=self.reuse, varscope=namescope+'/conv4')
+			# pooling layer
+			self.state = tf.nn.max_pool(self.state, ksize=[1,3,3,1], strides=[1,2,2,1], padding='SAME', name=namescope+'/pool4')
+			# output block
+			self.state = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[384], AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, reuse=self.reuse, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preblend_batchnorm=True, varscope=namescope+'/dense5')
+			self.state = tf.nn.dropout(self.state, keep_prob=self.dropout_keep_prob[0], name=namescope+'/dropout5')
+			self.state = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[192], AF_set=self.NetSettings.af_set, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, reuse=self.reuse, swish_beta_trainable=self.NetSettings.swish_beta_trainable, preblend_batchnorm=True, varscope=namescope+'/dense6')
 			# output layer
 			self.logits = self.dense_parallel_act_layer(layer_input=self.state, W_shape=[self.NetSettings.logit_dims], AF_set=None, af_weights_init=self.NetSettings.af_weights_init, W_blend_trainable=self.NetSettings.blend_trainable, AF_blend_mode=self.NetSettings.blend_mode, reuse=self.reuse, swish_beta_trainable=self.NetSettings.swish_beta_trainable, varscope=namescope+'/denseout')
 			return self.logits
 
 	# ============================= NETWORK LAYERS =============================
 
-	def dense_parallel_act_layer(self, layer_input, W_shape, b_shape=[-1], bias_init=0.1, AF_set=None, af_weights_init='default', W_blend_trainable=True, AF_blend_mode='unrestricted', swish_beta_trainable=True, reuse=False, varscope=None):
+	def dense_parallel_act_layer(self, layer_input, W_shape, b_shape=[-1], bias_init=0.1, AF_set=None, af_weights_init='default', W_blend_trainable=True, AF_blend_mode='unrestricted', swish_beta_trainable=True, preblend_batchnorm=False, reuse=False, varscope=None):
 		with tf.variable_scope(varscope, reuse=reuse):
 			flat_input = tf.layers.flatten(layer_input)
 			input_dims = flat_input.get_shape().as_list()[1]
@@ -303,9 +307,9 @@ class Network(object):
 				iState += b
 			if AF_set is None:
 				return iState
-			return self.activate(iState, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, varscope)
+			return self.activate(iState, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, varscope, batch_norm=preblend_batchnorm)
 
-	def conv2d_parallel_act_layer(self, layer_input, W_shape, b_shape=[-1], strides=[1,1,1,1], padding='SAME', bias_init=0.1, AF_set=None, af_weights_init='default', W_blend_trainable=True, AF_blend_mode='unrestricted', swish_beta_trainable=True, preact_batchnorm=False, reuse=False, varscope=None):
+	def conv2d_parallel_act_layer(self, layer_input, W_shape, b_shape=[-1], strides=[1,1,1,1], padding='SAME', bias_init=0.1, AF_set=None, af_weights_init='default', W_blend_trainable=True, AF_blend_mode='unrestricted', swish_beta_trainable=True, preblend_batchnorm=False, reuse=False, varscope=None):
 		with tf.variable_scope(varscope, reuse=reuse):
 			if b_shape == [-1]:
 				b_shape = [W_shape[-1]]
@@ -317,15 +321,13 @@ class Network(object):
 			iState = tf.nn.conv2d(layer_input, W, strides, padding)
 			if b_shape != [0]:
 				iState += b
-			if preact_batchnorm:
-				iState = tf.layers.batch_normalization(iState,momentum=.95)
 			if AF_set is None:
 				return iState
-			return self.activate(iState, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, varscope)
+			return self.activate(iState, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, varscope, batch_norm=preblend_batchnorm)
 
 	# ============================== ACTIVATIONS ===============================
 
-	def activate(self, preact, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, layer_name):
+	def activate(self, preact, AF_set, af_weights_init, W_blend_trainable, AF_blend_mode, swish_beta_trainable, layer_name, batch_norm=False):
 		assert af_weights_init in ['default','predefined'], 'specified initialization type for W_blend unknown.'
 		assert AF_blend_mode in ['unrestricted','normalized','posnormed','absnormed','softmaxed'], 'specified blend mode unknown.'
 
@@ -346,8 +348,7 @@ class Network(object):
 		elif AF_blend_mode == 'absnormed':
 			blend_weights = tf.divide(blend_weights_raw, tf.reduce_sum(tf.abs(blend_weights_raw), keep_dims=True))
 		elif AF_blend_mode == 'posnormed':
-			blend_weights = tf.divide(tf.clip_by_value(blend_weights_raw, 0.0001, 1000.0),
-							          tf.reduce_sum(tf.clip_by_value(blend_weights_raw, 0.0001, 1000.0), keep_dims=True))
+			blend_weights = tf.divide(tf.clip_by_value(blend_weights_raw, 0.0001, 1000.0), tf.reduce_sum(tf.clip_by_value(blend_weights_raw, 0.0001, 1000.0), keep_dims=True))
 			blend_weights = tf.divide(blend_weights_raw, tf.reduce_sum(blend_weights_raw, keep_dims=True))
 		elif AF_blend_mode == 'softmaxed':
 			blend_weights = tf.exp(blend_weights_raw)
@@ -363,31 +364,58 @@ class Network(object):
 				except Exception:
 					raise IOError('\n[ERROR] Couldn\'t restore predefined swish beta, stopping run.\n')
 			swish_beta = tf.get_variable("swish_beta", trainable=swish_beta_trainable, initializer=swish_init)
-			act_swish = preact * tf.nn.sigmoid(swish_beta*preact)
-
-		# ACTIVATIONS (standard)
-		act_relu = tf.nn.relu(preact)
-		act_selu = tf.nn.selu(preact)
-		act_elu = tf.nn.elu(preact)
-		act_softplus = tf.nn.softplus(preact)
-		act_softsign = tf.nn.softsign(preact)
-		act_tanh = tf.nn.tanh(preact)
-		act_sigmoid = tf.nn.sigmoid(preact)
-		act_linu = preact
 
 		# AF sets
 		if AF_set.startswith('1_'):
-			if 'relu' in AF_set: return blend_weights[0] * act_relu
-			if 'selu' in AF_set: return blend_weights[0] * act_selu
-			if 'jelu' in AF_set: return blend_weights[0] * act_elu
-			if 'softplus' in AF_set: return blend_weights[0] * act_softplus
-			if 'softsign' in AF_set: return blend_weights[0] * act_softsign
-			if 'tanh' in AF_set: return blend_weights[0] * act_tanh
-			if 'sigmoid' in AF_set: return blend_weights[0] * act_sigmoid
-			if 'jswish' in AF_set: return blend_weights[0] * act_swish
-			if 'linu' in AF_set: return blend_weights[0] * act_linu
+			# relu
+			if 'relu' in AF_set:
+				act_relu = tf.nn.relu(preact)
+				if batch_norm:
+					act_relu = tf.layers.batch_normalization(act_relu, name='batchnorm_relu', training=True)
+				return blend_weights[0] * act_relu
+			# elu
+			if 'jelu' in AF_set:
+				act_elu = tf.nn.elu(preact)
+				if batch_norm:
+					act_elu = tf.layers.batch_normalization(act_elu, name='batchnorm_elu', training=True)
+				return blend_weights[0] * act_elu
+			# tanh
+			if 'tanh' in AF_set:
+				act_tanh = tf.nn.tanh(preact)
+				if batch_norm:
+					act_tanh = tf.layers.batch_normalization(act_tanh, name='batchnorm_tanh', training=True)
+				return blend_weights[0] * act_tanh
+			# swish
+			if 'jswish' in AF_set:
+				if batch_norm:
+					act_swish = tf.layers.batch_normalization(act_swish, name='batchnorm_swish', training=True)
+				act_swish = preact * tf.nn.sigmoid(swish_beta*preact)
+				return blend_weights[0] * act_swish
+			# linu
+			if 'linu' in AF_set:
+				act_linu = preact
+				if batch_norm:
+					act_linu = tf.layers.batch_normalization(act_linu, name='batchnorm_linu', training=True)
+				return blend_weights[0] * act_linu
+			# selu
+			if 'selu' in AF_set:
+				act_selu = tf.nn.selu(preact)
+				if batch_norm:
+					act_selu = tf.layers.batch_normalization(act_selu, name='batchnorm_selu', training=True)
+				return blend_weights[0] * act_selu
 
 		if 'blend5_swish' in AF_set:
+			act_relu = tf.nn.relu(preact)
+			act_elu = tf.nn.elu(preact)
+			act_tanh = tf.nn.tanh(preact)
+			act_swish = preact * tf.nn.sigmoid(swish_beta*preact)
+			act_linu = preact
+			if batch_norm:
+				act_relu = tf.layers.batch_normalization(act_relu, name='batchnorm_relu', training=True)
+				act_elu = tf.layers.batch_normalization(act_elu, name='batchnorm_elu', training=True)
+				act_tanh = tf.layers.batch_normalization(act_tanh, name='batchnorm_tanh', training=True)
+				act_swish = tf.layers.batch_normalization(act_swish, name='batchnorm_swish', training=True)
+				act_linu = tf.layers.batch_normalization(act_linu, name='batchnorm_linu', training=True)
 			return tf.add_n([blend_weights[0] * act_relu,
 							 blend_weights[1] * act_elu,
 							 blend_weights[2] * act_tanh,

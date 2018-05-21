@@ -36,10 +36,10 @@ for run in range(1):
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
-			  " -experiment_name "  			+ 'c100_test' + \
-			  " -spec_name "        			+ 'relu' + \
+			  " -experiment_name "  			+ 'new_batchnorm_test' + \
+			  " -spec_name "        			+ 'relux' + \
 			  " -run "              			+ '1' + \
-			  " -task="             			+ 'cifar100' + \
+			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
