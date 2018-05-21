@@ -722,7 +722,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 				# restore weights, counter, and performance history (recorder)
 				n_minibatches_remaining = TaskSettings.n_minibatches - highest_mb_in_filelist
 				TrainingHandler.restore_run_datasets()
-				Rec.restore_from_dict(Timer)
+				Rec.restore_from_dict(Timer, highest_mb_in_filelist)
 				saver.restore(sess, Paths.models+restore_data_filename)
 				model_restored = True
 				# print notification

@@ -36,14 +36,14 @@ for run in range(1):
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
-			  " -experiment_name "  			+ 'testtest' + \
+			  " -experiment_name "  			+ 'c100_test' + \
 			  " -spec_name "        			+ 'relu' + \
 			  " -run "              			+ '1' + \
-			  " -task="             			+ 'cifar10' + \
+			  " -task="             			+ 'cifar100' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '60000' + \
+			  " -n_minibatches "    			+ '3000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -52,7 +52,7 @@ for run in range(1):
 			  " -lr_schedule_type "            	+ 'constant' + \
 			  " -lr_decay "            			+ '0.00004' + \
 			  " -lr_lin_min "            		+ '0.0004' + \
-			  " -lr_lin_steps "            		+ '60000' + \
+			  " -lr_lin_steps "            		+ '3000' + \
 			  " -lr_step_ep "           		+ '200 250 300' + \
 			  " -lr_step_multi "        		+ '0.1 0.01 0.001' + \
 			  " -use_wd "        				+ 'False' + \

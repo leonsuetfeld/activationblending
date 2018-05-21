@@ -1,5 +1,5 @@
-ASC_test_normalization;run_1;run_2;run_3;run_4;run_5
-smcn_adam_c10_ABU_N_TERIS;;;;;finished
-smcn_adam_c10_ABU_P_TERIS;;running 1526834122.9477718;running 1526835787.9251325;running 1526835233.0374835;finished
-smcn_adam_c10_ABU_A_TERIS;running 1526835997.9659417;running 1526835772.9006402;running 1526834138.7924285;finished;
-smcn_adam_c10_ABU_S_TERIS;;running 1526833988.5756497;finished;;
+ASC_test_normalization;run_1;run_2;run_3;run_4;run_5;run_6;run_7;run_8;run_9;run_10
+smcn_adam_c10_ABU_N_TERIS;finished;running 1526912410.1121733;finished;finished;finished;finished;finished;finished;finished;finished
+smcn_adam_c10_ABU_P_TERIS;finished;finished;finished;finished;finished;finished;finished;finished;finished;finished
+smcn_adam_c10_ABU_A_TERIS;finished;finished;finished;finished;finished;finished;running 1526912349.5742705;finished;finished;finished
+smcn_adam_c10_ABU_S_TERIS;finished;finished;finished;finished;finished;finished;finished;finished;finished;finished

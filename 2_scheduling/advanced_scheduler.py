@@ -313,7 +313,7 @@ def get_settings():
 				 'smcn_adam_c10_ABU_P_TERIS',
 				 'smcn_adam_c10_ABU_A_TERIS',
 				 'smcn_adam_c10_ABU_S_TERIS']
-	n_runs = 5
+	n_runs = 10
 	gridjob_command = 'qsub 2_scheduling/advanced_scheduler_gridjob.sh'
 	return scheduling_subfolder, experiment_path, experiment_name, spec_list, n_runs, gridjob_command
 
