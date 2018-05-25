@@ -387,9 +387,9 @@ class Network(object):
 				return blend_weights[0] * act_tanh
 			# swish
 			if 'jswish' in AF_set:
+				act_swish = preact * tf.nn.sigmoid(swish_beta*preact)
 				if batch_norm:
 					act_swish = tf.layers.batch_normalization(act_swish, name='batchnorm_swish', training=True)
-				act_swish = preact * tf.nn.sigmoid(swish_beta*preact)
 				return blend_weights[0] * act_swish
 			# linu
 			if 'linu' in AF_set:

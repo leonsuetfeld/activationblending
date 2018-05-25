@@ -177,14 +177,24 @@ sections = [1]
 
 if 1 in sections:
 
-    path_af_weights = './3_output_cifar/ASC_test_normalization/0_af_weights/'
-    path_all_weights = './3_output_cifar/ASC_test_normalization/0_all_weights/'
+    path_af_weights = './3_output_cifar/ASC_main/0_af_weights/'
+    path_all_weights = './3_output_cifar/ASC_main/0_all_weights/'
     layer_list = ['c1', 'c2', 'c3', 'c4', 'd1', 'd2']
     abu_af_list = ['ReLU', 'ELU', 'tanh', 'Swish', 'I']
 
     print('')
 
-    print_weight_stats(path_all_weights, '_c10_ABU_N_TERIS', layer_list)
-    print_weight_stats(path_all_weights, '_c10_ABU_P_TERIS', layer_list)
-    print_weight_stats(path_all_weights, '_c10_ABU_A_TERIS', layer_list)
-    print_weight_stats(path_all_weights, '_c10_ABU_S_TERIS', layer_list)
+    print_weight_stats(path_all_weights, '_c10_tanh', layer_list)
+    print_weight_stats(path_all_weights, '_c10_alpha_tanh', layer_list)
+
+    print_weight_stats(path_all_weights, '_c10_relu', layer_list)
+    print_weight_stats(path_all_weights, '_c10_alpha_relu', layer_list)
+
+    print_weight_stats(path_all_weights, '_c10_elu', layer_list)
+    print_weight_stats(path_all_weights, '_c10_alpha_elu', layer_list)
+
+    print_weight_stats(path_all_weights, '_c10_selu', layer_list)
+    print_weight_stats(path_all_weights, '_c10_alpha_selu', layer_list)
+
+    print_weight_stats(path_all_weights, '_c10_swish', layer_list)
+    print_weight_stats(path_all_weights, '_c10_alpha_swish', layer_list)

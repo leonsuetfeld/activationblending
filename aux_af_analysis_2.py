@@ -58,27 +58,27 @@ def smcn_extract_af_weights_over_time(folder_path, keyword, mbs, n_timesteps_sav
                 for key, value in timestep_t.items():
                     if 'conv1' in key:
                         if 'swish_beta' in key: conv1_swish.append(value)
-                        elif 'blend_weights:0' in key: conv1_alpha.append(value)
+                        elif 'blend_weights' in key: conv1_alpha.append(value)
                         else: print('[WARNING] Found an extra key:', key)
                     elif 'conv2' in key:
                         if 'swish_beta' in key: conv2_swish.append(value)
-                        elif 'blend_weights:0' in key: conv2_alpha.append(value)
+                        elif 'blend_weights' in key: conv2_alpha.append(value)
                         else: print('[WARNING] Found an extra key:', key)
                     elif 'conv3' in key:
                         if 'swish_beta' in key: conv3_swish.append(value)
-                        elif 'blend_weights:0' in key: conv3_alpha.append(value)
+                        elif 'blend_weights' in key: conv3_alpha.append(value)
                         else: print('[WARNING] Found an extra key:', key)
                     elif 'conv4' in key:
                         if 'swish_beta' in key: conv4_swish.append(value)
-                        elif 'blend_weights:0' in key: conv4_alpha.append(value)
+                        elif 'blend_weights' in key: conv4_alpha.append(value)
                         else: print('[WARNING] Found an extra key:', key)
                     elif 'dense5' in key:
                         if 'swish_beta' in key: dense5_swish.append(value)
-                        elif 'blend_weights:0' in key: dense5_alpha.append(value)
+                        elif 'blend_weights' in key: dense5_alpha.append(value)
                         else: print('[WARNING] Found an extra key:', key)
                     elif 'dense6' in key:
                         if 'swish_beta' in key: dense6_swish.append(value)
-                        elif 'blend_weights:0' in key: dense6_alpha.append(value)
+                        elif 'blend_weights' in key: dense6_alpha.append(value)
                         else: print('[WARNING] Found an extra key:', key)
                     else: print('[WARNING] Found an extra key:', key)
 
@@ -222,7 +222,7 @@ def plot_mean_alpha_by_layers_over_time_grouped(alpha_list, af_name_list, ts_lis
         os.makedirs(saveplot_path)
     fig.savefig(saveplot_path+saveplot_filename, bbox_extra_artists=(lgd,), bbox_inches='tight', dpi=150)
 
-def plot_mean_alpha_by_layers_over_time_grouped(alpha_dict, ts_list, layer_list, af_list, title, saveplot_path, saveplot_filename, xlim=[0,60000], ylim=[-.3,.6]):
+def plot_mean_ABU_alphas_over_time(alpha_dict, ts_list, layer_list, af_list, title, saveplot_path, saveplot_filename, xlim=[0,60000], ylim=[-.3,.6], norm="None"):
     n_ts = len(ts_list)
     n_layers = len(layer_list)
     n_AFs = 5
@@ -235,19 +235,38 @@ def plot_mean_alpha_by_layers_over_time_grouped(alpha_dict, ts_list, layer_list,
     alphas_by_layers[4,:,:] = np.squeeze(np.mean(alpha_dict['dense5'], axis=0))
     alphas_by_layers[5,:,:] = np.squeeze(np.mean(alpha_dict['dense6'], axis=0))
 
+    # norm
+    if norm == 'N':
+        for layer in range(alphas_by_layers.shape[0]):
+            for ts in range(alphas_by_layers.shape[1]):
+                alphas_by_layers[layer,ts,:] = alphas_by_layers[layer,ts,:]/np.sum(alphas_by_layers[layer,ts,:])
+    if norm == 'S':
+        for layer in range(alphas_by_layers.shape[0]):
+            for ts in range(alphas_by_layers.shape[1]):
+                alphas_by_layers[layer,ts,:] = np.exp(alphas_by_layers[layer,ts,:])
+                alphas_by_layers[layer,ts,:] = alphas_by_layers[layer,ts,:]/np.sum(alphas_by_layers[layer,ts,:])
+    if norm == 'A':
+        for layer in range(alphas_by_layers.shape[0]):
+            for ts in range(alphas_by_layers.shape[1]):
+                alphas_by_layers[layer,ts,:] = alphas_by_layers[layer,ts,:]/np.sum(np.abs(alphas_by_layers[layer,ts,:]))
+    if norm == 'P':
+        for layer in range(alphas_by_layers.shape[0]):
+            for ts in range(alphas_by_layers.shape[1]):
+                alphas_by_layers[layer,ts,:] = np.clip(alphas_by_layers[layer,ts,:], 0.0001, 1000.0)
+                alphas_by_layers[layer,ts,:] = alphas_by_layers[layer,ts,:]/np.sum(alphas_by_layers[layer,ts,:])
+
     # figure
     linewidth_default = '2'
     fig = plt.figure(figsize=(14,3))
     for layer in range(n_layers):
         ax = fig.add_subplot(1,n_layers,layer+1)
-        ax.plot([0,xlim[1]],[-.2,-.2], ':', color='#000000', linewidth='1', alpha=0.5)
-        ax.plot([0,xlim[1]],[0.0,0.0], '-', color='#000000', linewidth='1', alpha=1.0)
-        ax.plot([0,xlim[1]],[0.2,0.2], '-', color='#000000', linewidth='1', alpha=0.5)
-        ax.plot([0,xlim[1]],[0.4,0.4], ':', color='#000000', linewidth='1', alpha=0.5)
-        ax.plot([0,xlim[1]],[0.6,0.6], ':', color='#000000', linewidth='1', alpha=0.5)
-        ax.plot([0,xlim[1]],[0.8,0.8], ':', color='#000000', linewidth='1', alpha=0.5)
-        ax.plot([0,xlim[1]],[1.0,1.0], ':', color='#000000', linewidth='1', alpha=0.5)
-        ax.plot([0,xlim[1]],[1.2,1.2], ':', color='#000000', linewidth='1', alpha=0.5)
+        y_line = -10.0
+        for i in range(100):
+            if y_line > ylim[0] and y_line < ylim[1]:
+                ax.plot([0,xlim[1]],[y_line,y_line], ':', color='#000000', linewidth='1', alpha=0.5)
+            y_line += 0.2
+        ax.plot([0,xlim[1]],[0,0], '-', color='#000000', linewidth='1', alpha=0.5)
+        ax.plot([0,xlim[1]],[.2,.2], '-', color='#000000', linewidth='1', alpha=0.5)
         color_list = ['#66c2a5', '#fc8d62', '#8c9fcb', '#e78ac3', '#a5d853', '#b4b4b4', '#ffd82e', '#e4c494']
         for af in range(n_AFs):
             ax.plot(np.array(ts_list), alphas_by_layers[layer,:,af], linewidth=linewidth_default, color=color_list[af], label=af_list[af], alpha=1.0)
@@ -273,7 +292,7 @@ def plot_mean_alpha_by_layers_over_time_grouped(alpha_dict, ts_list, layer_list,
 # ### SCRIPT ###################################################################
 # ##############################################################################
 
-sections = [3]
+sections = [2]
 
 # ##############################################################################
 # ### SCRIPT: ASU ##############################################################
@@ -331,7 +350,13 @@ if 2 in sections:
     print('AF weights extracted for ABU_N')
     ts_b5p, alphas_b5p, betas_b5p = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_P_', 60000, 60)
     print('AF weights extracted for ABU_P')
+    ts_b5a, alphas_b5a, betas_b5a = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_A_', 60000, 60)
+    print('AF weights extracted for ABU_A')
+    ts_b5s, alphas_b5s, betas_b5s = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_S_', 60000, 60)
+    print('AF weights extracted for ABU_S')
 
-    plot_mean_ABU_alphas_over_time(alphas_b5u, ts_b5u, layer_list, abu_af_list, r'$ABU$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_alphas_default_init', ylim=[-.4,.6])
-    plot_mean_ABU_alphas_over_time(alphas_b5n, ts_b5n, layer_list, abu_af_list, r'$ABU_N$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_N_alphas_default_init', ylim=[-.4,.8])
-    plot_mean_ABU_alphas_over_time(alphas_b5p, ts_b5p, layer_list, abu_af_list, r'$ABU_P$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_P_alphas_default_init', ylim=[-.1,1.2])
+    plot_mean_ABU_alphas_over_time(alphas_b5u, ts_b5u, layer_list, abu_af_list, r'$ABU$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_alphas_default_init', ylim=[-.4,.6], norm="None")
+    plot_mean_ABU_alphas_over_time(alphas_b5n, ts_b5n, layer_list, abu_af_list, r'$ABU_N$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_N_alphas_default_init', ylim=[-1.6,2.4], norm="N")
+    plot_mean_ABU_alphas_over_time(alphas_b5p, ts_b5p, layer_list, abu_af_list, r'$ABU_P$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_P_alphas_default_init', ylim=[-.1,0.9], norm="P")
+    plot_mean_ABU_alphas_over_time(alphas_b5a, ts_b5a, layer_list, abu_af_list, r'$ABU_A$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_A_alphas_default_init', ylim=[-.4,.7], norm="A")
+    plot_mean_ABU_alphas_over_time(alphas_b5s, ts_b5s, layer_list, abu_af_list, r'$ABU_S$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_S_alphas_default_init', ylim=[-.1,1.1], norm="S")
