@@ -544,7 +544,7 @@ def plot_ABU2(mean_alphas_C10, mean_swish_beta_C10, mean_alphas_C100, mean_swish
 # ### SCRIPT ###################################################################
 # ##############################################################################
 
-steps = [2]
+steps = [1,2]
 
 # ##############################################################################
 # ### SCRIPT ASU ###############################################################
@@ -552,8 +552,8 @@ steps = [2]
 
 if 1 in steps:
 
-    path_finalweights = './3_output_cifar/ASC_main/0_af_weights/'
-    scaled_AFs_figname = 'MAIN_mean_alphas_ASU.png'
+    path_finalweights = './3_output_cifar/d_ASC_main/0_af_weights/'
+    scaled_AFs_figname = 'D_MAIN_mean_alphas_ASU.png'
 
     # get files from folder
     mb_step = 60000
@@ -605,25 +605,19 @@ if 1 in steps:
     swish_wd_3, swish_swishbeta_3 = smcn_extract_weights(path_finalweights, swish_fw_files_3)
 
     # print mean and std for all weights
-    smcn_print_mean_std(linu_wd, 'alpha-I alpha')
-    smcn_print_mean_std(tanh_wd, 'alpha-tanh alpha')
-    smcn_print_mean_std(relu_wd, 'alpha-ReLU alpha')
-    smcn_print_mean_std(elu_wd, 'alpha-ELU alpha')
-    smcn_print_mean_std(selu_wd, 'alpha-SELU alpha')
-    smcn_print_mean_std(swish_wd, 'alpha-Swish alpha')
-    smcn_print_mean_std(swish_swishbeta, 'alpha-Swish beta')
+    smcn_print_mean_std(linu_wd, 'D_alpha-I alpha')
+    smcn_print_mean_std(tanh_wd, 'D_alpha-tanh alpha')
+    smcn_print_mean_std(relu_wd, 'D_alpha-ReLU alpha')
+    smcn_print_mean_std(elu_wd, 'D_alpha-ELU alpha')
+    smcn_print_mean_std(selu_wd, 'D_alpha-SELU alpha')
+    smcn_print_mean_std(swish_wd, 'D_alpha-Swish alpha')
+    smcn_print_mean_std(swish_swishbeta, 'D_alpha-Swish beta')
 
     # plot all alphas for individual AFs (only plot final states)
     af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
     beta_list = [None, None, None, None, None, swish_swishbeta]
     title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
-    plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_1.png', beta_list=beta_list)
-    # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I.png')
-    # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh.png') # ylim=[0.0,1.8]
-    # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU.png')
-    # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU.png')
-    # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU.png')
-    # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish.png', beta=swish_swishbeta)
+    plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'D_MAIN_final_alpha_all_1.png', beta_list=beta_list)
 
     # plot all alphas for individual AFs (plot @ 6k and @60k)
     af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
@@ -631,13 +625,7 @@ if 1 in steps:
     beta_list = [None, None, None, None, None, swish_swishbeta]
     beta_list_2 = [None, None, None, None, None, swish_swishbeta_2]
     title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
-    plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_2.png', af_dict_list_2=af_dict_list_2, beta_list=beta_list, beta_list_2=beta_list_2)
-    # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I_2.png', af_dict_2=linu_wd_2)
-    # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh_2.png', af_dict_2=tanh_wd_2) # ylim=[0.0,1.8]
-    # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU_2.png', af_dict_2=relu_wd_2)
-    # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU_2.png', af_dict_2=elu_wd_2)
-    # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU_2.png', af_dict_2=selu_wd_2)
-    # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish_2.png', af_dict_2=swish_wd_2, beta=swish_swishbeta, beta_2=swish_swishbeta_2)
+    plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'D_MAIN_final_alpha_all_2.png', af_dict_list_2=af_dict_list_2, beta_list=beta_list, beta_list_2=beta_list_2)
 
     # plot all alphas for individual AFs (plot @ 1k, 6k and @60k)
     af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
@@ -647,13 +635,7 @@ if 1 in steps:
     beta_list_2 = [None, None, None, None, None, swish_swishbeta_2]
     beta_list_3 = [None, None, None, None, None, swish_swishbeta_3]
     title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
-    plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_3.png', af_dict_list_2=af_dict_list_2, af_dict_list_3=af_dict_list_3, beta_list=beta_list, beta_list_2=beta_list_2, beta_list_3=beta_list_3)
-    # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I_3.png', af_dict_2=linu_wd_2, af_dict_3=linu_wd_3)
-    # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh_3.png', af_dict_2=tanh_wd_2, af_dict_3=tanh_wd_3) # ylim=[0.0,1.8]
-    # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU_3.png', af_dict_2=relu_wd_2, af_dict_3=relu_wd_3)
-    # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU_3.png', af_dict_2=elu_wd_2, af_dict_3=elu_wd_3)
-    # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU_3.png', af_dict_2=selu_wd_2, af_dict_3=selu_wd_3)
-    # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish_3.png', af_dict_2=swish_wd_2, af_dict_3=swish_wd_3, beta=swish_swishbeta, beta_2=swish_swishbeta_2, beta_3=swish_swishbeta_3)
+    plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'D_MAIN_final_alpha_all_3.png', af_dict_list_2=af_dict_list_2, af_dict_list_3=af_dict_list_3, beta_list=beta_list, beta_list_2=beta_list_2, beta_list_3=beta_list_3)
 
     # plot mean alpha over layers for adaptively scaled functions
     af_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd, swish_swishbeta]
@@ -666,21 +648,21 @@ if 1 in steps:
 
 if 2 in steps:
 
-    path_finalweights = './3_output_cifar/ASC_main/0_af_weights/'
+    path_finalweights = './3_output_cifar/d_ASC_main/0_af_weights/'
 
-    ABU_figname = 'MAIN_mean_alphas_ABU.png'
-    ABU_S_figname = 'MAIN_mean_alphas_ABU_S.png'
-    ABU_N_figname = 'MAIN_mean_alphas_ABU_N.png'
-    ABU_A_figname = 'MAIN_mean_alphas_ABU_A.png'
-    ABU_P_figname = 'MAIN_mean_alphas_ABU_P.png'
+    ABU_figname = 'D_MAIN_mean_alphas_ABU.png'
+    ABU_S_figname = 'D_MAIN_mean_alphas_ABU_S.png'
+    ABU_N_figname = 'D_MAIN_mean_alphas_ABU_N.png'
+    ABU_A_figname = 'D_MAIN_mean_alphas_ABU_A.png'
+    ABU_P_figname = 'D_MAIN_mean_alphas_ABU_P.png'
 
-    ABU_AF_figname = 'MAIN_resulting_AFs_ABU.png'
-    ABU_S_AF_figname = 'MAIN_resulting_AFs_ABU_S.png'
-    ABU_N_AF_figname = 'MAIN_resulting_AFs_ABU_N.png'
-    ABU_A_AF_figname = 'MAIN_resulting_AFs_ABU_A.png'
-    ABU_P_AF_figname = 'MAIN_resulting_AFs_ABU_P.png'
+    ABU_AF_figname = 'D_MAIN_resulting_AFs_ABU.png'
+    ABU_S_AF_figname = 'D_MAIN_resulting_AFs_ABU_S.png'
+    ABU_N_AF_figname = 'D_MAIN_resulting_AFs_ABU_N.png'
+    ABU_A_AF_figname = 'D_MAIN_resulting_AFs_ABU_A.png'
+    ABU_P_AF_figname = 'D_MAIN_resulting_AFs_ABU_P.png'
 
-    ABU_AF_norm_figname = 'MAIN_resulting_AFnormed_ABU.png'
+    ABU_AF_norm_figname = 'D_MAIN_resulting_AFnormed_ABU.png'
 
     # get files from folder
     mb_step = 60000
@@ -730,20 +712,20 @@ if 2 in steps:
         blend5s_wd_3, blend5s_swishbeta_3 = smcn_extract_weights(path_finalweights, blend5s_fw_files_3)
 
     if len(blend5u_fw_files) > 0:
-        smcn_print_mean_std(blend5u_wd, 'ABU-TERIS alpha')
-        smcn_print_mean_std(blend5u_swishbeta, 'ABU-TERIS SwB')
+        smcn_print_mean_std(blend5u_wd, 'D_ABU-TERIS alpha')
+        smcn_print_mean_std(blend5u_swishbeta, 'D_ABU-TERIS SwB')
     if len(blend5n_fw_files) > 0:
-        smcn_print_mean_std(blend5n_wd, 'ABU_N-TERIS alpha')
-        smcn_print_mean_std(blend5n_swishbeta, 'ABU_N-TERIS SwB')
+        smcn_print_mean_std(blend5n_wd, 'D_ABU_N-TERIS alpha')
+        smcn_print_mean_std(blend5n_swishbeta, 'D_ABU_N-TERIS SwB')
     if len(blend5p_fw_files) > 0:
-        smcn_print_mean_std(blend5p_wd, 'ABU_P-TERIS alpha')
-        smcn_print_mean_std(blend5p_swishbeta, 'ABU_P-TERIS SwB')
+        smcn_print_mean_std(blend5p_wd, 'D_ABU_P-TERIS alpha')
+        smcn_print_mean_std(blend5p_swishbeta, 'D_ABU_P-TERIS SwB')
     if len(blend5a_fw_files) > 0:
-        smcn_print_mean_std(blend5a_wd, 'ABU_P-TERIS alpha')
-        smcn_print_mean_std(blend5a_swishbeta, 'ABU_P-TERIS SwB')
+        smcn_print_mean_std(blend5a_wd, 'D_ABU_P-TERIS alpha')
+        smcn_print_mean_std(blend5a_swishbeta, 'D_ABU_P-TERIS SwB')
     if len(blend5s_fw_files) > 0:
-        smcn_print_mean_std(blend5s_wd, 'ABU_P-TERIS alpha')
-        smcn_print_mean_std(blend5s_swishbeta, 'ABU_P-TERIS SwB')
+        smcn_print_mean_std(blend5s_wd, 'D_ABU_P-TERIS alpha')
+        smcn_print_mean_std(blend5s_swishbeta, 'D_ABU_P-TERIS SwB')
 
     # plot mean alpha over layers for adaptively scaled functions & plot resulting AFs:
     if len(blend5u_fw_files) > 0:

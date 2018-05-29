@@ -292,7 +292,7 @@ def plot_mean_ABU_alphas_over_time(alpha_dict, ts_list, layer_list, af_list, tit
 # ### SCRIPT ###################################################################
 # ##############################################################################
 
-sections = [2]
+sections = [1,2]
 
 # ##############################################################################
 # ### SCRIPT: ASU ##############################################################
@@ -300,8 +300,8 @@ sections = [2]
 
 if 1 in sections:
 
-    path_af_weights = './3_output_cifar/ASC_main/0_af_weights/'
-    path_all_weights = './3_output_cifar/ASC_main/0_all_weights/'
+    path_af_weights = './3_output_cifar/d_ASC_main/0_af_weights/'
+    path_all_weights = './3_output_cifar/d_ASC_main/0_all_weights/'
     layer_list = ['c1', 'c2', 'c3', 'c4', 'd1', 'd2']
     abu_af_list = ['ReLU', 'ELU', 'tanh', 'Swish', 'I']
 
@@ -323,15 +323,8 @@ if 1 in sections:
     alphas_list = [alphas_linu, alphas_tanh, alphas_relu, alphas_elu, alphas_selu, alphas_swish]
     af_name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
     ts_list = [ts_linu, ts_tanh, ts_relu, ts_elu, ts_selu, ts_swish]
-    ylim_list = [[0.,1.2], [0.,2.4], [0.,1.2], [0.,1.2], [0.,1.2], [0.,1.2]]
-    plot_mean_alpha_by_layers_over_time_grouped(alphas_list, af_name_list, ts_list, layer_list, './3_result_plots/', 'MAIN_ASU_over_time', ylim_list=ylim_list)
-
-    # plot_mean_alpha_by_layers_over_time(alphas_linu, ts_linu, layer_list, r'$\alpha_i$ over time ($\alpha$I)', './3_result_plots/', 'over_time_linu_alphas_default_init', ylim=[0.,1.2])
-    # plot_mean_alpha_by_layers_over_time(alphas_relu, ts_relu, layer_list, r'$\alpha_i$ over time ($\alpha$ReLU)', './3_result_plots/', 'over_time_relu_alphas_default_init', ylim=[0.,1.2])
-    # plot_mean_alpha_by_layers_over_time(alphas_tanh, ts_tanh, layer_list, r'$\alpha_i$ over time ($\alpha$tanh)', './3_result_plots/', 'over_time_tanh_alphas_default_init', ylim=[0.,2.4])
-    # plot_mean_alpha_by_layers_over_time(alphas_elu, ts_elu, layer_list, r'$\alpha_i$ over time ($\alpha$ELU)', './3_result_plots/', 'over_time_elu_alphas_default_init', ylim=[0.,1.2])
-    # plot_mean_alpha_by_layers_over_time(alphas_selu, ts_selu, layer_list, r'$\alpha_i$ over time ($\alpha$SELU)', './3_result_plots/', 'over_time_selu_alphas_default_init', ylim=[0.,1.2])
-    # plot_mean_alpha_by_layers_over_time(alphas_swish, ts_swish, layer_list, r'$\alpha_i$ over time ($\alpha$Swish)', './3_result_plots/', 'over_time_swish_alphas_default_init', ylim=[0.,1.2])
+    ylim_list = [[0.,3.0], [0.,1.2], [0.,2.0], [0.,4.0], [0.,6.0], [0.,2.0]]
+    plot_mean_alpha_by_layers_over_time_grouped(alphas_list, af_name_list, ts_list, layer_list, './3_result_plots/', 'D_MAIN_ASU_over_time', ylim_list=ylim_list)
 
 # ##############################################################################
 # ### SCRIPT: ABU ##############################################################
@@ -339,8 +332,8 @@ if 1 in sections:
 
 if 2 in sections:
 
-    path_af_weights = './3_output_cifar/ASC_main/0_af_weights/'
-    path_all_weights = './3_output_cifar/ASC_main/0_all_weights/'
+    path_af_weights = './3_output_cifar/d_ASC_main/0_af_weights/'
+    path_all_weights = './3_output_cifar/d_ASC_main/0_all_weights/'
     layer_list = ['conv1', 'conv2', 'conv3', 'conv4', 'dense1', 'dense2']
     abu_af_list = ['ReLU', 'ELU', 'tanh', 'Swish', 'I']
 
@@ -355,8 +348,8 @@ if 2 in sections:
     ts_b5s, alphas_b5s, betas_b5s = smcn_extract_af_weights_over_time(path_af_weights, 'ABU_S_', 60000, 60)
     print('AF weights extracted for ABU_S')
 
-    plot_mean_ABU_alphas_over_time(alphas_b5u, ts_b5u, layer_list, abu_af_list, r'$ABU$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_alphas_default_init', ylim=[-.4,.6], norm="None")
-    plot_mean_ABU_alphas_over_time(alphas_b5n, ts_b5n, layer_list, abu_af_list, r'$ABU_N$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_N_alphas_default_init', ylim=[-1.6,2.4], norm="N")
-    plot_mean_ABU_alphas_over_time(alphas_b5p, ts_b5p, layer_list, abu_af_list, r'$ABU_P$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_P_alphas_default_init', ylim=[-.1,0.9], norm="P")
-    plot_mean_ABU_alphas_over_time(alphas_b5a, ts_b5a, layer_list, abu_af_list, r'$ABU_A$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_A_alphas_default_init', ylim=[-.4,.7], norm="A")
-    plot_mean_ABU_alphas_over_time(alphas_b5s, ts_b5s, layer_list, abu_af_list, r'$ABU_S$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'over_time_ABU_S_alphas_default_init', ylim=[-.1,1.1], norm="S")
+    plot_mean_ABU_alphas_over_time(alphas_b5u, ts_b5u, layer_list, abu_af_list, r'$ABU$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'D_over_time_ABU_alphas_default_init', ylim=[-.6,.6], norm="None")
+    plot_mean_ABU_alphas_over_time(alphas_b5n, ts_b5n, layer_list, abu_af_list, r'$ABU_N$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'D_over_time_ABU_N_alphas_default_init', ylim=[-2.,2.4], norm="N")
+    plot_mean_ABU_alphas_over_time(alphas_b5p, ts_b5p, layer_list, abu_af_list, r'$ABU_P$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'D_over_time_ABU_P_alphas_default_init', ylim=[-.1,1.1], norm="P")
+    plot_mean_ABU_alphas_over_time(alphas_b5a, ts_b5a, layer_list, abu_af_list, r'$ABU_A$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'D_over_time_ABU_A_alphas_default_init', ylim=[-.4,1.], norm="A")
+    plot_mean_ABU_alphas_over_time(alphas_b5s, ts_b5s, layer_list, abu_af_list, r'$ABU_S$'+': mean '+r'$\alpha_{ij}$', './3_result_plots/', 'D_over_time_ABU_S_alphas_default_init', ylim=[-.1,1.1], norm="S")

@@ -748,8 +748,10 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 		# save overview of the run as a txt file
 		aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 
-		if TaskSettings.create_val_set and Rec.mb_count_total == 0:
-			validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec)
+		if Rec.mb_count_total == 0:
+			if TaskSettings.create_val_set:
+				validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec)
+			save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, recorder=True, tf_model=True, dataset=True, print_messsages=True)
 
 		while n_minibatches_remaining > 0 and Timer.session_shut_down == False:
 
