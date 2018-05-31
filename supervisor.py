@@ -37,11 +37,11 @@ for run in range(1):
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
 			  " -experiment_name "  			+ 'new_batchnorm_test' + \
-			  " -spec_name "        			+ 'relux' + \
+			  " -spec_name "        			+ 'test' + \
 			  " -run "              			+ '1' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcn' + \
+			  " -network="          			+ 'smcnBN' + \
 			  " -mode "             			+ 'training' + \
 			  " -n_minibatches "    			+ '3000' + \
 			  " -minibatch_size "   			+ '256' + \
