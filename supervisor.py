@@ -38,7 +38,7 @@ for run in range(1):
 			  " -path_relative "                + './' + \
 			  " -experiment_name "  			+ 'new_batchnorm_test' + \
 			  " -spec_name "        			+ 'test' + \
-			  " -run "              			+ '1' + \
+			  " -run "              			+ '2' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
 			  " -network="          			+ 'smcnBN' + \
