@@ -150,24 +150,26 @@ class Network(object):
 			tf.summary.scalar('top5', self.top5)
 
 		# OPTIMIZER
-		with tf.name_scope('optimizer'):
-			if self.NetSettings.optimizer_choice == 'Adam':
-				self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
-			elif self.NetSettings.optimizer_choice == 'SGD':
-				self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.lr)
-			elif self.NetSettings.optimizer_choice == 'Momentum':
-				self.optimizer = tf.train.MomentumOptimizer(learning_rate=self.lr, momentum=0.9, use_nesterov=False)
-			elif self.NetSettings.optimizer_choice == 'Nesterov':
-				self.optimizer = tf.train.MomentumOptimizer(learning_rate=self.lr, momentum=0.9, use_nesterov=True)
-			self.minimize = self.optimizer.minimize(self.loss)
-			varlist = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
-			self.gradients = self.optimizer.compute_gradients(self.loss, var_list=varlist)
-			self.update = self.optimizer.apply_gradients(grads_and_vars=self.gradients)
+		update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+  		with tf.control_dependencies(update_ops):
+			with tf.name_scope('optimizer'):
+				if self.NetSettings.optimizer_choice == 'Adam':
+					self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+				elif self.NetSettings.optimizer_choice == 'SGD':
+					self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.lr)
+				elif self.NetSettings.optimizer_choice == 'Momentum':
+					self.optimizer = tf.train.MomentumOptimizer(learning_rate=self.lr, momentum=0.9, use_nesterov=False)
+				elif self.NetSettings.optimizer_choice == 'Nesterov':
+					self.optimizer = tf.train.MomentumOptimizer(learning_rate=self.lr, momentum=0.9, use_nesterov=True)
+				self.minimize = self.optimizer.minimize(self.loss)
+				varlist = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
+				self.gradients = self.optimizer.compute_gradients(self.loss, var_list=varlist)
+				self.update = self.optimizer.apply_gradients(grads_and_vars=self.gradients)
 
-			for grad, var in self.gradients:
-				summary_label = var.name+'_gradient'
-				summary_label = summary_label.replace('/','_').replace(':','_')
-				variable_summaries(grad, summary_label)
+				for grad, var in self.gradients:
+					summary_label = var.name+'_gradient'
+					summary_label = summary_label.replace('/','_').replace(':','_')
+					variable_summaries(grad, summary_label)
 
 	# ========================== NETWORK ARCHITECTURES =========================
 
