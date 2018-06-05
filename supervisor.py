@@ -36,14 +36,14 @@ for run in range(1):
 	os.system("nvidia-smi")
 	command = "python3 "          				+ 'deepnet_main.py' + \
 			  " -path_relative "                + './' + \
-			  " -experiment_name "  			+ 'new_batchnorm_test' + \
-			  " -spec_name "        			+ 'test' + \
-			  " -run "              			+ '2' + \
+			  " -experiment_name "  			+ 'activations_log_test' + \
+			  " -spec_name "        			+ 'tanh' + \
+			  " -run "              			+ '1' + \
 			  " -task="             			+ 'cifar10' + \
 			  " -preprocessing="				+ 'ztrans' +\
-			  " -network="          			+ 'smcnBN' + \
+			  " -network="          			+ 'smcn' + \
 			  " -mode "             			+ 'training' + \
-			  " -n_minibatches "    			+ '3000' + \
+			  " -n_minibatches "    			+ '10000' + \
 			  " -minibatch_size "   			+ '256' + \
 			  " -dropout_keep_probs "   		+ '0.5' + \
 			  " -dropout_keep_probs_inference "	+ '1.0' + \
@@ -71,8 +71,8 @@ for run in range(1):
 			  " -walltime "						+ '1000.0' + \
 			  " -create_checkpoints "			+ 'True' + \
 			  " -epochs_between_checkpoints "	+ '3' + \
-			  " -save_af_weights_at_test_mb "	+ 'True' + \
-			  " -save_all_weights_at_test_mb "	+ 'True' + \
+			  " -save_af_weights_at_test_mb "	+ 'False' + \
+			  " -save_all_weights_at_test_mb "	+ 'False' + \
 			  " -create_lc_on_the_fly "			+ 'True'
 
 	subprocess.run(command, shell=True)

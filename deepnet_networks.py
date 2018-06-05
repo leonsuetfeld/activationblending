@@ -151,7 +151,7 @@ class Network(object):
 
 		# OPTIMIZER
 		update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-  		with tf.control_dependencies(update_ops):
+		with tf.control_dependencies(update_ops):
 			with tf.name_scope('optimizer'):
 				if self.NetSettings.optimizer_choice == 'Adam':
 					self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
@@ -301,6 +301,8 @@ class Network(object):
 		assert af_weights_init in ['default','predefined'], 'specified initialization type for W_blend unknown.'
 		assert AF_blend_mode in ['unrestricted','normalized','posnormed','absnormed','softmaxed'], 'specified blend mode unknown.'
 
+		variable_summaries(preact, 'preact')
+
 		if batch_norm:
 			preact = tf.layers.batch_normalization(preact, name='batchnorm', training=True)
 
@@ -314,6 +316,7 @@ class Network(object):
 			except Exception:
 				raise IOError('\n[ERROR] Couldn\'t restore predefined blend weights, stopping run.\n')
 		blend_weights_raw = tf.get_variable("blend_weights_raw", trainable=W_blend_trainable, initializer=af_weights_initializer)
+		variable_summaries(blend_weights_raw, 'blend_weights')
 		if AF_blend_mode == 'unrestricted':
 			blend_weights = blend_weights_raw
 		elif AF_blend_mode == 'normalized':
@@ -337,35 +340,36 @@ class Network(object):
 				except Exception:
 					raise IOError('\n[ERROR] Couldn\'t restore predefined swish beta, stopping run.\n')
 			swish_beta = tf.get_variable("swish_beta", trainable=swish_beta_trainable, initializer=swish_init)
+			variable_summaries(swish_beta, 'swish_beta')
 
 		# AF sets
 		if AF_set.startswith('1_'):
 			# relu
 			if 'relu' in AF_set:
 				act_relu = tf.nn.relu(preact)
-				return blend_weights[0] * act_relu
+				activation = blend_weights[0] * act_relu
 			# elu
-			if 'jelu' in AF_set:
+			elif 'jelu' in AF_set:
 				act_elu = tf.nn.elu(preact)
-				return blend_weights[0] * act_elu
+				activation = blend_weights[0] * act_elu
 			# tanh
-			if 'tanh' in AF_set:
+			elif 'tanh' in AF_set:
 				act_tanh = tf.nn.tanh(preact)
-				return blend_weights[0] * act_tanh
+				activation = blend_weights[0] * act_tanh
 			# swish
-			if 'jswish' in AF_set:
+			elif 'jswish' in AF_set:
 				act_swish = preact * tf.nn.sigmoid(swish_beta*preact)
-				return blend_weights[0] * act_swish
+				activation = blend_weights[0] * act_swish
 			# linu
-			if 'linu' in AF_set:
+			elif 'linu' in AF_set:
 				act_linu = preact
-				return blend_weights[0] * act_linu
+				activation = blend_weights[0] * act_linu
 			# selu
-			if 'selu' in AF_set:
+			elif 'selu' in AF_set:
 				act_selu = tf.nn.selu(preact)
-				return blend_weights[0] * act_selu
+				activation = blend_weights[0] * act_selu
 
-		if 'blend5_swish' in AF_set:
+		elif 'blend5_swish' in AF_set:
 			act_relu = tf.nn.relu(preact)
 			act_elu = tf.nn.elu(preact)
 			act_tanh = tf.nn.tanh(preact)
@@ -377,11 +381,14 @@ class Network(object):
 				act_tanh = tf.layers.batch_normalization(act_tanh, name='batchnorm_tanh', training=True)
 				act_swish = tf.layers.batch_normalization(act_swish, name='batchnorm_swish', training=True)
 				act_linu = tf.layers.batch_normalization(act_linu, name='batchnorm_linu', training=True)
-			return tf.add_n([blend_weights[0] * act_relu,
-							 blend_weights[1] * act_elu,
-							 blend_weights[2] * act_tanh,
-							 blend_weights[3] * act_swish,
-							 blend_weights[4] * act_linu])
+			activation = tf.add_n([blend_weights[0] * act_relu,
+								   blend_weights[1] * act_elu,
+								   blend_weights[2] * act_tanh,
+								   blend_weights[3] * act_swish,
+								   blend_weights[4] * act_linu])
+
+		variable_summaries(activation, 'activation')
+		return activation
 
 	def get_predefined_af_weights(self, layer_name, w_type='blend'):
 		# define which file to load the blend weights from

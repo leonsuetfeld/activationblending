@@ -163,8 +163,8 @@ class Paths(object):
 		self.af_weight_dicts = self.experiment+'0_af_weights/' 					# corresponds to TaskSettings.save_af_weights
 		self.all_weight_dicts = self.experiment+'0_all_weights/' 			 	# corresponds to TaskSettings.save_weights
 		self.analysis = self.experiment+'0_analysis/'							# path for analysis files, not used during training
-		self.summaries = self.experiment+'0_summaries/'							# corresponds to TaskSettings.keep_train_val_datasets
 		self.chrome_tls = self.experiment+'0_chrome_timelines/' 				# corresponds to TaskSettings.run_tracer
+		self.summaries = self.experiment+'0_summaries/'+str(TaskSettings.spec_name)+'_'+str(TaskSettings.run) # corresponds to TaskSettings.keep_train_val_datasets
 		# save paths (spec / run level)
 		if TaskSettings.mode != 'analysis':
 			self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
@@ -609,7 +609,7 @@ class Recorder(object):
 		self.mb_count_total = mb_to_restore
 		self.ep_count_total = 1 + (self.mb_count_total-1) // self.mbs_per_epoch
 		# print debug
-		assert self.mb_count_total == self.val_mb_n_hist[-1], 'something wrong here. %i %i' %(self.mb_count_total, self.val_mb_n_hist[-1])
+		assert self.mb_count_total == self.train_mb_n_hist[-1], 'something wrong here. %i %i' %(self.mb_count_total, self.train_mb_n_hist[-1])
 
 class SessionTimer(object):
 
@@ -765,21 +765,20 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 			input_dict = {Network.X: imageBatch, Network.Y: labelBatch, Network.lr: current_lr, Network.dropout_keep_prob: TaskSettings.dropout_keep_probs}
 			run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 			run_metadata = tf.RunMetadata()
-			# different options w.r.t. summaries and tracer
-			if TaskSettings.write_summary:
+			# session run call for summaries
+			if TaskSettings.write_summary and (Rec.mb_count_total % 20 == 0):
 				if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
-					_, loss, top1, summary = sess.run([Network.update, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+					summary = sess.run([merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
 				else:
-					_, loss, top1, summary = sess.run([Network.update, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict)
+					summary = sess.run([merged_summary_op], feed_dict = input_dict)
+				summary_writer.add_summary(summary, Rec.mb_count_total)
+			# main session run call for training
+			if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
+				_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
 			else:
-				if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
-					_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
-				else:
-					_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict)
+				_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict)
 
-			# WRITE SUMMARY AND TRACER FILE
-			if TaskSettings.write_summary:
-				summary_writer.add_summary(summary,Network.global_step.eval(session=sess))
+			# WRITE TRACER FILE
 			if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
 				tl = timeline.Timeline(run_metadata.step_stats)
 				ctf = tl.generate_chrome_trace_format()

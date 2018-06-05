@@ -34,6 +34,8 @@ from sklearn.utils import shuffle
 import deepnet_aux_cifar as aux
 import psutil
 
+from tensorflow import SessionLog
+
 # ##############################################################################
 # ### TASK SETTINGS ############################################################
 # ##############################################################################
@@ -111,7 +113,7 @@ class TaskSettings(object):
 				self.create_lc_on_the_fly = args['create_lc_on_the_fly']
 				self.tracer_minibatches = [0,50,100]
 				self.run_tracer = False					# recommended: False 	-- use only for efficiency optimization
-				self.write_summary = False				# recommended: False   	-- use only for debugging
+				self.write_summary = True				# recommended: False   	-- use only for debugging
 				self.keep_train_val_datasets = False	# recommended: False   	-- only necessary when continuing training after a break
 		self.print_overview()
 
@@ -163,8 +165,8 @@ class Paths(object):
 		self.af_weight_dicts = self.experiment+'0_af_weights/' 					# corresponds to TaskSettings.save_af_weights
 		self.all_weight_dicts = self.experiment+'0_all_weights/' 			 	# corresponds to TaskSettings.save_weights
 		self.analysis = self.experiment+'0_analysis/'							# path for analysis files, not used during training
-		self.summaries = self.experiment+'0_summaries/'							# corresponds to TaskSettings.keep_train_val_datasets
 		self.chrome_tls = self.experiment+'0_chrome_timelines/' 				# corresponds to TaskSettings.run_tracer
+		self.summaries = self.experiment+'0_summaries/'+str(TaskSettings.spec_name)+'_'+str(TaskSettings.run) # corresponds to TaskSettings.keep_train_val_datasets
 		# save paths (spec / run level)
 		if TaskSettings.mode != 'analysis':
 			self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
@@ -528,7 +530,7 @@ class Recorder(object):
 		pickle.dump(recorder_dict, open(savepath+filename,'wb'), protocol=3)
 		if print_messages:
 			print('================================================================================================================================================================================================================')
-			print('[MESSAGE] recorder dict saved: %s'%(savepath+filename))
+			print('[MESSAGE] recorder dict saved after minibatch %i: %s'%(self.mb_count_total, savepath+filename))
 
 	def restore_from_dict(self, Timer, mb_to_restore):
 		# restore dict
@@ -609,7 +611,7 @@ class Recorder(object):
 		self.mb_count_total = mb_to_restore
 		self.ep_count_total = 1 + (self.mb_count_total-1) // self.mbs_per_epoch
 		# print debug
-		assert self.mb_count_total == self.val_mb_n_hist[-1], 'something wrong here. %i %i' %(self.mb_count_total, self.val_mb_n_hist[-1])
+		assert self.mb_count_total == self.train_mb_n_hist[-1], 'something wrong here. %i %i' %(self.mb_count_total, self.train_mb_n_hist[-1])
 
 class SessionTimer(object):
 
@@ -724,6 +726,9 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 				TrainingHandler.restore_run_datasets()
 				Rec.restore_from_dict(Timer, highest_mb_in_filelist)
 				saver.restore(sess, Paths.models+restore_data_filename)
+				# marking this as a new session in the summary writer to avoid overlapping plots after model restore
+				if TaskSettings.write_summary:
+					summary_writer.add_session_log(SessionLog(status=SessionLog.START), global_step=Rec.mb_count_total)
 				model_restored = True
 				# print notification
 				print('================================================================================================================================================================================================================')
@@ -765,21 +770,20 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 			input_dict = {Network.X: imageBatch, Network.Y: labelBatch, Network.lr: current_lr, Network.dropout_keep_prob: TaskSettings.dropout_keep_probs}
 			run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 			run_metadata = tf.RunMetadata()
-			# different options w.r.t. summaries and tracer
-			if TaskSettings.write_summary:
+			# session run call for summaries
+			if TaskSettings.write_summary and (Rec.mb_count_total % 20 == 0):
 				if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
-					_, loss, top1, summary = sess.run([Network.update, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+					summary = sess.run(merged_summary_op, feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
 				else:
-					_, loss, top1, summary = sess.run([Network.update, Network.loss, Network.top1, merged_summary_op], feed_dict = input_dict)
+					summary = sess.run(merged_summary_op, feed_dict = input_dict)
+				summary_writer.add_summary(summary, Rec.mb_count_total)
+			# main session run call for training
+			if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
+				_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
 			else:
-				if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
-					_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
-				else:
-					_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict)
+				_, loss, top1 = sess.run([Network.update, Network.loss, Network.top1], feed_dict = input_dict)
 
-			# WRITE SUMMARY AND TRACER FILE
-			if TaskSettings.write_summary:
-				summary_writer.add_summary(summary,Network.global_step.eval(session=sess))
+			# WRITE TRACER FILE
 			if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
 				tl = timeline.Timeline(run_metadata.step_stats)
 				ctf = tl.generate_chrome_trace_format()
@@ -974,6 +978,9 @@ def save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, s
 		if not os.path.exists(Paths.models):
 			os.makedirs(Paths.models)
 		saver.save(sess, Paths.models+'model', global_step=Rec.mb_count_total, write_meta_graph=True) # MEMORY LEAK HAPPENING HERE. ANY IDEAS?
+		if print_messsages:
+			print('================================================================================================================================================================================================================')
+			print('[MESSAGE] model saved after minibatch %i: %s' %(Rec.mb_count_total, Paths.models+'model'))
 	# dataset
 	if dataset:
 		TrainingHandler.save_run_datasets()
@@ -989,10 +996,6 @@ def save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, s
 	# delete previous
 	if delete_previous:
 		delete_previous_savefiles(TaskSettings, Paths, Rec, ['all_weights','af_weights','models'])
-	# print message
-	if print_messsages:
-		print('================================================================================================================================================================================================================')
-		print('[MESSAGE] model saved: %s'%(Paths.models+'model'))
 
 def delete_previous_savefiles(TaskSettings, Paths, Rec, which_files, print_messsages=False):
 	# filenames must be manually defined to match the saved filenames
