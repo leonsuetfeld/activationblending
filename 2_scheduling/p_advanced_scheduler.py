@@ -158,9 +158,11 @@ def get_command(experiment_name, spec_name, run):
 	else:
 		raise IOError('\n[ERROR] Requested spec not found (%s).'%(spec_name))
 	if '_pre' in spec_name:
-		changes_dict["load_af_weights_from"] = spec_name.split('_pre_')[0]
+		changes_dict["af_weights_init"] = 'predefined'
+		changes_dict["load_af_weights_from"] = spec_name.split('_pre')[0]
 	if '_prenorm' in spec_name:
-		changes_dict["load_af_weights_from"] = spec_name.split('_pre_')[0]
+		changes_dict["af_weights_init"] = 'predefined'
+		changes_dict["load_af_weights_from"] = spec_name.split('_pre')[0]
 		changes_dict["norm_blendw_at_init"] = 'True'
 	if '_notrain' in spec_name:
 		changes_dict["blend_trainable"] = 'False'

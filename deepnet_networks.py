@@ -405,7 +405,7 @@ class Network(object):
 						file_num = i
 			blend_weights_file = blend_weights_files[file_num]
 			af_weights_dict = pickle.load(open(self.Paths.af_weight_dicts+blend_weights_file,'rb'))
-			print('[MESSAGE] (predefined) blend weights loaded from file "%s"' %(self.Paths.af_weight_dicts+blend_weights_file))
+			print('[MESSAGE] (predefined) blending weights loaded from file "%s"' %(self.Paths.af_weight_dicts+blend_weights_file))
 		else:
 			raise ValueError('Could not find af weights file containing "%s" and "run_%i"' %(self.NetSettings.init_blendweights_from_spec_name, self.NetSettings.run))
 		# extract from dict
@@ -413,8 +413,10 @@ class Network(object):
 			layer_blend_weights = af_weights_dict[layer_name+'/blend_weights:0']
 			if self.NetSettings.normalize_blend_weights_at_init:
 				layer_blend_weights /= tf.reduce_sum(layer_blend_weights)
+			print('[MESSAGE] (predefined) blending weights for layer',layer_name,':',layer_blend_weights)
 			return tf.convert_to_tensor(layer_blend_weights)
 		if w_type == 'swish_beta':
+			print('[MESSAGE] (predefined) swish beta for layer',layer_name,':',af_weights_dict[layer_name+'/swish_beta:0'])
 			return tf.convert_to_tensor(af_weights_dict[layer_name+'/swish_beta:0'])
 
 	def get_af_weights_dict(self, sess):
