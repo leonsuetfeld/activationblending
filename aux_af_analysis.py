@@ -262,11 +262,12 @@ def plot_all_runs_alphas(af_dict, title, saveplot_path, saveplot_filename, af_di
     plt.close()
 
 def plot_all_runs_alphas_multi(af_dict_list, title_list, saveplot_path, saveplot_filename, af_dict_list_2=[], af_dict_list_3=[], beta_list=[], beta_list_2=[], beta_list_3=[], ylim_list=[[0.0,1.4]]):
+    color_list = ['#8c9fcb','#fc8d62', '#e78ac3', '#a5d853', '#66c2a5', '#b4b4b4', '#ffd82e', '#e4c494']
     n_runs = len(af_dict_list[0]['conv1'])
     while len(ylim_list) < n_runs:
         ylim_list.append(ylim_list[0])
     linewidth_default = '1'
-    fig = plt.figure(figsize=(14,3))
+    fig = plt.figure(figsize=(14.01,3))
 
     for af_num, af_dict in enumerate(af_dict_list):
 
@@ -348,21 +349,21 @@ def plot_all_runs_alphas_multi(af_dict_list, title_list, saveplot_path, saveplot
         x = np.arange(6)+1
         if len(beta_list) > 0 and not beta is None:
             for run in range(n_runs):
-                ax.plot(x, betas_by_layers[run,:], linewidth=linewidth_default, color='orange', alpha=0.3)
+                ax.plot(x, betas_by_layers[run,:], linewidth=linewidth_default, color=color_list[1], alpha=0.3)
         if len(beta_list_2) > 0 and not beta_2 is None:
             for run in range(n_runs):
-                ax.plot(x, betas_by_layers_2[run,:], linewidth=linewidth_default, color='red', alpha=0.3)
+                ax.plot(x, betas_by_layers_2[run,:], linewidth=linewidth_default, color=color_list[3], alpha=0.3)
         if len(beta_list_3) > 0 and not beta_3 is None:
             for run in range(n_runs):
-                ax.plot(x, betas_by_layers_3[run,:], linewidth=linewidth_default, color='pink', alpha=0.3)
+                ax.plot(x, betas_by_layers_3[run,:], linewidth=linewidth_default, color=color_list[5], alpha=0.3)
         for run in range(n_runs):
-            ax.plot(x, alphas_by_layers[run,:], linewidth=linewidth_default, color='blue', alpha=0.3)
+            ax.plot(x, alphas_by_layers[run,:], linewidth=linewidth_default, color=color_list[0], alpha=0.3)
         if len(af_dict_list_2) > 0:
             for run in range(n_runs):
-                ax.plot(x, alphas_by_layers_2[run,:], linewidth=linewidth_default, color='green', alpha=0.3)
+                ax.plot(x, alphas_by_layers_2[run,:], linewidth=linewidth_default, color=color_list[2], alpha=0.3)
         if len(af_dict_list_3) > 0:
             for run in range(n_runs):
-                ax.plot(x, alphas_by_layers_3[run,:], linewidth=linewidth_default, color='black', alpha=0.3)
+                ax.plot(x, alphas_by_layers_3[run,:], linewidth=linewidth_default, color=color_list[4], alpha=0.3)
         ax.set_ylim(ylim_list[af_num])
         ax.set_xlim([0.8,6.2])
         ax.set_xticklabels(['','c1','c2','c3','c4','d1','d2'])
@@ -440,12 +441,13 @@ def get_mean_alphas_by_layers_ABU(weight_dict, swish_beta={}):
         swish_betas_by_layers_means[5] = np.mean(swish_beta['dense6'], axis=0)[0]
     return AF_names, afs_by_layers_means, swish_betas_by_layers_means
 
-def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, ylim=[-2.0, 2.0], col='black', norm="None"):
+def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, ylim=[-2.0, 2.0], xlim=[-2.0, 2.0], figsize=(11.198,1.5), norm="None", hide_xticks=True, hide_yticks=True):
+    color_list = ['#8c9fcb','#fc8d62', '#e78ac3', '#a5d853', '#66c2a5', '#b4b4b4', '#ffd82e', '#e4c494']
     mean_alphas = np.copy(mean_alphas)
     mean_swish_beta = np.copy(mean_swish_beta)
     assert mean_alphas.shape[0] == 6 and mean_alphas.shape[1] == 5, 'got wrong mean_alphas matrix. expected [6 layers x 5 AFs].'
-    fig = plt.figure(figsize=(11.6,2.3))
-    show_range = [-2.,2.,.01]
+    fig = plt.figure(figsize=figsize)
+    show_range = [xlim[0],xlim[1],.01]
     layer_names=['conv1','conv2','conv3','conv4','dense1','dense2']
     for layer_i in range(6):
         # calculate AF
@@ -469,14 +471,16 @@ def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, yli
         resulting_AF_layer_i += af(x, 'identity')*vec_alpha_layer_i[4]
         # plot AF
         ax = fig.add_subplot(1,6,layer_i+1)
-        plt.plot([-6.,6.],[0,0], '--', linewidth=1, color='black', alpha=0.5)
+        plt.plot([xlim[0],xlim[1]],[0,0], '--', linewidth=1, color='black', alpha=0.5)
         plt.plot([0,0],[-100,100], '--', linewidth=1, color='black', alpha=0.5)
-        plt.plot(x,resulting_AF_layer_i, linewidth='2', color=col)
+        plt.plot(x,resulting_AF_layer_i, linewidth='2', color=color_list[0])
         plt.xlim(show_range[0], show_range[1])
         plt.ylim(ylim)
         plt.title(layer_names[layer_i])
-        if layer_i > 0:
+        if layer_i > 0 or hide_yticks:
             plt.tick_params(axis='y', which='both', labelleft='off') # labels along the left and right off
+        if hide_xticks:
+            plt.tick_params(axis='x', which='both', labelbottom='off') # labels along the left and right off
         # ax.set_xticklabels(['-2','','-1','','0','','1','','2'])
         plt.locator_params(axis='y', nbins=5)
         plt.locator_params(axis='x', nbins=5)
@@ -618,12 +622,6 @@ if 1 in steps:
     beta_list = [None, None, None, None, None, swish_swishbeta]
     title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
     plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_1.png', beta_list=beta_list)
-    # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I.png')
-    # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh.png') # ylim=[0.0,1.8]
-    # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU.png')
-    # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU.png')
-    # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU.png')
-    # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish.png', beta=swish_swishbeta)
 
     # plot all alphas for individual AFs (plot @ 6k and @60k)
     af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
@@ -632,12 +630,6 @@ if 1 in steps:
     beta_list_2 = [None, None, None, None, None, swish_swishbeta_2]
     title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
     plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_2.png', af_dict_list_2=af_dict_list_2, beta_list=beta_list, beta_list_2=beta_list_2)
-    # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I_2.png', af_dict_2=linu_wd_2)
-    # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh_2.png', af_dict_2=tanh_wd_2) # ylim=[0.0,1.8]
-    # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU_2.png', af_dict_2=relu_wd_2)
-    # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU_2.png', af_dict_2=elu_wd_2)
-    # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU_2.png', af_dict_2=selu_wd_2)
-    # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish_2.png', af_dict_2=swish_wd_2, beta=swish_swishbeta, beta_2=swish_swishbeta_2)
 
     # plot all alphas for individual AFs (plot @ 1k, 6k and @60k)
     af_dict_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd]
@@ -648,12 +640,6 @@ if 1 in steps:
     beta_list_3 = [None, None, None, None, None, swish_swishbeta_3]
     title_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
     plot_all_runs_alphas_multi(af_dict_list, title_list, './3_result_plots/', 'MAIN_final_alpha_all_3.png', af_dict_list_2=af_dict_list_2, af_dict_list_3=af_dict_list_3, beta_list=beta_list, beta_list_2=beta_list_2, beta_list_3=beta_list_3)
-    # plot_all_runs_alphas(linu_wd, r'$\alpha I$', './3_result_plots/', 'MAIN_final_alpha_I_3.png', af_dict_2=linu_wd_2, af_dict_3=linu_wd_3)
-    # plot_all_runs_alphas(tanh_wd, r'$\alpha tanh$', './3_result_plots/', 'MAIN_final_alpha_tanh_3.png', af_dict_2=tanh_wd_2, af_dict_3=tanh_wd_3) # ylim=[0.0,1.8]
-    # plot_all_runs_alphas(relu_wd, r'$\alpha ReLU$', './3_result_plots/', 'MAIN_final_alpha_ReLU_3.png', af_dict_2=relu_wd_2, af_dict_3=relu_wd_3)
-    # plot_all_runs_alphas(elu_wd, r'$\alpha ELU$', './3_result_plots/', 'MAIN_final_alpha_ELU_3.png', af_dict_2=elu_wd_2, af_dict_3=elu_wd_3)
-    # plot_all_runs_alphas(selu_wd, r'$\alpha SELU$', './3_result_plots/', 'MAIN_final_alpha_SELU_3.png', af_dict_2=selu_wd_2, af_dict_3=selu_wd_3)
-    # plot_all_runs_alphas(swish_wd, r'$\alpha Swish$', './3_result_plots/', 'MAIN_final_alpha_Swish_3.png', af_dict_2=swish_wd_2, af_dict_3=swish_wd_3, beta=swish_swishbeta, beta_2=swish_swishbeta_2, beta_3=swish_swishbeta_3)
 
     # plot mean alpha over layers for adaptively scaled functions
     af_list = [linu_wd, tanh_wd, relu_wd, elu_wd, selu_wd, swish_wd, swish_swishbeta]
@@ -668,19 +654,6 @@ if 2 in steps:
 
     path_finalweights = './3_output_cifar/ASC_main/0_af_weights/'
 
-    ABU_figname = 'MAIN_mean_alphas_ABU.png'
-    ABU_S_figname = 'MAIN_mean_alphas_ABU_S.png'
-    ABU_N_figname = 'MAIN_mean_alphas_ABU_N.png'
-    ABU_A_figname = 'MAIN_mean_alphas_ABU_A.png'
-    ABU_P_figname = 'MAIN_mean_alphas_ABU_P.png'
-
-    ABU_AF_figname = 'MAIN_resulting_AFs_ABU.png'
-    ABU_S_AF_figname = 'MAIN_resulting_AFs_ABU_S.png'
-    ABU_N_AF_figname = 'MAIN_resulting_AFs_ABU_N.png'
-    ABU_A_AF_figname = 'MAIN_resulting_AFs_ABU_A.png'
-    ABU_P_AF_figname = 'MAIN_resulting_AFs_ABU_P.png'
-
-    ABU_AF_norm_figname = 'MAIN_resulting_AFnormed_ABU.png'
 
     # get files from folder
     mb_step = 60000
@@ -749,25 +722,30 @@ if 2 in steps:
     if len(blend5u_fw_files) > 0:
         # ABU
         ABU_AF_names, ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5u_wd, blend5u_swishbeta)
-        plot_mean_alpha_by_layers_ABU(ABU_AF_names, ABU_afs_by_layers_means_C10, 'ABU', './3_result_plots/', ABU_figname, swish_betas_by_layers_means=ABU_swish_betas_by_layers_means_C10, ylim=[-0.4,0.6])
-        plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_AF_figname, ylim=[-1.0, 1.0], col='blue', norm="None")
+        plot_mean_alpha_by_layers_ABU(ABU_AF_names, ABU_afs_by_layers_means_C10, 'ABU', './3_result_plots/', 'MAIN_mean_alphas_ABU.png', swish_betas_by_layers_means=ABU_swish_betas_by_layers_means_C10, ylim=[-0.4,0.6])
+        plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU.png', ylim=[-1.0, 1.0], xlim=[-8.0, 8.0], norm="None")
+        plot_ABU(ABU_afs_by_layers_means_C10, ABU_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_ticks.png', ylim=[-1.0, 1.0], xlim=[-8.0, 8.0], norm="None", hide_xticks=False, hide_yticks=False)
     if len(blend5n_fw_files) > 0:
         # ABU_N
         ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5n_wd, blend5n_swishbeta)
-        plot_mean_alpha_by_layers_ABU(ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, r'$ABU_{N}$', './3_result_plots/', ABU_N_figname, swish_betas_by_layers_means=ABU_N_swish_betas_by_layers_means_C10, ylim=[-0.6,2.0])
-        plot_ABU(ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_N_AF_figname, ylim=[-2.0, 2.0], col='blue', norm="N")
+        plot_mean_alpha_by_layers_ABU(ABU_N_AF_names, ABU_N_afs_by_layers_means_C10, r'$ABU_{N}$', './3_result_plots/', 'MAIN_mean_alphas_ABU_N.png', swish_betas_by_layers_means=ABU_N_swish_betas_by_layers_means_C10, ylim=[-0.6,2.0])
+        plot_ABU(ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_N.png', ylim=[-2.0, 2.0], xlim=[-8.0, 8.0], norm="N")
+        plot_ABU(ABU_N_afs_by_layers_means_C10, ABU_N_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_N_ticks.png', ylim=[-2.0, 2.0], xlim=[-8.0, 8.0], norm="N", hide_xticks=False, hide_yticks=False)
     if len(blend5p_fw_files) > 0:
         # ABU_P
         ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5p_wd, blend5p_swishbeta)
-        plot_mean_alpha_by_layers_ABU(ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, r'$ABU_{P}$', './3_result_plots/', ABU_P_figname, swish_betas_by_layers_means=ABU_P_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
-        plot_ABU(ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_P_AF_figname, ylim=[-2.0, 2.0], col='blue', norm="P")
+        plot_mean_alpha_by_layers_ABU(ABU_P_AF_names, ABU_P_afs_by_layers_means_C10, r'$ABU_{P}$', './3_result_plots/', 'MAIN_mean_alphas_ABU_P.png', swish_betas_by_layers_means=ABU_P_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
+        plot_ABU(ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_P.png', ylim=[-2.0, 2.0], xlim=[-8.0, 8.0], norm="P")
+        plot_ABU(ABU_P_afs_by_layers_means_C10, ABU_P_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_P_ticks.png', ylim=[-2.0, 2.0], xlim=[-8.0, 8.0], norm="P", hide_xticks=False, hide_yticks=False)
     if len(blend5a_fw_files) > 0:
         # ABU_A
         ABU_A_AF_names, ABU_A_afs_by_layers_means_C10, ABU_A_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5a_wd, blend5a_swishbeta)
-        plot_mean_alpha_by_layers_ABU(ABU_A_AF_names, ABU_A_afs_by_layers_means_C10, r'$ABU_{A}$', './3_result_plots/', ABU_A_figname, swish_betas_by_layers_means=ABU_A_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
-        plot_ABU(ABU_A_afs_by_layers_means_C10, ABU_A_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_A_AF_figname, ylim=[-1.0, 1.0], col='blue', norm="A")
+        plot_mean_alpha_by_layers_ABU(ABU_A_AF_names, ABU_A_afs_by_layers_means_C10, r'$ABU_{A}$', './3_result_plots/', 'MAIN_mean_alphas_ABU_A.png', swish_betas_by_layers_means=ABU_A_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
+        plot_ABU(ABU_A_afs_by_layers_means_C10, ABU_A_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_A.png', ylim=[-1.0, 1.0], xlim=[-8.0, 8.0], norm="A")
+        plot_ABU(ABU_A_afs_by_layers_means_C10, ABU_A_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_A_ticks.png', ylim=[-1.0, 1.0], xlim=[-8.0, 8.0], norm="A", hide_xticks=False, hide_yticks=False)
     if len(blend5s_fw_files) > 0:
         # ABU_S
         ABU_S_AF_names, ABU_S_afs_by_layers_means_C10, ABU_S_swish_betas_by_layers_means_C10 = get_mean_alphas_by_layers_ABU(blend5s_wd, blend5s_swishbeta)
-        plot_mean_alpha_by_layers_ABU(ABU_S_AF_names, ABU_S_afs_by_layers_means_C10, r'$ABU_{S}$', './3_result_plots/', ABU_S_figname, swish_betas_by_layers_means=ABU_S_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
-        plot_ABU(ABU_S_afs_by_layers_means_C10, ABU_S_swish_betas_by_layers_means_C10, './3_result_plots/', ABU_S_AF_figname, ylim=[-2.0, 2.0], col='blue', norm="S")
+        plot_mean_alpha_by_layers_ABU(ABU_S_AF_names, ABU_S_afs_by_layers_means_C10, r'$ABU_{S}$', './3_result_plots/', 'MAIN_mean_alphas_ABU_S.png', swish_betas_by_layers_means=ABU_S_swish_betas_by_layers_means_C10, ylim=[-0.1,1.2])
+        plot_ABU(ABU_S_afs_by_layers_means_C10, ABU_S_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_S.png', ylim=[-2.0, 2.0], xlim=[-8.0, 8.0], norm="S")
+        plot_ABU(ABU_S_afs_by_layers_means_C10, ABU_S_swish_betas_by_layers_means_C10, './3_result_plots/', 'MAIN_resulting_AFs_ABU_S_ticks.png', ylim=[-2.0, 2.0], xlim=[-8.0, 8.0], norm="S", hide_xticks=False, hide_yticks=False)

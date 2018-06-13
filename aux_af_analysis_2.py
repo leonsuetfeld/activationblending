@@ -164,7 +164,7 @@ def plot_mean_alpha_by_layers_over_time(alpha_dict, ts_list, layer_list, title, 
 
 def plot_mean_alpha_by_layers_over_time_grouped(alpha_list, af_name_list, ts_listoflists, layer_list, saveplot_path, saveplot_filename, xlim=[0,60000], ylim_list=[[0.0,1.8]]):
 
-    fig = plt.figure(figsize=(14,3))
+    fig = plt.figure(figsize=(14.11,3))
     n_layers = len(layer_list)
     n_AFs = len(alpha_list)
     linewidth_default = '2'
@@ -292,7 +292,7 @@ def plot_mean_ABU_alphas_over_time(alpha_dict, ts_list, layer_list, af_list, tit
 # ### SCRIPT ###################################################################
 # ##############################################################################
 
-sections = [2]
+sections = [1]
 
 # ##############################################################################
 # ### SCRIPT: ASU ##############################################################
