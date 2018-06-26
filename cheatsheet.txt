@@ -5,11 +5,11 @@
 source venvtfgpu/bin/activate
 
 export THEANO_FLAGS=floatX=float32,device=gpu0,lib.cnmem=0.8
-export CUDNN_HOME=/net/store/ni/users/lsuetfel/squeezeMI/cuda 									# cuda 5.1
+export CUDNN_HOME=/net/store/ni/users/lsuetfel/squeezeMI/cuda                   # cuda 5.1
 export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$CUDNN_HOME/lib64"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDNN_HOME/lib64"
 
-unset DISPLAY										# to disable display output (matplotlib); alternative to set current (local) display as output display: DISPLAY=:0.0
+unset DISPLAY                    # to disable display output (matplotlib); alternative to set current (local) display as output display: DISPLAY=:0.0
 
 python3 codename.py
 
@@ -25,8 +25,8 @@ git init
 git config --global user.name "John Doe"
 git config --global user.email johndoe@example.com
 git remote add origin https://github.com/username/myrepository.git
-git remote -v 																																	# see 'remote' settings
-touch .gitignore 																																# creates empty .gitignore file. put in folders and files to ignore, one per line [all files in the repository folder should either be added or listed in .gitignore]
+git remote -v                                                                   # see 'remote' settings
+touch .gitignore                                                                 # creates empty .gitignore file. put in folders and files to ignore, one per line [all files in the repository folder should either be added or listed in .gitignore]
 
 2) SETUP: join existing repository
 
@@ -35,12 +35,12 @@ touch .gitignore 																																# creates empty .gitignore file
 
 3) USE
 
-git add filename.py 																														# add file to repository
-git mv old_filename.py new_filename 																						# rename file
-git rm filename.py 																															# delete file (from local hard disk)
-git commit -a -m "commit message"																								# commit all changes in previouslz added files
-git push -u origin master																												# push all new commits (i.e., sync with online repo)
-git pull																																				# pulls newest version from
+git add filename.py                                                             # add file to repository
+git mv old_filename.py new_filename                                             # rename file
+git rm filename.py                                                               # delete file (from local hard disk)
+git commit -a -m "commit message"                                                # commit all changes in previouslz added files
+git push -u origin master                                                        # push all new commits (i.e., sync with online repo)
+git pull                                                                        # pulls newest version from
 
 4) MERGE
 
@@ -105,8 +105,8 @@ ssh righty
 in ~/.ssh/config (on either mac or uni computer)
 ---------
 Host gate
-	Hostname gate.ikw.uni-osnabrueck.de
-	User lsuetfel
+  Hostname gate.ikw.uni-osnabrueck.de
+  User lsuetfel
 ---------
 scp gate:/net/store/ni/...
 ssh gate
@@ -152,10 +152,10 @@ localhost:16006"
 # ##############################################################################
 
 cd /net/store/ni/users/lsuetfel/projectfolder             # go to folder for venv
-virtualenv -p python3 --system-site-packages venvtfgpu  	# create venv
-virtualenv -p python3 --system-site-packages venvtfcpu  	# create venv for cpu usage
-source venvtfgpu/bin/activate                           	# activate venv
-source venvtfcpu/bin/activate                           	# activate venv for cpu
+virtualenv -p python3 --system-site-packages venvtfgpu    # create venv
+virtualenv -p python3 --system-site-packages venvtfcpu    # create venv for cpu usage
+source venvtfgpu/bin/activate                             # activate venv
+source venvtfcpu/bin/activate                             # activate venv for cpu
 
 # Install or update some other libraries if needed:
 pip3 install --upgrade wheel

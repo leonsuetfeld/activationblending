@@ -126,11 +126,11 @@ def load_cifar10(path_train='./1_data_cifar10/train_batches/', path_test='./1_da
             labels = data_dict[b'labels']
             dataset_labels.extend(labels)
     with open(path_test+'test_batch', 'rb') as file:
-    	test_dict = pickle.load(file, encoding='bytes')
-    	images = test_dict[b'data']
-    	dataset_images.extend(images)
-    	labels = test_dict[b'labels']
-    	dataset_labels.extend(labels)
+        test_dict = pickle.load(file, encoding='bytes')
+        images = test_dict[b'data']
+        dataset_images.extend(images)
+        labels = test_dict[b'labels']
+        dataset_labels.extend(labels)
     dataset_images = np.array(dataset_images)
     dataset_labels = np.array(dataset_labels)
     if max_size > 0:
@@ -148,9 +148,9 @@ def load_cifar100(path_train='./1_data_cifar100/train_batches/', path_test='./1_
         dataset_images.extend(data_dict[b'data'])
         dataset_labels.extend(data_dict[b'fine_labels'])
     with open(path_test+'test', 'rb') as file:
-    	test_dict = pickle.load(file, encoding='bytes')
-    	dataset_images.extend(test_dict[b'data'])
-    	dataset_labels.extend(test_dict[b'fine_labels'])
+        test_dict = pickle.load(file, encoding='bytes')
+        dataset_images.extend(test_dict[b'data'])
+        dataset_labels.extend(test_dict[b'fine_labels'])
     dataset_images = np.array(dataset_images)
     dataset_labels = np.array(dataset_labels)
     if max_size > 0:
