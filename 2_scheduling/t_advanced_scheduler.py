@@ -203,7 +203,6 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, spec_list, 
 					unfinished_list.append([spec, run])
 	# update csv
 	create_scheduler_csv(spec_list, n_runs, experiment_name)
-	print('[MESSAGE ASC] created empty scheduling csv.')
 	csv = open_csv_as_list(csv_path, filename)
 	if len(finished_list) > 0:
 		for entry in finished_list:
@@ -322,27 +321,26 @@ def create_scheduler_csv(spec_list, n_runs, experiment_name, path_relative='/2_s
 def get_settings():
 	scheduling_subfolder = '/2_scheduling/'
 	experiment_path = '/3_output_cifar/'
-	experiment_name = 'p_ASC_main'                                                # change when swapping between deployed and development folders
-	spec_list = ['smcn_adam_c10_alpha_relu_pre_notrain',
-				 'smcn_adam_c10_alpha_tanh_pre_notrain',
-				 'smcn_adam_c10_alpha_elu_pre_notrain',
-				 'smcn_adam_c10_ABU_TERIS_pre_notrain',
-				 'smcn_adam_c10_alpha_relu_pre',
-				 'smcn_adam_c10_alpha_tanh_pre',
-				 'smcn_adam_c10_alpha_elu_pre',
-				 'smcn_adam_c10_ABU_TERIS_pre',
- 				 'smcn_adam_c10_ABU_TERIS_prenorm_notrain',
- 				 'smcn_adam_c10_ABU_TERIS_prenorm',
- 				 'smcn_adam_c10_ABU_S_TERIS_pre_notrain',
- 				 'smcn_adam_c10_ABU_S_TERIS_pre',
- 				 'smcn_adam_c10_ABU_N_TERIS_pre_notrain',
- 				 'smcn_adam_c10_ABU_N_TERIS_pre',
- 				 'smcn_adam_c10_ABU_A_TERIS_pre_notrain',
- 				 'smcn_adam_c10_ABU_A_TERIS_pre',
- 				 'smcn_adam_c10_ABU_P_TERIS_pre_notrain',
- 				 'smcn_adam_c10_ABU_P_TERIS_pre']
-	n_runs = 30
-	gridjob_command = 'qsub 2_scheduling/p_advanced_scheduler_gridjob.sh'
+	experiment_name = 't_ASC_main'                                                # change when swapping between deployed and development folders
+	spec_list = ['smcn_adam_c10_I',
+				 'smcn_adam_c10_alpha_I',
+				 'smcn_adam_c10_relu',
+				 'smcn_adam_c10_alpha_relu',
+				 'smcn_adam_c10_tanh',
+				 'smcn_adam_c10_alpha_tanh',
+				 'smcn_adam_c10_elu',
+				 'smcn_adam_c10_alpha_elu',
+				 'smcn_adam_c10_selu',
+				 'smcn_adam_c10_alpha_selu',
+				 'smcn_adam_c10_swish',
+				 'smcn_adam_c10_alpha_swish',
+				 'smcn_adam_c10_ABU_TERIS',
+				 'smcn_adam_c10_ABU_S_TERIS',
+				 'smcn_adam_c10_ABU_N_TERIS',
+				 'smcn_adam_c10_ABU_A_TERIS',
+				 'smcn_adam_c10_ABU_P_TERIS']
+	n_runs = 5
+	gridjob_command = 'qsub 2_scheduling/t_advanced_scheduler_gridjob.sh'
 	return scheduling_subfolder, experiment_path, experiment_name, spec_list, n_runs, gridjob_command
 
 ################################################################################
@@ -379,5 +377,5 @@ if __name__ == '__main__':
 
 	# AT THE END OF GRIDJOB, RESCHEDULE GRIDJOB
 	if len(sys.argv) > 1:
-		if int(sys.argv[1]) == 5 and n_unfinished_runs > 0:
+		if int(sys.argv[1]) == 10 and n_unfinished_runs > 0:
 			os.system(gridjob_command)

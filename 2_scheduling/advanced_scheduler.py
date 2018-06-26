@@ -1,4 +1,5 @@
 import time
+import datetime
 import os
 import sys
 import subprocess
@@ -74,36 +75,14 @@ def get_command(experiment_name, spec_name, run):
 		changes_dict["network"] = 'smcnLin'
 	if 'smcnc_' in spec_name:
 		changes_dict["network"] = 'smcnDeep'
-	if '_sgdm_l_' in spec_name:
+	if 'smcnd_' in spec_name:
+		changes_dict["network"] = 'smcnBN'
+	if '_sgdm_' in spec_name:
 		changes_dict["optimizer"] = 'Momentum'
 		changes_dict["lr"] = '0.01'
 		changes_dict["lr_schedule_type"] = 'linear'
 		changes_dict["lr_lin_min"] = '0.0004'
 		changes_dict["lr_lin_step"] = '60000'
-	if '_sgdm_d1_' in spec_name:
-		changes_dict["optimizer"] = 'Momentum'
-		changes_dict["lr"] = '0.01'
-		changes_dict["lr_schedule_type"] = 'decay'
-		changes_dict["lr_decay"] = '0.0003'
-	if '_sgdm_d2_' in spec_name:
-		changes_dict["optimizer"] = 'Momentum'
-		changes_dict["lr"] = '0.01'
-		changes_dict["lr_schedule_type"] = 'decay'
-		changes_dict["lr_decay"] = '0.00003'
-	if '_sgdm_d3_' in spec_name:
-		changes_dict["optimizer"] = 'Momentum'
-		changes_dict["lr"] = '0.01'
-		changes_dict["lr_schedule_type"] = 'decay'
-		changes_dict["lr_decay"] = '0.00001'
-	if '_sgdm_d4_' in spec_name:
-		changes_dict["optimizer"] = 'Momentum'
-		changes_dict["lr"] = '0.01'
-		changes_dict["lr_schedule_type"] = 'decay'
-		changes_dict["lr_decay"] = '0.000001'
-	if '_sgdm_c_' in spec_name:
-		changes_dict["optimizer"] = 'Momentum'
-		changes_dict["lr"] = '0.01'
-		changes_dict["lr_schedule_type"] = 'constant'
 	# I
 	if '_I' in spec_name and not '_alpha_I' in spec_name:
 		pass
@@ -190,16 +169,23 @@ def get_command(experiment_name, spec_name, run):
 		changes_dict["swish_beta_trainable"] = 'False'
 	return dict_to_command_str(get_spec_dict(changes_dict))
 
-def csv_update(csv_path, filename, experiment_path, experiment_name, mark_running_as_incomplete=False):
+def csv_update(csv_path, filename, experiment_path, experiment_name, spec_list, n_runs, mark_running_as_incomplete=False):
+	print('[MESSAGE ASC] going through experiment folder to scan for finished and unfinished runs...')
+	n_specs = len(spec_list)
 	finished_list = []
 	unfinished_list = []
 	# look through recorder files
 	if os.path.exists(os.getcwd()+experiment_path+experiment_name+'/'):
-		spec_folders = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/') if os.path.isdir(os.path.join(os.getcwd()+experiment_path+experiment_name+'/',f))]
+		spec_folders = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/') if (os.path.isdir(os.path.join(os.getcwd()+experiment_path+experiment_name+'/',f)) and not f.startswith('0_'))]
 		for spec in spec_folders:
 			run_folders = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec) if os.path.isdir(os.path.join(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/',f))]
 			for run_folder in run_folders:
 				run = int(run_folder.split('_')[-1])
+				if mark_running_as_incomplete:
+					running_file_name = os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder+'/running.txt'
+					if os.path.exists(running_file_name):
+						os.remove(running_file_name)
+						print('[MESSAGE ASC] running file deleted to mark run as incomplete instead of running.')
 				run_info_files = [f for f in os.listdir(os.getcwd()+experiment_path+experiment_name+'/'+spec+'/'+run_folder) if ('run_info_' in f)]
 				if len(run_info_files) > 0:
 					training_complete = False
@@ -216,6 +202,7 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, mark_runnin
 				else:
 					unfinished_list.append([spec, run])
 	# update csv
+	create_scheduler_csv(spec_list, n_runs, experiment_name)
 	csv = open_csv_as_list(csv_path, filename)
 	if len(finished_list) > 0:
 		for entry in finished_list:
@@ -226,21 +213,44 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, mark_runnin
 		for entry in unfinished_list:
 			spec_idx = csv_spec_to_num(csv, entry[0])
 			run = entry[1]
-			if mark_running_as_incomplete:
+			run_still_running, timestamp = still_running(experiment_path, experiment_name, spec_list[spec_idx-1], run)
+			if mark_running_as_incomplete or csv[spec_idx][run] == 'incomplete' or not run_still_running:
 				csv[spec_idx][run] = 'incomplete'
-			else:
-				cell = csv[spec_idx][run]
-				if 'running' in cell:
-					if (time.time()-float(cell.split(' ')[-1]))/60. > 90.0:
-						csv[spec_idx][run] = 'incomplete'
-				else:
-					csv[spec_idx][run] = 'incomplete'
+			elif run_still_running:
+				csv[spec_idx][run] = 'running '+str(timestamp)
 	save_list_as_csv(csv, csv_path, filename)
+	print('[MESSAGE ASC] updated scheduling csv: %i specs * %i runs = %i runs total. %i runs finished, %i runs running or incomplete' %(n_specs, n_runs, n_specs*n_runs, len(finished_list), len(unfinished_list)))
 	return ((np.array(csv).shape[0]-1)*(np.array(csv).shape[1]-1)) - len(finished_list)
+
+def write_running_file(experiment_path, experiment_name, spec_name, run):
+	exp_spec_run_path = os.getcwd()+experiment_path+experiment_name+'/'+spec_name+'/run_'+str(run)+'/'
+	running_file_name = exp_spec_run_path+'running.txt'
+	if not os.path.exists(exp_spec_run_path):
+		os.makedirs(exp_spec_run_path)
+	if os.path.exists(running_file_name):
+		os.remove(running_file_name)
+		print('[MESSAGE ASC] running file deleted before writing new running file')
+	with open(running_file_name, "w+") as text_file:
+		t = time.time()
+		text_file.write('running: %f\n' %(t))
+		text_file.write(datetime.datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S'))
+	print('[MESSAGE ASC] running file created. experiment: %s, spec: %s, run: %i' %(experiment_name, spec_name, run))
+
+def still_running(experiment_path, experiment_name, spec_name, run):
+	exp_spec_run_path = os.getcwd()+experiment_path+experiment_name+'/'+spec_name+'/run_'+str(run)+'/'
+	if os.path.exists(exp_spec_run_path+'running.txt'):
+		inputfile = open(exp_spec_run_path+'running.txt', 'r')
+		lines = inputfile.readlines()
+		for line in lines:
+			if 'running: ' in line:
+				timestamp = float(line.split('running: ')[-1].split('\n')[0])
+				if time.time() - timestamp < 90.0*60.0:
+					return True, timestamp
+	return False, 0.
 
 def csv_spec_to_num(csv, spec):
 	for i, row in enumerate(csv):
-		if spec in row[0]:
+		if spec == row[0]:
 			return i
 
 def csv_lookup_spec_run(csv_path, filename, valid=['','incomplete'], preferred=['incomplete'], random=True):
@@ -272,7 +282,7 @@ def csv_lookup_spec_run(csv_path, filename, valid=['','incomplete'], preferred=[
 	return spec_idx, run
 
 def open_csv_as_list(path, filename):
-	print('ASC // opening', os.getcwd()+path+filename, '('+str(time.time())+')')
+	print('[MESSAGE ASC] opening', os.getcwd()+path+filename, '('+str(time.time())+')')
 	with open(os.getcwd()+path+filename, 'r') as f:
 		reader = csv.reader(f)
 		csv_array = list(reader)
@@ -282,13 +292,13 @@ def open_csv_as_list(path, filename):
 	return csv_array
 
 def save_list_as_csv(array, path, filename, print_message=False):
-	print('ASC // saving', os.getcwd()+path+filename, '('+str(time.time())+')')
+	print('[MESSAGE ASC] saving', os.getcwd()+path+filename, '('+str(time.time())+')')
 	with open(os.getcwd()+path+filename, 'w') as csvfile:
 		writer = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 		for row in array:
 			writer.writerow(row)
 	if print_message:
-		print('[MESSAGE] csv saved: %s' %(path+filename))
+		print('[MESSAGE ASC] csv saved: %s' %(path+filename))
 
 def create_scheduler_csv(spec_list, n_runs, experiment_name, path_relative='/2_scheduling/'):
 	top_row = [experiment_name]
@@ -302,6 +312,7 @@ def create_scheduler_csv(spec_list, n_runs, experiment_name, path_relative='/2_s
 			next_row.append('')
 		csv_array.append(next_row)
 	save_list_as_csv(csv_array, path_relative, experiment_name+'.csv') # needs fixing
+	print('[MESSAGE ASC] created empty scheduling csv for %i specs * %i runs: %s' %(len(spec_list), n_runs, experiment_name+'.csv'))
 
 ################################################################################
 ### SETTINGS ###################################################################
@@ -310,12 +321,25 @@ def create_scheduler_csv(spec_list, n_runs, experiment_name, path_relative='/2_s
 def get_settings():
 	scheduling_subfolder = '/2_scheduling/'
 	experiment_path = '/3_output_cifar/'
-	experiment_name = 'ASC_test_normalization'                                    # change when swapping between deployed and development folders
-	spec_list = ['smcn_adam_c10_ABU_N_TERIS',
-				 'smcn_adam_c10_ABU_P_TERIS',
+	experiment_name = 'ASC_main'                                                # change when swapping between deployed and development folders
+	spec_list = ['smcn_adam_c10_I',
+				 'smcn_adam_c10_alpha_I',
+				 'smcn_adam_c10_relu',
+				 'smcn_adam_c10_alpha_relu',
+				 'smcn_adam_c10_tanh',
+				 'smcn_adam_c10_alpha_tanh',
+				 'smcn_adam_c10_elu',
+				 'smcn_adam_c10_alpha_elu',
+				 'smcn_adam_c10_selu',
+				 'smcn_adam_c10_alpha_selu',
+				 'smcn_adam_c10_swish',
+				 'smcn_adam_c10_alpha_swish',
+				 'smcn_adam_c10_ABU_TERIS',
+				 'smcn_adam_c10_ABU_S_TERIS',
+				 'smcn_adam_c10_ABU_N_TERIS',
 				 'smcn_adam_c10_ABU_A_TERIS',
-				 'smcn_adam_c10_ABU_S_TERIS']
-	n_runs = 10
+				 'smcn_adam_c10_ABU_P_TERIS']
+	n_runs = 30
 	gridjob_command = 'qsub 2_scheduling/advanced_scheduler_gridjob.sh'
 	return scheduling_subfolder, experiment_path, experiment_name, spec_list, n_runs, gridjob_command
 
@@ -330,29 +354,26 @@ if __name__ == '__main__':
 
 	# UPDATE CSV AND LOOK UP SPECS FOR NEXT RUN
 	with FileLock(os.getcwd()+scheduling_subfolder+experiment_name+'.csv.lock'):
-		gridjob_active = (len(sys.argv) > 1)
-		gridjob_inactive = not gridjob_active
-		n_unfinished_runs = csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name, mark_running_as_incomplete=gridjob_inactive)
+		n_unfinished_runs = csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name, spec_list, n_runs, mark_running_as_incomplete=False)
 		if n_unfinished_runs > 0:
 			spec_csv_idx, run = csv_lookup_spec_run(scheduling_subfolder, experiment_name+'.csv')
 
 	# AT THE END OF GRIDJOB, RESCHEDULE GRIDJOB
 	if len(sys.argv) > 1:
-		if int(sys.argv[1]) == 5 and n_unfinished_runs > 0:
+		if int(sys.argv[1]) == 30 and n_unfinished_runs > 0:
 			os.system(gridjob_command)
 
 	if spec_csv_idx == -1 and run == -1:
-		time.sleep(300.0)
+		time.sleep(120.0)
 		with FileLock(os.getcwd()+scheduling_subfolder+experiment_name+'.csv.lock'):
-			gridjob_active = (len(sys.argv) > 1)
-			gridjob_inactive = not gridjob_active
-			n_unfinished_runs = csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name, mark_running_as_incomplete=gridjob_inactive)
+			n_unfinished_runs = csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name, spec_list, n_runs, mark_running_as_incomplete=False)
 			if n_unfinished_runs > 0:
 				spec_csv_idx, run = csv_lookup_spec_run(scheduling_subfolder, experiment_name+'.csv')
 
 	if n_unfinished_runs == 0:
-		print('[MESSAGE] Experiment already complete. Please check if %s.csv shows every run to be finished.' %(scheduling_subfolder+experiment_name))
+		print('[MESSAGE ASC] Experiment already complete. Please check if %s.csv shows every run to be finished.' %(scheduling_subfolder+experiment_name))
 	elif run > 0:
+		write_running_file(experiment_path, experiment_name, spec_list[spec_csv_idx-1], run)
 		print('\n=================================================================================================================================================================================')
 		print('SCHEDULING: EXPERIMENT "%s" / SPEC "%s" / RUN "%i"' %(experiment_name, spec_list[spec_csv_idx-1], run))
 		print('=================================================================================================================================================================================\n')

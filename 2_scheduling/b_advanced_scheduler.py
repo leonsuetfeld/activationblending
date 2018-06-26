@@ -203,7 +203,6 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, spec_list, 
 					unfinished_list.append([spec, run])
 	# update csv
 	create_scheduler_csv(spec_list, n_runs, experiment_name)
-	print('[MESSAGE ASC] created empty scheduling csv.')
 	csv = open_csv_as_list(csv_path, filename)
 	if len(finished_list) > 0:
 		for entry in finished_list:
@@ -221,7 +220,9 @@ def csv_update(csv_path, filename, experiment_path, experiment_name, spec_list, 
 				csv[spec_idx][run] = 'running '+str(timestamp)
 	save_list_as_csv(csv, csv_path, filename)
 	print('[MESSAGE ASC] updated scheduling csv: %i specs * %i runs = %i runs total. %i runs finished, %i runs running or incomplete' %(n_specs, n_runs, n_specs*n_runs, len(finished_list), len(unfinished_list)))
-	return ((np.array(csv).shape[0]-1)*(np.array(csv).shape[1]-1)) - len(finished_list)
+	a = ((np.array(csv).shape[0]-1)*(np.array(csv).shape[1]-1)) - len(finished_list)
+	b = len(unfinished_list)
+	return max(a,b)
 
 def write_running_file(experiment_path, experiment_name, spec_name, run):
 	exp_spec_run_path = os.getcwd()+experiment_path+experiment_name+'/'+spec_name+'/run_'+str(run)+'/'
@@ -322,27 +323,26 @@ def create_scheduler_csv(spec_list, n_runs, experiment_name, path_relative='/2_s
 def get_settings():
 	scheduling_subfolder = '/2_scheduling/'
 	experiment_path = '/3_output_cifar/'
-	experiment_name = 'p_ASC_main'                                                # change when swapping between deployed and development folders
-	spec_list = ['smcn_adam_c10_alpha_relu_pre_notrain',
-				 'smcn_adam_c10_alpha_tanh_pre_notrain',
-				 'smcn_adam_c10_alpha_elu_pre_notrain',
-				 'smcn_adam_c10_ABU_TERIS_pre_notrain',
-				 'smcn_adam_c10_alpha_relu_pre',
-				 'smcn_adam_c10_alpha_tanh_pre',
-				 'smcn_adam_c10_alpha_elu_pre',
-				 'smcn_adam_c10_ABU_TERIS_pre',
- 				 'smcn_adam_c10_ABU_TERIS_prenorm_notrain',
- 				 'smcn_adam_c10_ABU_TERIS_prenorm',
- 				 'smcn_adam_c10_ABU_S_TERIS_pre_notrain',
- 				 'smcn_adam_c10_ABU_S_TERIS_pre',
- 				 'smcn_adam_c10_ABU_N_TERIS_pre_notrain',
- 				 'smcn_adam_c10_ABU_N_TERIS_pre',
- 				 'smcn_adam_c10_ABU_A_TERIS_pre_notrain',
- 				 'smcn_adam_c10_ABU_A_TERIS_pre',
- 				 'smcn_adam_c10_ABU_P_TERIS_pre_notrain',
- 				 'smcn_adam_c10_ABU_P_TERIS_pre']
+	experiment_name = 'b_ASC_main'                                                # change when swapping between deployed and development folders
+	spec_list = ['smcnb_adam_c10_I',
+				 'smcnb_adam_c10_alpha_I',
+				 'smcnb_adam_c10_relu',
+				 'smcnb_adam_c10_alpha_relu',
+				 'smcnb_adam_c10_tanh',
+				 'smcnb_adam_c10_alpha_tanh',
+				 'smcnb_adam_c10_elu',
+				 'smcnb_adam_c10_alpha_elu',
+				 'smcnb_adam_c10_selu',
+				 'smcnb_adam_c10_alpha_selu',
+				 'smcnb_adam_c10_swish',
+				 'smcnb_adam_c10_alpha_swish',
+				 'smcnb_adam_c10_ABU_TERIS',
+				 'smcnb_adam_c10_ABU_S_TERIS',
+				 'smcnb_adam_c10_ABU_N_TERIS',
+				 'smcnb_adam_c10_ABU_A_TERIS',
+				 'smcnb_adam_c10_ABU_P_TERIS']
 	n_runs = 30
-	gridjob_command = 'qsub 2_scheduling/p_advanced_scheduler_gridjob.sh'
+	gridjob_command = 'qsub 2_scheduling/b_advanced_scheduler_gridjob.sh'
 	return scheduling_subfolder, experiment_path, experiment_name, spec_list, n_runs, gridjob_command
 
 ################################################################################
@@ -357,8 +357,14 @@ if __name__ == '__main__':
 	# UPDATE CSV AND LOOK UP SPECS FOR NEXT RUN
 	with FileLock(os.getcwd()+scheduling_subfolder+experiment_name+'.csv.lock'):
 		n_unfinished_runs = csv_update(scheduling_subfolder, experiment_name+'.csv', experiment_path, experiment_name, spec_list, n_runs, mark_running_as_incomplete=False)
+		print('[MESSAGE ASC] unfinished runs:', n_unfinished_runs)
 		if n_unfinished_runs > 0:
 			spec_csv_idx, run = csv_lookup_spec_run(scheduling_subfolder, experiment_name+'.csv')
+
+	# AT THE END OF GRIDJOB, RESCHEDULE GRIDJOB
+	if len(sys.argv) > 1:
+		if int(sys.argv[1]) == 1 and n_unfinished_runs > 0:
+			os.system(gridjob_command)
 
 	if spec_csv_idx == -1 and run == -1:
 		time.sleep(120.0)
@@ -376,8 +382,3 @@ if __name__ == '__main__':
 		print('=================================================================================================================================================================================\n')
 		os.system("nvidia-smi")
 		subprocess.run(get_command(experiment_name, spec_list[spec_csv_idx-1], run), shell=True)
-
-	# AT THE END OF GRIDJOB, RESCHEDULE GRIDJOB
-	if len(sys.argv) > 1:
-		if int(sys.argv[1]) == 5 and n_unfinished_runs > 0:
-			os.system(gridjob_command)
