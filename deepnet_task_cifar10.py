@@ -166,9 +166,9 @@ class Paths(object):
 		self.all_weight_dicts = self.experiment+'0_all_weights/' 			 	# corresponds to TaskSettings.save_weights
 		self.analysis = self.experiment+'0_analysis/'							# path for analysis files, not used during training
 		self.chrome_tls = self.experiment+'0_chrome_timelines/' 				# corresponds to TaskSettings.run_tracer
-		self.summaries = self.experiment+'0_summaries/'+str(TaskSettings.spec_name)+'_'+str(TaskSettings.run) # corresponds to TaskSettings.keep_train_val_datasets
 		# save paths (spec / run level)
 		if TaskSettings.mode != 'analysis':
+			self.summaries = self.experiment+'0_summaries/'+str(TaskSettings.spec_name)+'_'+str(TaskSettings.run) # corresponds to TaskSettings.keep_train_val_datasets
 			self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
 			self.experiment_spec_run = self.experiment_spec+'run_'+str(TaskSettings.run)+'/'
 			# sub-paths (run level)

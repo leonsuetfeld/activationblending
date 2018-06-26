@@ -107,6 +107,16 @@ def smcn_print_mean_std(input_dict, info):
         print(info + ' - conv4:  %s (sum: %.4f) | %s' %( str(np.mean(input_dict['conv4'], axis=0)), float(np.sum(np.mean(input_dict['conv4'], axis=0))), str(np.std(input_dict['conv4'], axis=0)) ))
         print(info + ' - dense5: %s (sum: %.4f) | %s' %( str(np.mean(input_dict['dense5'], axis=0)), float(np.sum(np.mean(input_dict['dense5'], axis=0))), str(np.std(input_dict['dense5'], axis=0)) ))
         print(info + ' - dense6: %s (sum: %.4f) | %s' %( str(np.mean(input_dict['dense6'], axis=0)), float(np.sum(np.mean(input_dict['dense6'], axis=0))), str(np.std(input_dict['dense6'], axis=0)) ))
+        # calculate mean of stds
+        stds = []
+        stds.extend(np.std(input_dict['conv1'], axis=0))
+        stds.extend(np.std(input_dict['conv2'], axis=0))
+        stds.extend(np.std(input_dict['conv3'], axis=0))
+        stds.extend(np.std(input_dict['conv4'], axis=0))
+        stds.extend(np.std(input_dict['dense5'], axis=0))
+        stds.extend(np.std(input_dict['dense6'], axis=0))
+        print('mean of [std]:', np.mean(np.array(stds)))
+
     else:
         print(info + '           mean    | std')
         print(info + ' - conv1:  %.5f | %.5f' %(np.mean(input_dict['conv1'], axis=0), np.std(input_dict['conv1'], axis=0)))
@@ -115,6 +125,15 @@ def smcn_print_mean_std(input_dict, info):
         print(info + ' - conv4:  %.5f | %.5f' %(np.mean(input_dict['conv4'], axis=0), np.std(input_dict['conv4'], axis=0)))
         print(info + ' - dense5: %.5f | %.5f' %(np.mean(input_dict['dense5'], axis=0), np.std(input_dict['dense5'], axis=0)))
         print(info + ' - dense6: %.5f | %.5f' %(np.mean(input_dict['dense6'], axis=0), np.std(input_dict['dense6'], axis=0)))
+        # calculate mean of stds
+        stds = []
+        stds.extend(np.std(input_dict['conv1'], axis=0))
+        stds.extend(np.std(input_dict['conv2'], axis=0))
+        stds.extend(np.std(input_dict['conv3'], axis=0))
+        stds.extend(np.std(input_dict['conv4'], axis=0))
+        stds.extend(np.std(input_dict['dense5'], axis=0))
+        stds.extend(np.std(input_dict['dense6'], axis=0))
+        print('mean of [std]:', np.mean(np.array(stds)))
     print('')
 
 def plot_mean_alpha_by_layers(af_list, name_list, title, saveplot_path, saveplot_filename, includes_beta=False):
@@ -441,7 +460,7 @@ def get_mean_alphas_by_layers_ABU(weight_dict, swish_beta={}):
         swish_betas_by_layers_means[5] = np.mean(swish_beta['dense6'], axis=0)[0]
     return AF_names, afs_by_layers_means, swish_betas_by_layers_means
 
-def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, ylim=[-2.0, 2.0], xlim=[-2.0, 2.0], figsize=(11.198,1.5), norm="None", hide_xticks=True, hide_yticks=True):
+def plot_ABU(mean_alphas, mean_swish_beta, saveplot_path, saveplot_filename, ylim=[-2.0, 2.0], xlim=[-2.0, 2.0], figsize=(11.198,2.2), norm="None", hide_xticks=True, hide_yticks=True):
     color_list = ['#8c9fcb','#fc8d62', '#e78ac3', '#a5d853', '#66c2a5', '#b4b4b4', '#ffd82e', '#e4c494']
     mean_alphas = np.copy(mean_alphas)
     mean_swish_beta = np.copy(mean_swish_beta)
@@ -548,7 +567,7 @@ def plot_ABU2(mean_alphas_C10, mean_swish_beta_C10, mean_alphas_C100, mean_swish
 # ### SCRIPT ###################################################################
 # ##############################################################################
 
-steps = [2]
+steps = [1,2]
 
 # ##############################################################################
 # ### SCRIPT ASU ###############################################################

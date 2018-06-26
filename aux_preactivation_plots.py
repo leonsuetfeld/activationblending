@@ -108,6 +108,7 @@ def plot_preact_comparison(specs, savepath, filename, plot_mean_over_runs=True, 
 
 relative_path = '3_output_tensorboard/'
 spec_paths = list_subfolders(add_cwd_to_path(relative_path))
+spec_paths = [f for f in spec_paths if not 'newplot' in f] # throw out irrelevant paths
 
 # get list of all files in all subfolders of 'relative_path'
 all_std_files = []

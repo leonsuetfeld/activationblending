@@ -410,7 +410,12 @@ class Network(object):
 			raise ValueError('Could not find af weights file containing "%s" and "run_%i"' %(self.NetSettings.init_blendweights_from_spec_name, self.NetSettings.run))
 		# extract from dict
 		if w_type == 'blend':
-			layer_blend_weights = af_weights_dict[layer_name+'/blend_weights:0']
+			if layer_name+'/blend_weights:0' in af_weights_dict:
+				layer_blend_weights = af_weights_dict[layer_name+'/blend_weights:0']
+			elif layer_name+'/blend_weights_raw:0' in af_weights_dict:
+				layer_blend_weights = af_weights_dict[layer_name+'/blend_weights_raw:0']
+			else:
+				raise ValueError('[ERROR] Could not find the correct set of weights in weight dict loaded from file.')
 			if self.NetSettings.normalize_blend_weights_at_init:
 				layer_blend_weights /= tf.reduce_sum(layer_blend_weights)
 			print('[MESSAGE] (predefined) blending weights for layer',layer_name,':',layer_blend_weights)

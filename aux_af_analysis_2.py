@@ -164,7 +164,7 @@ def plot_mean_alpha_by_layers_over_time(alpha_dict, ts_list, layer_list, title, 
 
 def plot_mean_alpha_by_layers_over_time_grouped(alpha_list, af_name_list, ts_listoflists, layer_list, saveplot_path, saveplot_filename, xlim=[0,60000], ylim_list=[[0.0,1.8]]):
 
-    fig = plt.figure(figsize=(14.11,3))
+    fig = plt.figure(figsize=(11.835,3))
     n_layers = len(layer_list)
     n_AFs = len(alpha_list)
     linewidth_default = '2'
@@ -205,7 +205,7 @@ def plot_mean_alpha_by_layers_over_time_grouped(alpha_list, af_name_list, ts_lis
         ax.set_ylim(ylim_list[i])
         ax.set_xlim(xlim)
         if i == 0:
-            ax.set_ylabel('mean '+r'$\alpha_i$')
+            ax.set_ylabel(r'$\alpha_i$')
         ax.set_yticks(np.linspace(ylim_list[i][0], ylim_list[i][1], num=7))
         ax.set_title(af_name_list[i])
         ax.tick_params(axis='x', which='both', bottom='on', top='off')
@@ -321,7 +321,7 @@ if 1 in sections:
 
     # plot weights over time
     alphas_list = [alphas_linu, alphas_tanh, alphas_relu, alphas_elu, alphas_selu, alphas_swish]
-    af_name_list = [r'$\alpha I$', r'$\alpha tanh$', r'$\alpha ReLU$', r'$\alpha ELU$', r'$\alpha SELU$', r'$\alpha Swish$']
+    af_name_list = [r'$\alpha$I', r'$\alpha$tanh', r'$\alpha$ReLU', r'$\alpha$ELU', r'$\alpha$SELU', r'$\alpha$Swish']
     ts_list = [ts_linu, ts_tanh, ts_relu, ts_elu, ts_selu, ts_swish]
     ylim_list = [[0.,1.2], [0.,2.4], [0.,1.2], [0.,1.2], [0.,1.2], [0.,1.2]]
     plot_mean_alpha_by_layers_over_time_grouped(alphas_list, af_name_list, ts_list, layer_list, './3_result_plots/', 'MAIN_ASU_over_time', ylim_list=ylim_list)
