@@ -1,8 +1,5 @@
 """
-Collection of classes and functions relating to the task. Should not contain
-any classes or functions that are independent of the task, or depend on the
-network. Move such classes or functions to the _aux or corresonding network_
-file.
+Collection of classes and functions relating to the task (CIFAR10 / CIFAR100).
 
 @authors: Leon Sütfeld, Flemming Brieger
 """
@@ -24,21 +21,25 @@ import itertools
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from threading import Thread
+from matplotlib import cm
+import matplotlib.mlab as mlab
 import json
 import csv
 import sys
 import argparse
 import subprocess
 from sklearn.utils import shuffle
-import deepnet_aux_cifar as aux
 import psutil
+from tensorflow import SessionLog
+import deepnet_aux_cifar as aux
 
 # ##############################################################################
 # ### TASK SETTINGS ############################################################
 # ##############################################################################
 
 class TaskSettings(object):
+    """Class/ object containing all settings/ options relevant to the task.
+    """
 
     def __init__(self, args):
 
@@ -47,7 +48,7 @@ class TaskSettings(object):
         self.path_relative = args['path_relative']
         self.mode = args['mode']
         self.experiment_name = args['experiment_name']
-        self.task_name = 'cifar100'
+        self.task_name = args['task']
 
         if self.mode != 'analysis':
             assert args['run'] is not None, 'run must be specified.'
@@ -88,19 +89,17 @@ class TaskSettings(object):
                 self.restore_model = True
                 self.dropout_keep_probs = args['dropout_keep_probs']
                 self.lr = args['lr']
-                self.lr_schedule_type = args['lr_schedule_type']                 # (constant, linear, step, decay)
-                self.lr_decay = args['lr_decay']                                # (e.g., 1e-6)
-                self.lr_lin_min = args['lr_lin_min']                            # (e.g., 4*1e-5)
-                self.lr_lin_steps = args['lr_lin_steps']                        # (e.g., 60000)
+                self.lr_schedule_type = args['lr_schedule_type']
+                self.lr_decay = args['lr_decay']
+                self.lr_lin_min = args['lr_lin_min']
+                self.lr_lin_steps = args['lr_lin_steps']
                 self.lr_step_ep = args['lr_step_ep']
                 self.lr_step_multi = args['lr_step_multi']
                 if args['blend_trainable'] or args['swish_beta_trainable']:
                     self.af_weights_exist = True
                 else:
                     self.af_weights_exist = False
-                ################################################################
-                # FILE WRITING OPTIONS #########################################
-                ################################################################
+                # === FILE WRITING OPTIONS =====================================
                 self.create_checkpoints = args['create_checkpoints']
                 self.epochs_between_checkpoints = args['epochs_between_checkpoints']
                 self.checkpoints = self.get_checkpoints(50000, args['val_set_fraction'], args['minibatch_size'], args['n_minibatches'], args['epochs_between_checkpoints'])
@@ -110,12 +109,16 @@ class TaskSettings(object):
                 self.save_all_weights_at_test_mb = args['save_all_weights_at_test_mb']
                 self.create_lc_on_the_fly = args['create_lc_on_the_fly']
                 self.tracer_minibatches = [0,50,100]
-                self.run_tracer = False                    # recommended: False     -- use only for efficiency optimization
-                self.write_summary = False                # recommended: False       -- use only for debugging
-                self.keep_saved_datasets_after_run_complete = False    # recommended: False       -- only necessary when continuing training after a break
+                self.write_summary = True
+                self.run_tracer = False # recommended: False (use for efficiency optimization)
+                self.keep_saved_datasets_after_run_complete = False # recommended: False (disables auto-deletion of train / val set save files)
         self.print_overview()
 
     def get_checkpoints(self, dataset_size, val_set_fraction, mb_size, training_duration_in_mbs, epochs_between_checkpoints):
+        """Calculates the checkpoints = global time steps during training
+        where the model is saved (in mb). Returns list of ints containing
+        mini-batch counts.
+        """
         trainingset_size = int(np.floor(dataset_size*(1-val_set_fraction)))
         mbs_per_epoch = trainingset_size // mb_size
         mbs_per_checkpoint = mbs_per_epoch * epochs_between_checkpoints
@@ -124,9 +127,6 @@ class TaskSettings(object):
             checkpoints.append(checkpoints[-1]+mbs_per_checkpoint)
         checkpoints[-1] = training_duration_in_mbs
         return checkpoints
-
-    def even_splits(self, n, k):
-        return np.around(np.linspace(0, args['n_minibatches'], num=args['safe_af_ws_n'], endpoint=True))
 
     def print_overview(self):
         print('')
@@ -145,28 +145,29 @@ class TaskSettings(object):
                 print(' - minibatch size: %i' %(self.minibatch_size))
 
 class Paths(object):
+    """Class/ object containing all paths to read from or save to.
+    """
 
     def __init__(self, TaskSettings):
         self.relative = TaskSettings.path_relative # path from scheduler
         # data locations
-        self.train_batches = self.relative+'1_data_cifar100/train_batches/'                     # original data
-        self.test_batches = self.relative+'1_data_cifar100/test_batches/'                    # original data
-        self.train_set = self.relative+'1_data_cifar100/train_set/'
-        self.test_set = self.relative+'1_data_cifar100/test_set/'
-        self.train_set_ztrans = self.relative+'1_data_cifar100/train_set_ztrans/'
-        self.test_set_ztrans = self.relative+'1_data_cifar100/test_set_ztrans/'
-        self.train_set_gcn_zca = self.relative+'1_data_cifar100/train_set_gcn_zca/'
-        self.test_set_gcn_zca = self.relative+'1_data_cifar100/test_set_gcn_zca/'
-        self.sample_images = self.relative+'1_data_cifar100/samples/'
+        self.train_batches = self.relative+'1_data_'+TaskSettings.task+'/train_batches/' # original data
+        self.test_batches = self.relative+'1_data_'+TaskSettings.task+'/test_batches/' # original data
+        self.train_set = self.relative+'1_data_'+TaskSettings.task+'/train_set/'
+        self.test_set = self.relative+'1_data_'+TaskSettings.task+'/test_set/'
+        self.train_set_ztrans = self.relative+'1_data_'+TaskSettings.task+'/train_set_ztrans/'
+        self.test_set_ztrans = self.relative+'1_data_'+TaskSettings.task+'/test_set_ztrans/'
+        self.train_set_gcn_zca = self.relative+'1_data_'+TaskSettings.task+'/train_set_gcn_zca/'
+        self.test_set_gcn_zca = self.relative+'1_data_'+TaskSettings.task+'/test_set_gcn_zca/'
         # save paths (experiment level)
         self.experiment = self.relative+'3_output_cifar/'+str(TaskSettings.experiment_name)+'/'
-        self.af_weight_dicts = self.experiment+'0_af_weights/'                     # corresponds to TaskSettings.save_af_weights
-        self.all_weight_dicts = self.experiment+'0_all_weights/'                  # corresponds to TaskSettings.save_weights
-        self.analysis = self.experiment+'0_analysis/'                            # path for analysis files, not used during training
-        self.chrome_tls = self.experiment+'0_chrome_timelines/'                 # corresponds to TaskSettings.run_tracer
-        self.summaries = self.experiment+'0_summaries/'+str(TaskSettings.spec_name)+'_'+str(TaskSettings.run) # corresponds to TaskSettings.keep_saved_datasets_after_run_complete
+        self.af_weight_dicts = self.experiment+'0_af_weights/' # corresponds to TaskSettings.save_af_weights
+        self.all_weight_dicts = self.experiment+'0_all_weights/' # corresponds to TaskSettings.save_weights
+        self.analysis = self.experiment+'0_analysis/' # path for analysis files, not used during training
+        self.chrome_tls = self.experiment+'0_chrome_timelines/' # corresponds to TaskSettings.run_tracer
         # save paths (spec / run level)
         if TaskSettings.mode != 'analysis':
+            self.summaries = self.experiment+'0_summaries/'+str(TaskSettings.spec_name)+'_'+str(TaskSettings.run)
             self.experiment_spec = self.experiment+str(TaskSettings.spec_name)+'/'
             self.experiment_spec_run = self.experiment_spec+'run_'+str(TaskSettings.run)+'/'
             # sub-paths (run level)
@@ -174,14 +175,21 @@ class Paths(object):
             self.recorder_files = self.experiment_spec_run
             self.incomplete_run_info = self.experiment_spec_run
             self.run_learning_curves = self.experiment_spec_run
-            self.run_datasets = self.experiment_spec_run+'datasets/'                # corresponds to TaskSettings.keep_saved_datasets_after_run_complete
-            self.models = self.experiment_spec_run+'models/'                        # corresponds to TaskSettings.save_models
+            self.run_datasets = self.experiment_spec_run+'datasets/'
+            self.models = self.experiment_spec_run+'models/' # corresponds to TaskSettings.save_models
 
 # ##############################################################################
 # ### DATA HANDLER #############################################################
 # ##############################################################################
 
+
 class TrainingHandler(object):
+
+
+    """Object handling the training procedure, i.e., preparing training and
+    validation sets. Also saving, restoring and deleting of checkpoint data
+    sets.
+    """
 
     def __init__(self, TaskSettings, Paths, args):
 
@@ -202,17 +210,17 @@ class TrainingHandler(object):
 
     def load_dataset(self, args):
         if args['preprocessing'] in ['none', 'tf_ztrans']:
-            path_train_set = self.Paths.train_set+'cifar100_trainset.pkl'
+            path_train_set = self.Paths.train_set+self.TaskSettings.task+'_trainset.pkl'
             data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
             self.dataset_images = data_dict['images']
             self.dataset_labels = data_dict['labels']
         if args['preprocessing'] == 'ztrans':
-            path_train_set = self.Paths.train_set_ztrans+'cifar100_trainset.pkl'
+            path_train_set = self.Paths.train_set_ztrans+self.TaskSettings.task+'_trainset.pkl'
             data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
             self.dataset_images = data_dict['images']
             self.dataset_labels = data_dict['labels']
         elif args['preprocessing'] == 'gcn_zca':
-            path_train_set = self.Paths.train_set_gcn_zca+'cifar100_trainset.pkl'
+            path_train_set = self.Paths.train_set_gcn_zca+self.TaskSettings.task+'_trainset.pkl'
             data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
             self.dataset_images = data_dict['images']
             self.dataset_labels = data_dict['labels']
@@ -220,7 +228,9 @@ class TrainingHandler(object):
             print('[ERROR] requested preprocessing type unknown (%s)' %(args['preprocessing']))
 
     def split_training_validation(self):
-    # only call this function once per run, as it will randomly split the dataset into training set and validation set
+        """Splits data set into training and validation set. Only call once at
+        the beginning of a runself.
+        """
         self.dataset_images, self.dataset_labels = shuffle(self.dataset_images, self.dataset_labels)
         self.n_total_samples = int(len(self.dataset_labels))
         self.n_training_samples = self.n_total_samples
@@ -244,8 +254,38 @@ class TrainingHandler(object):
             self.training_images = self.dataset_images[self.n_validation_samples:]
             self.training_labels = self.dataset_labels[self.n_validation_samples:]
 
+    def shuffle_training_data_idcs(self):
+        self.training_data_idcs = shuffle(list(range(self.n_training_samples)))
+
+    def get_next_train_minibatch(self):
+        """Returns the next mini-batch from the training set.
+        """
+        if self.train_mb_counter % self.n_train_minibatches_per_epoch == 0:
+            self.shuffle_training_data_idcs()
+        start_idx = int(self.TaskSettings.minibatch_size*(self.train_mb_counter % self.n_train_minibatches_per_epoch))
+        end_idx = int(self.TaskSettings.minibatch_size*((self.train_mb_counter % self.n_train_minibatches_per_epoch)+1))
+        mb_idcs = self.training_data_idcs[start_idx:end_idx]
+        next_mb_images = [self.training_images[i] for i in mb_idcs]
+        next_mb_labels = [self.training_labels[i] for i in mb_idcs]
+        self.train_mb_counter += 1
+        return next_mb_images, next_mb_labels
+
+    def get_next_val_minibatch(self):
+        """Returns the next mini-batch from the validation set.
+        """
+        start_idx = int(self.TaskSettings.minibatch_size*self.val_mb_counter)
+        end_idx = int(self.TaskSettings.minibatch_size*(self.val_mb_counter+1))
+        mb_idcs = list(range(start_idx,end_idx))
+        next_mb_images = [self.validation_images[i] for i in mb_idcs]
+        next_mb_labels = [self.validation_labels[i] for i in mb_idcs]
+        self.val_mb_counter += 1
+        return next_mb_images, next_mb_labels
+
     def save_run_datasets(self, print_messages=False):
-    # saves the current spec_name/runs datasets to a file to allow for an uncontaminated resume after restart of run, should only be called once at the beginning of a session
+        """Saves the current spec_name/run's datasets to a file to allow for
+        an uncontaminated resume after restart of run. Should only be called
+        once at the beginning of a run.
+        """
         datasets_dict = { 't_img': self.training_images,
                           't_lab': self.training_labels,
                           'v_img': self.validation_images,
@@ -264,7 +304,9 @@ class TrainingHandler(object):
                 print('[MESSAGE] file saved: %s (datasets for current spec/run)'%(file_path))
 
     def restore_run_datasets(self, print_messages=False):
-    # loads the current spec_name/runs datasets from a file to make sure the validation set is uncontaminated after restart of run
+        """Loads the current spec_name/run's datasets from a file to make
+        sure the validation set is uncontaminated after restart of run.
+        """
         file_path = self.Paths.run_datasets+'datasets_'+str(self.TaskSettings.spec_name)+'_run_'+str(self.TaskSettings.run)+'.pkl'
         if os.path.exists(file_path):
             datasets_dict = pickle.load(open( file_path, 'rb'), encoding='bytes')
@@ -278,53 +320,15 @@ class TrainingHandler(object):
             raise IOError('\n[ERROR] Couldn\'t restore datasets, stopping run to avoid contamination of validation set.\n')
 
     def delete_run_datasets(self):
-    # deletes the run datasets at the end of a completed run to save storage space
+        """Deletes the run datasets at the end of a completed run to save
+        storage space.
+        """
         file_path = self.Paths.run_datasets+'datasets_'+str(self.TaskSettings.spec_name)+'_run_'+str(self.TaskSettings.run)+'.pkl'
         if os.path.exists(file_path) and not self.TaskSettings.keep_saved_datasets_after_run_complete:
             os.remove(file_path)
             print('[MESSAGE] spec/run dataset deleted to save disk space')
         else:
             print('[MESSAGE] call to delete spec/run dataset had no effect: no dataset file found or TaskSettings.keep_saved_datasets_after_run_complete==True')
-
-    def shuffle_training_data_idcs(self):
-        self.training_data_idcs = shuffle(list(range(self.n_training_samples)))
-
-    def get_train_minibatch(self):
-        return self.create_next_train_minibatch()
-
-    def create_random_train_minibatch(self): # no longer in use
-        mb_idcs = random.sample(range(0,self.n_training_samples),self.TaskSettings.minibatch_size)
-        random_mb_images = [self.training_images[i] for i in mb_idcs]
-        random_mb_labels = [self.training_labels[i] for i in mb_idcs]
-        self.train_mb_counter += 1
-        return random_mb_images, random_mb_labels
-
-    def create_next_train_minibatch(self):
-        if self.train_mb_counter % self.n_train_minibatches_per_epoch == 0:
-            self.shuffle_training_data_idcs()
-        start_idx = int(self.TaskSettings.minibatch_size*(self.train_mb_counter % self.n_train_minibatches_per_epoch))
-        end_idx = int(self.TaskSettings.minibatch_size*((self.train_mb_counter % self.n_train_minibatches_per_epoch)+1))
-        mb_idcs = self.training_data_idcs[start_idx:end_idx]
-        next_mb_images = [self.training_images[i] for i in mb_idcs]
-        next_mb_labels = [self.training_labels[i] for i in mb_idcs]
-        self.train_mb_counter += 1
-        return next_mb_images, next_mb_labels
-
-    def create_random_val_minibatch(self):
-        minibatch_idcs = random.sample(range(0,self.n_validation_samples),self.TaskSettings.minibatch_size)
-        random_mb_images = self.validation_images[minibatch_idcs]
-        random_mb_labels = self.validation_labels[minibatch_idcs]
-        self.val_mb_counter += 1
-        return random_mb_images, random_mb_labels
-
-    def create_next_val_minibatch(self):
-        start_idx = int(self.TaskSettings.minibatch_size*self.val_mb_counter)
-        end_idx = int(self.TaskSettings.minibatch_size*(self.val_mb_counter+1))
-        mb_idcs = list(range(start_idx,end_idx))
-        next_mb_images = [self.validation_images[i] for i in mb_idcs]
-        next_mb_labels = [self.validation_labels[i] for i in mb_idcs]
-        self.val_mb_counter += 1
-        return next_mb_images, next_mb_labels
 
     def print_overview(self):
         print('')
@@ -340,7 +344,13 @@ class TrainingHandler(object):
         print(' - # validation minibatches: ' + str(self.n_val_minibatches))
         print(' - # minibatches per epoch: ' + str(self.n_train_minibatches_per_epoch))
 
+
 class TestHandler(object):
+
+
+    """Object handling the test procedure, i.e., preparing and passing on
+    the test set.
+    """
 
     def __init__(self, TaskSettings, Paths, args):
         self.TaskSettings = TaskSettings
@@ -353,17 +363,17 @@ class TestHandler(object):
 
     def load_test_data(self, args):
         if args['preprocessing'] in ['none', 'tf_ztrans']:
-            path_test_set = self.Paths.test_set+'cifar100_testset.pkl'
+            path_test_set = self.Paths.test_set+self.TaskSettings.task+'_testset.pkl'
             data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
             self.test_images = data_dict['images']
             self.test_labels = data_dict['labels']
         elif args['preprocessing'] == 'ztrans':
-            path_test_set = self.Paths.test_set_ztrans+'cifar100_testset.pkl'
+            path_test_set = self.Paths.test_set_ztrans+self.TaskSettings.task+'_testset.pkl'
             data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
             self.test_images = data_dict['images']
             self.test_labels = data_dict['labels']
         elif args['preprocessing'] == 'gcn_zca':
-            path_test_set = self.Paths.test_set_gcn_zca+'cifar100_testset.pkl'
+            path_test_set = self.Paths.test_set_gcn_zca+self.TaskSettings.task+'_testset.pkl'
             data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
             self.test_images = data_dict['images']
             self.test_labels = data_dict['labels']
@@ -371,6 +381,8 @@ class TestHandler(object):
             print('[ERROR] requested preprocessing type unknown (%s)' %(args['preprocessing']))
 
     def create_next_test_minibatch(self):
+        """Returns the next mini-batch from the test set.
+        """
         start_idx = int(self.TaskSettings.minibatch_size*self.test_mb_counter)
         end_idx = int(self.TaskSettings.minibatch_size*(self.test_mb_counter+1))
         mb_idcs = list(range(start_idx,end_idx))
@@ -395,7 +407,13 @@ class TestHandler(object):
 # ### SUPORT CLASSES ###########################################################
 # ##############################################################################
 
+
 class Recorder(object):
+
+
+    """Keeps track of current state of the training procedure over restored
+    runs. Also logs performance figures.
+    """
 
     def __init__(self, TaskSettings, TrainingHandler, Paths):
         self.TaskSettings = TaskSettings
@@ -528,7 +546,7 @@ class Recorder(object):
         pickle.dump(recorder_dict, open(savepath+filename,'wb'), protocol=3)
         if print_messages:
             print('================================================================================================================================================================================================================')
-            print('[MESSAGE] recorder dict saved: %s'%(savepath+filename))
+            print('[MESSAGE] recorder dict saved after minibatch %i: %s'%(self.mb_count_total, savepath+filename))
 
     def restore_from_dict(self, Timer, mb_to_restore):
         # restore dict
@@ -611,7 +629,13 @@ class Recorder(object):
         # print debug
         assert self.mb_count_total == self.train_mb_n_hist[-1], 'something wrong here. %i %i' %(self.mb_count_total, self.train_mb_n_hist[-1])
 
+
 class SessionTimer(object):
+
+
+    """Keeps track of run times. Responsible for remaining time estimations
+    in print statements.
+    """
 
     def __init__(self, Paths):
         self.session_start_time = 0
@@ -653,15 +677,22 @@ class SessionTimer(object):
     def get_mean_mb_duration(self, window_length=500):
         if window_length > len(self.mb_duration_list):
             window_length = len(self.mb_duration_list)
-        return np.mean(np.array(self.mb_duration_list)) if (window_length == -1) else np.mean(np.array(self.mb_duration_list)[-window_length:])
+        if (window_length == -1):
+            return np.mean(np.array(self.mb_duration_list))
+        else:
+            return np.mean(np.array(self.mb_duration_list)[-window_length:])
 
     def get_mean_val_duration(self, window_length=25):
         if window_length > len(self.val_duration_list):
             window_length = len(self.val_duration_list)
-        return np.mean(np.array(self.val_duration_list)) if (window_length == -1) else np.mean(np.array(self.val_duration_list)[-window_length:])
+        if (window_length == -1):
+            return np.mean(np.array(self.val_duration_list))
+        else:
+            return np.mean(np.array(self.val_duration_list)[-window_length:])
 
     def laptime(self):
-        # keeps 'laptimes', i.e. times between calls of this function. can be used to report printout-to-printout times
+        # keeps 'laptimes', i.e. times between calls of this function.
+        # can be used to report printout-to-printout times
         now = time.time()
         latest_laptime = now-self.laptime_start
         self.laptime_start = now
@@ -679,6 +710,8 @@ class SessionTimer(object):
 # ##############################################################################
 
 def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec, args):
+    """Contains the complete training procedure.
+    """
 
     # CREATE RUN FOLDER
     if not os.path.exists(Paths.experiment_spec_run):
@@ -694,8 +727,8 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
     # tf.set_random_seed(1)
 
         # INITIALIZATION OF VARIABLES/ GRAPH, SAVER, SUMMARY WRITER
-        saver = tf.train.Saver(max_to_keep=100)# , write_version=tf.train.SaverDef.V1)
-        sess.run(tf.global_variables_initializer()) # initialize all variables (must be done after the graph is constructed and the session is started)
+        saver = tf.train.Saver(max_to_keep=100)
+        sess.run(tf.global_variables_initializer()) # initialize all variables (after graph construction and session start)
         merged_summary_op = tf.summary.merge_all()
         if TaskSettings.write_summary:
             summary_writer = tf.summary.FileWriter(Paths.summaries, sess.graph)
@@ -724,6 +757,9 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
                 TrainingHandler.restore_run_datasets()
                 Rec.restore_from_dict(Timer, highest_mb_in_filelist)
                 saver.restore(sess, Paths.models+restore_data_filename)
+                # marking this as a new session in the summary writer to avoid overlapping plots after model restore
+                if TaskSettings.write_summary:
+                    summary_writer.add_session_log(SessionLog(status=SessionLog.START), global_step=Rec.mb_count_total)
                 model_restored = True
                 # print notification
                 print('================================================================================================================================================================================================================')
@@ -746,7 +782,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
         print('================================================================================================================================================================================================================')
 
         # save overview of the run as a txt file
-        aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+        args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 
         if Rec.mb_count_total == 0:
             if TaskSettings.create_val_set:
@@ -758,19 +794,19 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
             # MB START
             time_mb_start = time.time()
             Rec.mb_plus_one()
-            imageBatch, labelBatch = TrainingHandler.get_train_minibatch()
+            imageBatch, labelBatch = TrainingHandler.get_next_train_minibatch()
 
             # SESSION RUN
-            current_lr = aux.lr_scheduler(TaskSettings, Rec.mb_count_total)
+            current_lr = lr_scheduler(TaskSettings, Rec.mb_count_total)
             input_dict = {Network.X: imageBatch, Network.Y: labelBatch, Network.lr: current_lr, Network.dropout_keep_prob: TaskSettings.dropout_keep_probs}
             run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
             run_metadata = tf.RunMetadata()
             # session run call for summaries
             if TaskSettings.write_summary and (Rec.mb_count_total % 20 == 0):
                 if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
-                    summary = sess.run([merged_summary_op], feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
+                    summary = sess.run(merged_summary_op, feed_dict = input_dict, options=run_options, run_metadata=run_metadata)
                 else:
-                    summary = sess.run([merged_summary_op], feed_dict = input_dict)
+                    summary = sess.run(merged_summary_op, feed_dict = input_dict)
                 summary_writer.add_summary(summary, Rec.mb_count_total)
             # main session run call for training
             if TaskSettings.run_tracer and Rec.mb_count_total in TaskSettings.tracer_minibatches:
@@ -809,9 +845,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
                     memoryUse = py.memory_info()[0]/2.**30
                     print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
                           ' | lr %0.5f' %(current_lr) +
-                          # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=100)) +
                           ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=100)) +
-                          # ' | l(v) %05.3f [%05.3f]' %(Rec.val_loss_hist[-1], Rec.get_running_average(measure='v-loss', window_length=10)) +
                           ' | acc(v) %05.3f [%05.3f]' %(Rec.val_top1_hist[-1], Rec.get_running_average(measure='v-acc', window_length=10)) +
                           ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
                           ' | t_v %05.3f s' %(Timer.val_duration_list[-1]) +
@@ -826,8 +860,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
                     py = psutil.Process(pid)
                     memoryUse = py.memory_info()[0]/2.**30
                     print('['+str(TaskSettings.spec_name)+'/'+str(TaskSettings.run).zfill(2)+'] mb '+str(Rec.mb_count_total).zfill(len(str(TaskSettings.n_minibatches)))+'/'+str(TaskSettings.n_minibatches)+
-                            ' | lr %0.5f' %(current_lr) +
-                          # ' | l(t) %05.3f [%05.3f]' %(Rec.train_loss_hist[-1], Rec.get_running_average(measure='t-loss', window_length=100)) +
+                          ' | lr %0.5f' %(current_lr) +
                           ' | acc(t) %05.3f [%05.3f]' %(Rec.train_top1_hist[-1], Rec.get_running_average(measure='t-acc', window_length=100)) +
                           ' | t_mb %05.3f s' %(Timer.mb_duration_list[-1]) +
                           ' | t_tot %05.2f m' %(t_total) +
@@ -845,11 +878,11 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
             if Rec.mb_count_total in TaskSettings.checkpoints or Rec.mb_count_total == TaskSettings.n_minibatches:
                 save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, recorder=True, tf_model=True, dataset=True, print_messsages=True)
                 if TaskSettings.create_lc_on_the_fly:
-                    aux.visualize_performance(TaskSettings, Paths)
+                    visualize_performance(TaskSettings, Paths)
 
             # minibatch finished
             n_minibatches_remaining -= 1
-            assert n_minibatches_remaining + Rec.mb_count_total == TaskSettings.n_minibatches, '[BUG IN CODE] minibatch counting not aligned.'
+            assert n_minibatches_remaining + Rec.mb_count_total == TaskSettings.n_minibatches, '[BUG IN CODE] minibatch counting not aligned. (remaining %i, count_total %i, n_mb %s)' %(n_minibatches_remaining, Rec.mb_count_total, TaskSettings.n_minibatches)
 
             # CHECK IF SESSION (=SPLIT) CAN BE COMPLETED BEFORE WALLTIME
             end_session_now = False
@@ -872,7 +905,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
             if Rec.mb_count_total == TaskSettings.n_minibatches or end_session_now:
                 Rec.mark_end_of_session() # created incomplete_run file or sets Rec.training_completed to True
                 Rec.save_as_dict()
-                aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+                args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
                 Timer.set_session_end_time()
                 Timer.end_session()
 
@@ -880,7 +913,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
         if Rec.mb_count_total == TaskSettings.n_minibatches:
             Rec.mark_end_of_session() # sets Rec.training_completed to True if applicable
             Rec.save_as_dict()
-            aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+            args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 
     # AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
     if Rec.training_completed and not Rec.test_completed:
@@ -901,7 +934,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
             test_top1, test_loss = test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=TaskSettings.n_minibatches)
             delete_all_models_but_one(Paths, TaskSettings.n_minibatches)
         Rec.save_as_dict()
-        aux.args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+        args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
         TrainingHandler.delete_run_datasets()
 
         print('================================================================================================================================================================================================================')
@@ -968,30 +1001,29 @@ def smooth(y, smoothing_window, times):
     return smooth
 
 def save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, all_weights_dict=False, af_weights_dict=False, recorder=False, tf_model=False, dataset=False, delete_previous=False, print_messsages=False):
+    # model
+    if tf_model:
+        if not os.path.exists(Paths.models):
+            os.makedirs(Paths.models)
+        saver.save(sess, Paths.models+'model', global_step=Rec.mb_count_total, write_meta_graph=True) # MEMORY LEAK HAPPENING HERE. ANY IDEAS?
+        if print_messsages:
+            print('================================================================================================================================================================================================================')
+            print('[MESSAGE] model saved after minibatch %i: %s' %(Rec.mb_count_total, Paths.models+'model'))
+    # dataset
+    if dataset:
+        TrainingHandler.save_run_datasets()
+    # rec
+    if recorder:
+        Rec.save_as_dict()
     # all weights
     if all_weights_dict:
         Network.save_all_weights(sess, Rec.mb_count_total)
     # af weights
     if af_weights_dict:
         Network.save_af_weights(sess, Rec.mb_count_total)
-    # rec
-    if recorder:
-        Rec.save_as_dict()
-    # model
-    if tf_model:
-        if not os.path.exists(Paths.models):
-            os.makedirs(Paths.models)
-        saver.save(sess, Paths.models+'model', global_step=Rec.mb_count_total, write_meta_graph=True) # MEMORY LEAK HAPPENING HERE. ANY IDEAS?
-    # dataset
-    if dataset:
-        TrainingHandler.save_run_datasets()
     # delete previous
     if delete_previous:
         delete_previous_savefiles(TaskSettings, Paths, Rec, ['all_weights','af_weights','models'])
-    # print message
-    if print_messsages:
-        print('================================================================================================================================================================================================================')
-        print('[MESSAGE] model saved: %s'%(Paths.models+'model'))
 
 def delete_previous_savefiles(TaskSettings, Paths, Rec, which_files, print_messsages=False):
     # filenames must be manually defined to match the saved filenames
@@ -1033,17 +1065,24 @@ def delete_previous_savefiles(TaskSettings, Paths, Rec, which_files, print_messs
             print('[MESSAGE] file deleted: %s'%(del_file))
 
 def validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec, print_val_apc=False):
+    """Contains the complete validation procedure. Requires running session,
+    call from train().
+    """
     # VALIDATION START
     time_val_start = time.time()
     TrainingHandler.reset_val()
     # MINIBATCH HANDLING
     loss_store = []
     top1_store = []
-    val_confusion_matrix = np.zeros((100,100))
-    val_count_vector = np.zeros((100,1))
+    if TaskSettings.task == 'cifar10'
+        n_classes_in_task = 10
+    elif TaskSettings.task == 'cifar100':
+        n_classes_in_task = 100
+    val_confusion_matrix = np.zeros((n_classes_in_task,n_classes_in_task))
+    val_count_vector = np.zeros((n_classes_in_task,1))
     while TrainingHandler.val_mb_counter < TrainingHandler.n_val_minibatches:
         # LOAD VARIABLES & RUN SESSION
-        val_imageBatch, val_labelBatch = TrainingHandler.create_next_val_minibatch()
+        val_imageBatch, val_labelBatch = TrainingHandler.get_next_val_minibatch()
         loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: val_imageBatch, Network.Y: val_labelBatch, Network.lr: 0., Network.dropout_keep_prob: TaskSettings.dropout_keep_probs_inference})
         # STORE PERFORMANCE
         loss_store.append(loss)
@@ -1055,10 +1094,10 @@ def validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec, print_val
     # GET MEAN PERFORMANCE OVER VALIDATION MINIBATCHES
     val_loss = np.mean(loss_store)
     val_top1 = np.mean(top1_store)
-    val_apc = np.zeros((100,))
-    for i in range(100):
+    val_apc = np.zeros((n_classes_in_task,))
+    for i in range(n_classes_in_task):
         val_apc[i] = np.array(val_confusion_matrix[i,i]/val_count_vector[i])[0]
-    if print_val_apc:
+    if print_val_apc and TaskSettings.task == 'cifar10':
         print('[MESSAGE] accuracy per class (v): {1: %.3f |' %val_apc[0] + ' 2: %.3f |' %val_apc[1] + ' 3: %.3f |' %val_apc[2] + ' 4: %.3f |' %val_apc[3] + ' 5: %.3f |' %val_apc[4] +
                                                 ' 6: %.3f |' %val_apc[5] + ' 7: %.3f |' %val_apc[6] + ' 8: %.3f |' %val_apc[7] + ' 9: %.3f |' %val_apc[8] + ' 10: %.3f}' %val_apc[9])
     # GET AF WEIGHTS
@@ -1068,13 +1107,20 @@ def validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec, print_val
     Timer.feed_val_duration(time.time()-time_val_start)
 
 def test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_apc=False):
+    """Contains the complete test procedure. Requires running session,
+    call from train().
+    """
     # TEST START
     TestHandler.reset_test()
     # MINIBATCH HANDLING
     loss_store = []
     top1_store = []
-    test_confusion_matrix = np.zeros((100,100))
-    test_count_vector = np.zeros((100,1))
+    if TaskSettings.task == 'cifar10'
+        n_classes_in_task = 10
+    elif TaskSettings.task == 'cifar100':
+        n_classes_in_task = 100
+    test_confusion_matrix = np.zeros((n_classes_in_task,n_classes_in_task))
+    test_count_vector = np.zeros((n_classes_in_task,1))
     while TestHandler.test_mb_counter < TestHandler.n_test_minibatches:
         # LOAD VARIABLES & RUN SESSION
         test_imageBatch, test_labelBatch = TestHandler.create_next_test_minibatch()
@@ -1089,10 +1135,10 @@ def test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_ap
     # GET MEAN PERFORMANCE OVER VALIDATION MINIBATCHES
     test_loss = np.mean(loss_store)
     test_top1 = np.mean(top1_store)
-    test_apc = np.zeros((100,))
-    for i in range(100):
+    test_apc = np.zeros((n_classes_in_task,))
+    for i in range(n_classes_in_task):
         test_apc[i] = np.array(test_confusion_matrix[i,i]/test_count_vector[i])[0]
-    if print_test_apc:
+    if print_test_apc and TaskSettings.task == 'cifar10':
         print('[MESSAGE] accuracy per class (test): {1: %.3f |' %test_apc[0] + ' 2: %.3f |' %test_apc[1] + ' 3: %.3f |' %test_apc[2] + ' 4: %.3f |' %test_apc[3] + ' 5: %.3f |' %test_apc[4] +
                                                    ' 6: %.3f |' %test_apc[5] + ' 7: %.3f |' %test_apc[6] + ' 8: %.3f |' %test_apc[7] + ' 9: %.3f |' %test_apc[8] + ' 10: %.3f}' %test_apc[9])
     # STORE RESULTS
@@ -1101,6 +1147,9 @@ def test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_ap
     return test_top1, test_loss
 
 def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1, print_results=False, print_messages=False):
+    """Contains the complete test procedure. Creates its own session,
+    do not call from train().
+    """
     # SESSION CONFIG AND START
     time_test_start = time.time()
     TestHandler.reset_test()
@@ -1108,9 +1157,9 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
     config.gpu_options.allow_growth = True
     with tf.Session(config = config) as sess:
 
-        # INITIALIZATION OF VARIABLES/ GRAPH, SAVER, SUMMARY WRITER, COUNTERS
-        saver = tf.train.Saver()# , write_version=tf.train.SaverDef.V1)
-        sess.run(tf.global_variables_initializer()) # initialize all variables (must be done after the graph is constructed and the session is started)
+        # INITIALIZATION OF VARIABLES & SAVER
+        saver = tf.train.Saver()
+        sess.run(tf.global_variables_initializer()) # initialize all variables (after graph construction and session start)
 
         # RESTORE
         # make list of files in model weights folder
@@ -1119,7 +1168,7 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
         files_in_models_folder = [f for f in os.listdir(Paths.models) if (os.path.isfile(os.path.join(Paths.models, f)) and f.startswith('model'))]
         files_in_models_folder = sorted(files_in_models_folder, key=str.lower)
         restore_data_filename = 'none'
-        # find model save file with the highest number (of minibatches) in weight folder
+        # find model save file with the highest number (of mbs) in weight folder
         if model_mb == -1:
             highest_mb_in_filelist = -1
             for fname in files_in_models_folder:
@@ -1148,8 +1197,12 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
         # create stores for multi-batch processing
         loss_store = []
         top1_store = []
-        test_confusion_matrix = np.zeros((100,100))
-        test_count_vector = np.zeros((100,1))
+        if TaskSettings.task == 'cifar10'
+            n_classes_in_task = 10
+        elif TaskSettings.task == 'cifar100':
+            n_classes_in_task = 100
+        test_confusion_matrix = np.zeros((n_classes_in_task,n_classes_in_task))
+        test_count_vector = np.zeros((n_classes_in_task,1))
         while TestHandler.test_mb_counter < TestHandler.n_test_minibatches:
             # LOAD DATA & RUN SESSION
             test_imageBatch, test_labelBatch = TestHandler.create_next_test_minibatch()
@@ -1165,11 +1218,11 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
         # GET MEAN PERFORMANCE OVER MINIBATCHES
         test_loss = np.mean(loss_store)
         test_top1 = np.mean(top1_store)
-        test_apc = np.zeros((100,))
-        for i in range(100):
+        test_apc = np.zeros((n_classes_in_task,))
+        for i in range(n_classes_in_task):
             test_apc[i] = np.array(test_confusion_matrix[i,i] / test_count_vector[i])[0]
         # STORE RESULTS AND PRINT TEST OVERVIEW
-        if print_results:
+        if print_results and TaskSettings.task == 'cifar10':
             print('================================================================================================================================================================================================================')
             print('['+str(TaskSettings.spec_name)+'] test' +
                   ' | l(t): %.3f' %test_loss +
@@ -1184,7 +1237,7 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
 
         # SAVE (AF) WEIGHTS IF REQUESTED
         if TaskSettings.save_af_weights_at_test_mb:
-            Network.save_af_weights(sess, model_mb) # to do: add option to mark correct mb
+            Network.save_af_weights(sess, model_mb)
         if TaskSettings.save_all_weights_at_test_mb:
             Network.save_all_weights(sess, model_mb)
 
@@ -1192,3 +1245,520 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
     Rec.feed_test_performance(test_loss, test_top1, test_apc, mb=model_mb)
     # RETURN
     return test_top1, test_loss
+
+# ##############################################################################
+# ### AUXILIARY FUNCTIONS ######################################################
+# ##############################################################################
+
+def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
+    experiment_name = Paths.experiment.split('/')[-2]
+    # get spec spec names from their respective folder names
+    spec_list = [f for f in os.listdir(Paths.experiment) if (os.path.isdir(os.path.join(Paths.experiment,f)) and not f.startswith('0_'))]
+    # put the pieces together and call spec_analysis() for each spec of the experiment
+    spec_name_list, n_runs_list, mb_list, test_earlys_mb_mean, test_earlys_mb_std = [], [], [], [], []
+    median_run_per_spec, best_run_per_spec, mean_run_per_spec, worst_run_per_spec, std_per_spec = [], [], [], [], []
+    t_min_per_spec, t_max_per_spec, t_median_per_spec, t_mean_per_spec, t_var_per_spec, t_std_per_spec = [], [], [], [], [], []
+    v_min_per_spec, v_max_per_spec, v_median_per_spec, v_mean_per_spec, v_var_per_spec, v_std_per_spec = [], [], [], [], [], []
+    test_min_per_spec, test_max_per_spec, test_median_per_spec, test_mean_per_spec, test_var_per_spec, test_std_per_spec = [], [], [], [], [], []
+    print('')
+    print('================================================================================================================================================================================================================')
+    spec_list_filtered = [] # will only contain specs that actually have completed runs
+    for spec_name in spec_list:
+        spec_path = Paths.experiment+spec_name+'/'
+        spec_perf_dict = spec_analysis(TaskSettings, Paths, spec_name, spec_path, make_plot=True)
+        # general info about spec
+        if spec_perf_dict:
+            spec_list_filtered.append(spec_name)
+            spec_name_list.append(spec_perf_dict['spec_name'])
+            n_runs_list.append(spec_perf_dict['n_runs'])
+            test_earlys_mb_mean.append(spec_perf_dict['test_mb_n_mean'])
+            test_earlys_mb_std.append(spec_perf_dict['test_mb_n_std'])
+            # full runs for plotting
+            mb_list.append(spec_perf_dict['v_mb'])
+            median_run_per_spec.append(spec_perf_dict['v_top1_median_run'])
+            best_run_per_spec.append(spec_perf_dict['v_top1_himax_run'])
+            mean_run_per_spec.append(spec_perf_dict['v_top1_mean_run'])
+            worst_run_per_spec.append(spec_perf_dict['v_top1_lomax_run'])
+            std_per_spec.append(spec_perf_dict['v_top1_std_run'])
+            # performance info for text output
+            t_min_per_spec.append(spec_perf_dict['t_top1_run_max_min'])
+            t_max_per_spec.append(spec_perf_dict['t_top1_run_max_max'])
+            t_mean_per_spec.append(spec_perf_dict['t_top1_run_max_mean'])
+            t_median_per_spec.append(spec_perf_dict['t_top1_run_max_median'])
+            t_var_per_spec.append(spec_perf_dict['t_top1_run_max_var'])
+            t_std_per_spec.append(spec_perf_dict['t_top1_run_max_std'])
+            v_min_per_spec.append(spec_perf_dict['v_top1_run_max_min'])
+            v_max_per_spec.append(spec_perf_dict['v_top1_run_max_max'])
+            v_mean_per_spec.append(spec_perf_dict['v_top1_run_max_mean'])
+            v_median_per_spec.append(spec_perf_dict['v_top1_run_max_median'])
+            v_var_per_spec.append(spec_perf_dict['v_top1_run_max_var'])
+            v_std_per_spec.append(spec_perf_dict['v_top1_run_max_std'])
+            test_min_per_spec.append(spec_perf_dict['test_top1_min'])
+            test_max_per_spec.append(spec_perf_dict['test_top1_max'])
+            test_mean_per_spec.append(spec_perf_dict['test_top1_mean'])
+            test_median_per_spec.append(spec_perf_dict['test_top1_median'])
+            test_var_per_spec.append(spec_perf_dict['test_top1_var'])
+            test_std_per_spec.append(spec_perf_dict['test_top1_std'])
+        print('[MESSAGE] spec analysis complete:', spec_name)
+    print('================================================================================================================================================================================================================')
+
+    # BIG FINAL PLOT
+    if make_plot and len(mb_list[0])>0:
+        n_mb_total = int(np.max(mb_list[0]))
+        fig = plt.figure(figsize=(10,10))
+        ax = fig.add_subplot(1,1,1)
+        cmap = matplotlib.cm.get_cmap('nipy_spectral')#('Dark2') ('nipy_spectral')
+        color_list = ['black','blue','green','red']
+        # layer 1
+        for spec in range(len(spec_list_filtered)):
+            # ax.plot(mb_list[spec], best_run_per_spec[spec], linewidth=1.5, color=cmap(spec/len(spec_list)), alpha=0.15)
+            ax.plot(np.array([0,300]), np.array([np.max(mean_run_per_spec[spec]),np.max(mean_run_per_spec[spec])]), linewidth=1.5, linestyle='-', color=cmap(spec/len(spec_list_filtered)), alpha=0.8)
+        # layer 2
+        for spec in range(len(spec_list_filtered)):
+            ax.plot(mb_list[spec], mean_run_per_spec[spec], linewidth=2.0, color=cmap(spec/len(spec_list_filtered)), label='[%i / m %.4f / v %.6f] %s' %(n_runs_list[spec], 100*test_mean_per_spec[spec], 100*test_var_per_spec[spec], spec_list_filtered[spec]), alpha=0.8)
+        # settings
+        ax.set_ylim(0.1,1.)
+        ax.set_xlim(0.,float(n_mb_total))
+        ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/10.))
+        ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/40.), minor=True)
+        ax.set_yticks(np.arange(0.1, 1.01, .1))
+        ax.set_yticks(np.arange(0.1, 1.01, .05), minor=True)
+        ax.grid(which='major', linewidth=0.5, linestyle='dotted', color='black', alpha=0.3)
+        ax.grid(which='minor', linewidth=0.5, linestyle='dotted', color='black', alpha=0.3)
+        ax.set_aspect(float(n_mb_total)+.1/0.901)
+        ax.set_title('performance analysis (validation accuracy): %s' %(experiment_name))
+        ax.legend(loc=4)
+        plt.tight_layout()
+        # save
+        savepath = Paths.analysis
+        plot_filename = 'PA_'+str(experiment_name)+'.png'
+        if not os.path.exists(savepath):
+            os.makedirs(savepath)
+        plt.savefig(savepath+plot_filename, dpi = 120, transparent=False, bbox_inches='tight')
+        plt.close()
+        print('[MESSAGE] file saved: %s (performance analysis plot for experiment "%s")' %(savepath+plot_filename, experiment_name))
+
+    # HUMAN READABLE TEXT FILE:
+    if make_hrtf:
+        savepath = Paths.analysis
+        hrtf_filename = 'main_performance_analysis.csv'
+        with open(savepath+hrtf_filename, 'w') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(['spec_name','n_runs', 'test / e.s. mb [mean]', 'test / e.s. mb [std]',
+                             'train acc [median]','train acc [mean]','train acc [var]','train acc [std]','train acc [max]','train acc [min]',
+                             'val acc [median]','val acc [mean]','val acc [var]','val acc [std]','val acc [max]','val acc [min]',
+                             'test acc [median]','test acc [mean]','test acc [var]','test acc [std]','test acc [max]','test acc [min]'])
+            for spec in range(len(spec_name_list)):
+                writer.writerow([spec_name_list[spec], n_runs_list[spec], test_earlys_mb_mean[spec], test_earlys_mb_std[spec],
+                                t_median_per_spec[spec], t_mean_per_spec[spec], t_var_per_spec[spec], t_std_per_spec[spec], t_max_per_spec[spec], t_min_per_spec[spec],
+                                v_median_per_spec[spec], v_mean_per_spec[spec], v_var_per_spec[spec], v_std_per_spec[spec], v_max_per_spec[spec], v_min_per_spec[spec],
+                                test_median_per_spec[spec], test_mean_per_spec[spec], test_var_per_spec[spec], test_std_per_spec[spec], test_max_per_spec[spec], test_min_per_spec[spec]])
+        print('[MESSAGE] file saved: %s (performance analysis csv for experiment "%s")' %(savepath+hrtf_filename, experiment_name))
+
+def spec_analysis(TaskSettings, Paths, spec_name, spec_path, axis_2='af_weights', make_plot=False, return_loss=False):
+    assert (axis_2 in ['af_weights', 'loss']) or axis_2 is None, 'axis_2 needs to be defined as None, \'af_weights\', or \'loss\'.'
+    analysis_savepath = Paths.analysis
+    # get list of all performance files (pickle dicts) within a spec
+    rec_files_list = []
+    if os.path.isdir(spec_path):
+        run_folder_list = [f for f in os.listdir(spec_path) if (os.path.isdir(os.path.join(spec_path, f)) and ('run_' in f))]
+        for run_folder in run_folder_list:
+            run_dir = os.path.join(spec_path, run_folder)+'/'
+            relative_path_perf_file = [f for f in os.listdir(run_dir) if (('.pkl' in f) and ('record' in f)) ]
+            if len(relative_path_perf_file) > 1:
+                print('[WARNING] more than one record file found in %s. Using first file (%s).' %(run_dir, relative_path_perf_file[0]))
+            if len(relative_path_perf_file) > 0:
+                rec_files_list.append(os.path.join(run_dir, relative_path_perf_file[0]))
+
+    # prepare extraction from dicts
+    afw_hist_store, run_number_store = [], []
+    train_mb_n_hist_store, train_top1_hist_store, train_loss_hist_store = [], [], []
+    val_mb_n_hist_store, val_top1_hist_store, val_loss_hist_store = [], [], []
+    test_mb_n_hist_store, test_top1_store, test_loss_store = [], [], []
+
+    # criteria for exclusion: incomplete runs. this section makes a list of all completed runs
+    n_val_samples_list = []
+    for rec_file in rec_files_list:
+        rec_dict = pickle.load( open( rec_file, "rb" ) )
+        run_number = int(rec_file.split('/')[-2].split('run_')[-1])
+        n_val_samples = len(rec_dict['val_mb_n_hist'])
+        n_val_samples_list.append(n_val_samples)
+    if len(n_val_samples_list) > 0:
+        run_length = np.max(n_val_samples_list)
+    complete_runs = []
+    for rec_file in rec_files_list:
+        if os.path.getsize(rec_file) > 0:
+            rec_dict = pickle.load( open( rec_file, "rb" ) )
+            run_number = int(rec_file.split('/')[-2].split('run_')[-1])
+            if len(rec_dict['test_top1']) > 0: # put 'if len(rec_dict['val_mb_n_hist']) == run_length:' for runs without test
+                complete_runs.append(rec_file)
+            else:
+                print('[WARNING] spec %s run %i found to be incomplete (no test accuracy data found), excluded from analysis.'%(spec_name, run_number))
+    if len(complete_runs) == 0:
+        print('[WARNING] No complete run found for spec %s' %(spec_name))
+        return {}
+
+    # extract data from files
+    for rec_file in complete_runs:
+        rec_dict = pickle.load( open( rec_file, "rb" ) )
+        run_number = int(rec_file.split('/')[-2].split('run_')[-1])
+        n_val_samples = len(rec_dict['val_mb_n_hist'])
+        run_val_mean = np.mean(rec_dict['val_top1_hist'])
+        test_t1 = rec_dict['test_top1'][0]
+        # exclude bad runs
+        if (n_val_samples > 0) and (run_val_mean > .95 or run_val_mean < .3):
+            print('[WARNING] bad run detected and excluded from analysis (based on validation performance): %s, run %i' %(spec_name, run_number))
+        if test_t1 and test_t1 > 0. and test_t1 < .3:
+            print('[WARNING] bad run detected and excluded from analysis (based on test performance): %s, run %i' %(spec_name, run_number))
+        else:
+            train_mb_n_hist_store.append(np.array(rec_dict['train_mb_n_hist']))
+            train_top1_hist_store.append(np.array(rec_dict['train_top1_hist']))
+            train_loss_hist_store.append(np.array(rec_dict['train_loss_hist']))
+            test_mb_n_hist_store.append(rec_dict['test_mb_n_hist'])
+            test_loss_store.append(rec_dict['test_loss'])
+            test_top1_store.append(rec_dict['test_top1'])
+            run_number_store.append(run_number)
+            # special treatment for validation data: remove double mb counts from initial validation after restore
+            vmb_hist = rec_dict['val_mb_n_hist']
+            vt1_hist = rec_dict['val_top1_hist']
+            vlo_hist = rec_dict['val_loss_hist']
+            vmb_hist, vt1_hist, vlo_hist = remove_double_logs(vmb_hist, vt1_hist, vlo_hist)
+            val_mb_n_hist_store.append(np.array(vmb_hist))
+            val_top1_hist_store.append(np.array(vt1_hist))
+            val_loss_hist_store.append(np.array(vlo_hist))
+
+    # if more than one run was done in this spec, build spec performance summary dict
+    v_run_max_list = []
+    spec_perf_dict = {}
+    if len(run_number_store) > 0:
+        n_runs = len(run_number_store)
+
+        # get train statistics
+        train_mb_n = np.array(train_mb_n_hist_store)
+        train_top1 = np.array(train_top1_hist_store)
+        train_loss = np.array(train_loss_hist_store)
+        t_mb = train_mb_n[0,:]
+        t_median_run, t_himax_run, t_lomax_run, _, _, t_mean_run, t_std_run, t_var_run, t_run_max_list, _ = get_statistics(train_top1)
+        t_loss_median_run, _, _, t_loss_himin_run, t_loss_lomin_run, t_loss_mean_run, t_loss_std_run, t_loss_var_run, _, t_loss_run_min_list = get_statistics(train_loss)
+
+        # get val statistics
+        val_mb_n = np.array(val_mb_n_hist_store)
+        val_top1 = np.array(val_top1_hist_store)
+        val_loss = np.array(val_loss_hist_store)
+        v_mb = val_mb_n[0,:]
+        v_median_run, v_himax_run, v_lomax_run, _, _, v_mean_run, v_std_run, v_var_run, v_run_max_list, _ = get_statistics(val_top1)
+        v_loss_median_run, _, _, v_loss_himin_run, v_loss_lomin_run, v_loss_mean_run, v_loss_std_run, v_loss_var_run, _, v_loss_run_min_list = get_statistics(val_loss)
+
+        # put data into dict
+        spec_perf_dict = { 'spec_name': spec_name,
+                            'n_runs': n_runs,
+                            # training loss main
+                            't_mb': t_mb,
+                            't_loss_run_min_list': t_loss_run_min_list,
+                            't_loss_run_min_median': np.median(t_loss_run_min_list),
+                            't_loss_run_min_max': np.max(t_loss_run_min_list),
+                            't_loss_run_min_min': np.min(t_loss_run_min_list),
+                            't_loss_run_min_mean': np.mean(t_loss_run_min_list),
+                            't_loss_run_min_var': np.var(t_loss_run_min_list),
+                            't_loss_run_min_std': np.std(t_loss_run_min_list),
+                            # training loss full runs for plotting
+                            't_loss_median_run': t_loss_median_run,
+                            't_loss_himin_run': t_loss_himin_run,
+                            't_loss_lomin_run': t_loss_lomin_run,
+                            't_loss_mean_run': t_loss_mean_run,
+                            't_loss_std_run': t_loss_std_run,
+                            't_loss_var_run': t_loss_var_run,
+                            # training acc main
+                            't_top1_run_max_list': t_run_max_list,
+                            't_top1_run_max_median': np.median(t_run_max_list),
+                            't_top1_run_max_max': np.max(t_run_max_list),
+                            't_top1_run_max_min': np.min(t_run_max_list),
+                            't_top1_run_max_mean': np.mean(t_run_max_list),
+                            't_top1_run_max_std': np.std(t_run_max_list),
+                            't_top1_run_max_var': np.var(t_run_max_list),
+                            # training acc full runs for plotting
+                            't_top1_median_run': t_median_run,
+                            't_top1_himax_run': t_himax_run,
+                            't_top1_lomax_run': t_lomax_run,
+                            't_top1_mean_run': t_mean_run,
+                            't_top1_std_run': t_std_run,
+                            't_top1_var_run': t_var_run,
+
+                            # val loss main
+                            'v_mb': v_mb, # training minibatch numbers corresponding to validation runs
+                            'v_loss_run_min_list': v_loss_run_min_list,
+                            'v_loss_run_min_median': np.median(v_loss_run_min_list),
+                            'v_loss_run_min_max': np.max(v_loss_run_min_list),
+                            'v_loss_run_min_min': np.min(v_loss_run_min_list),
+                            'v_loss_run_min_mean': np.mean(v_loss_run_min_list),
+                            'v_loss_run_min_std': np.std(v_loss_run_min_list),
+                            'v_loss_run_min_var': np.var(v_loss_run_min_list),
+                            # val loss full runs for plotting
+                            'v_loss_median_run': v_loss_median_run,
+                            'v_loss_himin_run': v_loss_himin_run,
+                            'v_loss_lomin_run': v_loss_lomin_run,
+                            'v_loss_mean_run': v_loss_mean_run,
+                            'v_loss_std_run': v_loss_std_run,
+                            'v_loss_var_run': v_loss_var_run,
+                            # var acc main
+                            'v_top1_run_max_list': v_run_max_list,     # all runs' max values
+                            'v_top1_run_max_median': np.median(v_run_max_list),
+                            'v_top1_run_max_max': np.max(v_run_max_list),
+                            'v_top1_run_max_min': np.min(v_run_max_list),
+                            'v_top1_run_max_mean': np.mean(v_run_max_list),
+                            'v_top1_run_max_std': np.std(v_run_max_list),
+                            'v_top1_run_max_var': np.var(v_run_max_list),
+                            # val acc full runs for plotting
+                            'v_top1_median_run': v_median_run,    # complete median run
+                            'v_top1_himax_run': v_himax_run,    # complete best run (highest max)
+                            'v_top1_lomax_run': v_lomax_run,    # complete worst run (lowest max)
+                            'v_top1_mean_run': v_mean_run,        # complete mean run
+                            'v_top1_std_run': v_std_run,        # complete std around mean run
+                            'v_top1_var_run': v_var_run,        # complete var around mean run
+
+                            # test loss main
+                            'test_loss_list': test_loss_store,
+                            'test_loss_median': np.median(test_loss_store),
+                            'test_loss_max': np.max(test_loss_store),
+                            'test_loss_min': np.min(test_loss_store),
+                            'test_loss_mean': np.mean(test_loss_store),
+                            'test_loss_var': np.var(test_loss_store),
+                            'test_loss_std': np.std(test_loss_store),
+                            # test acc main
+                            'test_top1_list': test_top1_store,
+                            'test_top1_median': np.median(test_top1_store),
+                            'test_top1_max': np.max(test_top1_store),
+                            'test_top1_min': np.min(test_top1_store),
+                            'test_top1_mean': np.mean(test_top1_store),
+                            'test_top1_var': np.var(test_top1_store),
+                            'test_top1_std': np.std(test_top1_store),
+
+                            # early stopping minibatches
+                            'test_mb_n_hist': test_mb_n_hist_store,
+                            'test_mb_n_min': np.amin(test_mb_n_hist_store),
+                            'test_mb_n_max': np.amax(test_mb_n_hist_store),
+                            'test_mb_n_mean': np.mean(test_mb_n_hist_store),
+                            'test_mb_n_median': np.median(test_mb_n_hist_store),
+                            'test_mb_n_std': np.std(test_mb_n_hist_store) }
+
+        # save dict as pickle file
+        if not os.path.exists(analysis_savepath):
+            os.makedirs(analysis_savepath)
+        filename = 'performance_summary_'+spec_name+'.pkl'
+        filepath = analysis_savepath + filename
+        pickle.dump(spec_perf_dict, open(filepath,'wb'), protocol=3)
+        print('[MESSAGE] file saved: %s (performance summary dict for "%s")' %(filepath, spec_name))
+
+        # for the current spec: put all runs' val learning curves in one plot
+        n_mb_total = int(np.max(t_mb))
+        if make_plot:
+            fig = plt.figure(figsize=(10,10))
+            ax = fig.add_subplot(1,1,1)
+            for r in range(len(train_mb_n_hist_store)):
+                colors = [ cm.plasma(x) for x in np.linspace(0.01, 0.99, len(train_mb_n_hist_store))  ]
+                ax.plot(val_mb_n_hist_store[r], val_top1_hist_store[r], linewidth=0.5, color=colors[r], label='run '+str(run_number_store[r]), alpha=0.5)
+            ax.plot(np.array([0,len(t_mb)]), np.array([np.max(v_himax_run),np.max(v_himax_run)]), linewidth=1., linestyle='--', color='black', alpha=0.5, label='highest max')
+            # settings ax
+            ax.set_ylim(0.1,1.)
+            ax.set_xlim(0.,float(n_mb_total))
+            ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/10.))
+            ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/40.), minor=True)
+            ax.set_yticks(np.arange(0.1, 1.01, .1))
+            ax.set_yticks(np.arange(0.1, 1.01, .05), minor=True)
+            ax.grid(which='major', linewidth=0.5, linestyle='dotted', color='black', alpha=0.3)
+            ax.grid(which='minor', linewidth=0.5, linestyle='dotted', color='black', alpha=0.3)
+            ax.set_aspect(float(n_mb_total)+.1/0.901)
+            ax.set_title('all runs: %s (%i runs)' %(spec_name, n_runs))
+            # ax.legend(loc='lower left', prop={'size': 11})
+            # save
+            plt.tight_layout()
+            filename = 'all_runs_'+str(spec_name)+'.png'
+            if not os.path.exists(analysis_savepath):
+                os.makedirs(analysis_savepath)
+            plt.savefig(analysis_savepath+filename, dpi = 120, transparent=False, bbox_inches='tight')
+            plt.close()
+            print('[MESSAGE] file saved: %s (performance analysis plot for spec "%s")' %(spec_name, analysis_savepath+filename))
+
+    # if validation was done and more than one run was done in this spec, make spec plot
+    if len(v_run_max_list) > 1:
+        n_mb_total = int(np.max(t_mb))
+        if make_plot:
+            fig = plt.figure(figsize=(10,10))
+            ax = fig.add_subplot(1,1,1)
+            if axis_2 == 'loss':
+                ax2 = ax.twinx()
+                ax2_ylim = [0.,1.]
+                ax2.plot(t_mb, t_loss_mean_run, linewidth=1., color='red', label='training acc', alpha=0.2)
+                ax2_ylim = [0.,np.max(t_loss_mean_run)]
+                ax2.set_ylim(ax2_ylim[0],ax2_ylim[1])
+            ax.plot(t_mb, t_mean_run, linewidth=1., color='green', label='training acc', alpha=0.4)
+            # best and worst run
+            ax.fill_between(v_mb, v_himax_run, v_lomax_run, linewidth=0., color='black', alpha=0.15)
+            ax.plot(np.array([0,n_mb_total]), np.array([np.max(v_himax_run),np.max(v_himax_run)]), linewidth=1., linestyle='--', color='black', alpha=0.6)
+            ax.plot(np.array([0,n_mb_total]), np.array([np.max(v_lomax_run),np.max(v_lomax_run)]), linewidth=1., linestyle='--', color='black', alpha=0.6)
+            ax.plot(v_mb, v_himax_run, linewidth=1., linestyle='-', color='black', label='best run val acc (max = %.3f)'%(np.max(v_himax_run)), alpha=0.6)
+            ax.plot(v_mb, v_lomax_run, linewidth=1., linestyle='-', color='black', label='worst run val acc (max = %.3f)'%(np.max(v_lomax_run)), alpha=0.6)
+            # mean run
+            ax.plot(np.array([0,len(t_mb)]), np.array([np.max(v_mean_run),np.max(v_mean_run)]), linewidth=1., linestyle='--', color='blue', alpha=0.8)
+            ax.plot(v_mb, v_mean_run, linewidth=2., color='blue', label='mean val acc (max = %.3f)'%(np.max(v_mean_run)), alpha=0.8)
+            # settings ax
+            ax.set_ylim(0.1,1.)
+            ax.set_xlim(0.,float(n_mb_total))
+            ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/10.))
+            ax.set_xticks(np.arange(0, float(n_mb_total)+.1, float(n_mb_total)/40.), minor=True)
+            ax.set_yticks(np.arange(0.1, 1.01, .1))
+            ax.set_yticks(np.arange(0.1, 1.01, .05), minor=True)
+            ax.grid(which='major', linewidth=0.5, linestyle='dotted', color='black', alpha=0.3)
+            ax.grid(which='minor', linewidth=0.5, linestyle='dotted', color='black', alpha=0.3)
+            ax.set_aspect(float(n_mb_total)+.1/0.901)
+            ax.set_title('performance analysis: %s (%i runs)' %(spec_name, n_runs))
+            ax.legend(loc='lower left', prop={'size': 11})
+            # save
+            plt.tight_layout()
+            filename = 'performance_analysis_'+str(spec_name)+'.png'
+            if not os.path.exists(analysis_savepath):
+                os.makedirs(analysis_savepath)
+            plt.savefig(analysis_savepath+filename, dpi = 120, transparent=False, bbox_inches='tight')
+            plt.close()
+            print('[MESSAGE] file saved: %s (performance analysis plot for spec "%s")' %(spec_name, analysis_savepath+filename))
+
+    # return spec_perf_dict
+    return spec_perf_dict
+
+def remove_double_logs(vmb_hist, vt1_hist, vlo_hist):
+    vmb_new, vt1_new, vlo_new = [], [], []
+    for i in range(len(vmb_hist)):
+        if not vmb_hist[i] in vmb_new:
+            vmb_new.append(vmb_hist[i])
+            vt1_new.append(vt1_hist[i])
+            vlo_new.append(vlo_hist[i])
+    return vmb_new, vt1_new, vlo_new
+
+def get_statistics(data_array):
+    # function gets a all full runs of a spec (train / val) and returns stats. do not use this for single values as in test.
+    assert len(data_array.shape) == 2, 'data_array must be 2-dimensional: number of runs * number of performance measurement per run'
+    if data_array.shape[1] > 0:
+        # find himax and lomax run's indices
+        run_max_list = []
+        run_min_list = []
+        for i in range(data_array.shape[0]):
+            run = data_array[i,:]
+            run_max_list.append(np.max(run))
+            run_min_list.append(np.min(run))
+        himax_run_idx = np.argmax(np.array(run_max_list))
+        lomax_run_idx = np.argmin(np.array(run_max_list))
+        himin_run_idx = np.argmax(np.array(run_min_list))
+        lomin_run_idx = np.argmin(np.array(run_min_list))
+        median_run_idx = np.argsort(np.array(run_min_list))[len(np.array(run_min_list))//2]
+        # isolate himax, mean and lomax run
+        himax_run = data_array[himax_run_idx,:]
+        lomax_run = data_array[lomax_run_idx,:]
+        himin_run = data_array[himin_run_idx,:]
+        lomin_run = data_array[lomin_run_idx,:]
+        median_run = data_array[median_run_idx,:]
+        mean_run = np.mean(data_array, axis=0)
+        std_run = np.std(data_array, axis=0)
+        var_run = np.var(data_array, axis=0)
+        # return many things
+        return median_run, himax_run, lomax_run, himin_run, lomin_run, mean_run, std_run, var_run, run_max_list, run_min_list
+    else:
+        return 0, 0, 0, 0, 0, 0, 0, 0, [0], [0]
+
+def smooth_history(hist, n):
+    smooth_hist = []
+    for i in range(len(hist)):
+        smooth_hist.append(sliding_window(hist[:i], n))
+    return smooth_hist
+
+def sliding_window(l, n):
+    if len(l) < n:
+        n = len(l)
+    return np.mean(l[-n:])
+
+def visualize_performance(TaskSettings, Paths):
+    # load
+    filename = Paths.recorder_files+'record_'+str(TaskSettings.spec_name)+'_run_'+str(TaskSettings.run)+'.pkl'
+    performance_dict = pickle.load( open( filename, "rb" ) )
+    n_mb_total = int(np.max(performance_dict['train_mb_n_hist']))
+    # plot
+    fig = plt.figure(figsize=(10,10))
+    ax = fig.add_subplot(1,1,1)
+    ax.plot(np.array([0,n_mb_total]), np.array([1.0,1.0]), linewidth=3., color='black', label='100%', alpha=0.5)
+    ax.plot(np.array(performance_dict['train_mb_n_hist']), performance_dict['train_top1_hist'], linewidth=1., color='green', label='accuracy train', alpha=0.3) # linewidth=2.,
+    ax.plot(np.array([0,n_mb_total]), np.array([np.max(performance_dict['val_top1_hist']),np.max(performance_dict['val_top1_hist'])]), linewidth=1.0, color='blue', label='max val acc (%.3f)'%(np.max(performance_dict['val_top1_hist'])), alpha=0.5)
+    ax.plot(np.array(performance_dict['val_mb_n_hist']), performance_dict['val_top1_hist'], linewidth=2., color='blue', label='accuracy val', alpha=0.5)
+    ax.plot(np.array([0,n_mb_total]), np.array([0.1,0.1]), linewidth=3., color='red', label='chance level', alpha=0.5)
+    ax.set_ylim(0.,1.01)
+    ax.set_xlim(0.,float(n_mb_total))
+    ax.set_xticks(np.arange(0, n_mb_total, n_mb_total//6))
+    ax.set_yticks(np.arange(0., 1.1, .1))
+    ax.set_yticks(np.arange(0., 1.1, .02), minor=True)
+    ax.grid(which='major', alpha=0.6)
+    ax.grid(which='minor', alpha=0.1)
+    ax.set_aspect(float(n_mb_total))
+    ax.set_title('accuracy over epochs ('+str(TaskSettings.spec_name)+', run_'+str(TaskSettings.run)+')')
+    ax.legend(loc=4)
+    plt.tight_layout()
+    # save
+    savepath = Paths.run_learning_curves
+    filename = 'learning_curves_'+str(TaskSettings.spec_name)+'_run_'+str(TaskSettings.run)+'.png'
+    if not os.path.exists(savepath):
+        os.makedirs(savepath)
+    plt.savefig(savepath+filename, dpi = 120, transparent=False, bbox_inches='tight')
+    plt.close('all')
+    print('================================================================================================================================================================================================================')
+    print('[MESSAGE] performance figure saved: %s' %(savepath+filename))
+    print('================================================================================================================================================================================================================')
+
+def lr_scheduler(TaskSettings, current_mb): # new variablse: TaskSettings.lr_schedule_type (constant, step, continuous), TaskSettings.lr_decay (e.g., 1e-6)
+    if TaskSettings.lr_schedule_type == 'constant':
+        return TaskSettings.lr
+    if TaskSettings.lr_schedule_type == 'decay':
+        lr = TaskSettings.lr * (1. / (1. + TaskSettings.lr_decay * current_mb))
+        return lr
+    if TaskSettings.lr_schedule_type == 'linear':
+        if current_mb < TaskSettings.lr_lin_steps:
+            return np.linspace(TaskSettings.lr, TaskSettings.lr_lin_min, num=TaskSettings.lr_lin_steps)[current_mb] #start_lr=0.04, stop_lr=0.00004
+        else:
+            return TaskSettings.lr_lin_min
+    if TaskSettings.lr_schedule_type == 'step':
+        mb_per_ep = 50000*(1-TaskSettings.val_set_fraction)//TaskSettings.minibatch_size
+        lr_step_mb = np.array(TaskSettings.lr_step_ep) * mb_per_ep
+        step_mbs_relative = lr_step_mb - current_mb
+        for i in range(len(step_mbs_relative)):
+            if step_mbs_relative[i] > 0:
+                if i == 0: return TaskSettings.lr
+                else: return TaskSettings.lr * TaskSettings.lr_step_multi[i-1]
+        return TaskSettings.lr * TaskSettings.lr_step_multi[-1]
+
+def args_to_txt(args, Paths, training_complete_info='', test_complete_info=''):
+    # prepare
+    experiment_name = args['experiment_name']
+    spec_name = args['spec_name']
+    run = args['run']
+    network = args['network']
+    task = args['task']
+    mode = args['mode']
+    # write file
+    if not os.path.exists(Paths.experiment_spec_run):
+        os.makedirs(Paths.experiment_spec_run)
+    filename = "run_info_"+str(experiment_name)+"_"+str(spec_name)+"_run_"+str(run)+".txt"
+    with open(Paths.experiment_spec_run+filename, "w+") as text_file:
+        print("{:>35}".format('RUN SETTINGS:'), file=text_file)
+        print("", file=text_file)
+        print("{:>35} {:<30}".format('experiment_name:',experiment_name), file=text_file)
+        print("{:>35} {:<30}".format('spec_name:', spec_name), file=text_file)
+        print("{:>35} {:<30}".format('run:', run), file=text_file)
+        if len(training_complete_info) > 0:
+            print("", file=text_file)
+            print("{:>35} {:<30}".format('training complete:', training_complete_info), file=text_file)
+        if len(test_complete_info) > 0:
+            print("{:>35} {:<30}".format('test complete:', test_complete_info), file=text_file)
+        print("", file=text_file)
+        print("{:>35} {:<30}".format('network:', network), file=text_file)
+        print("{:>35} {:<30}".format('task:', task), file=text_file)
+        print("{:>35} {:<30}".format('mode:', mode), file=text_file)
+        print("", file=text_file)
+        for key in args.keys():
+            if args[key] is not None and key not in ['experiment_name','spec_name','run','network','task','mode']:
+                print("{:>35} {:<30}".format(key+':', str(args[key])), file=text_file)

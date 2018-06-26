@@ -11,6 +11,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import deepnet_networks as net
+import deepnet_task_cifar as task
 
 # ##############################################################################
 # ################################### MAIN #####################################
@@ -69,13 +70,6 @@ if __name__ == '__main__':
     parser.add_argument('-create_lc_on_the_fly', type=str2bool, help='create learning curves on the fly, i.e., at checkpoints and at the end of the run')
     args = vars(parser.parse_args())
 
-    if args['task'] == 'cifar10':
-        import deepnet_task_cifar10 as task
-        import deepnet_aux_cifar as aux
-    elif args['task'] == 'cifar100':
-        import deepnet_task_cifar100 as task
-        import deepnet_aux_cifar as aux
-
     # training
     if args['mode'] in ['training', 'train', '']:
         NetSettings = net.NetSettings(args)
@@ -92,7 +86,7 @@ if __name__ == '__main__':
     if args['mode'] in ['analysis']:
         TaskSettings = task.TaskSettings(args)
         Paths = task.Paths(TaskSettings)
-        aux.analysis(TaskSettings, Paths)
+        task.analysis(TaskSettings, Paths)
 
     # testing: needs to be updates
     if args['mode'] in ['test', 'testing']:
