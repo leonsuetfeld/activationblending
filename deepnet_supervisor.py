@@ -34,9 +34,9 @@ import subprocess
 
 for run in range(1):
     os.system("nvidia-smi")
-    command = "python3 "                          + 'deepnet_main.py' + \
+    command = "python3 "                        + 'deepnet_main.py' + \
               " -path_relative "                + './' + \
-              " -experiment_name "              + 'c100_test' + \
+              " -experiment_name "              + 'debugging' + \
               " -spec_name "                    + 'relu' + \
               " -run "                          + '1' + \
               " -task="                         + 'cifar100' + \

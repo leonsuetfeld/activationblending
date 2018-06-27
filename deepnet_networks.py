@@ -177,7 +177,7 @@ class Network(object):
                 for grad, var in self.gradients:
                     summary_label = var.name+'_gradient'
                     summary_label = summary_label.replace('/','_').replace(':','_')
-                    __variable_summaries(grad, summary_label)
+                    variable_summaries(grad, summary_label)
 
     # ========================== NETWORK ARCHITECTURES =========================
 
@@ -283,9 +283,9 @@ class Network(object):
             if b_shape == [-1]:
                 b_shape = [W_shape[-1]]
             W = tf.get_variable('weights', W_shape, initializer=tf.truncated_normal_initializer(stddev=tf.sqrt(2./(W_shape[0]*W_shape[1])))) # stddev=0.1
-            __variable_summaries(W, 'weights')
+            variable_summaries(W, 'weights')
             b = tf.get_variable('biases', b_shape, initializer=tf.constant_initializer(bias_init))
-            __variable_summaries(b, 'biases')
+            variable_summaries(b, 'biases')
             iState = tf.matmul(flat_input, W)
             if b_shape != [0]:
                 iState += b
@@ -299,9 +299,9 @@ class Network(object):
                 b_shape = [W_shape[-1]]
             W_initializer = tf.truncated_normal_initializer(stddev=tf.sqrt(2./(W_shape[0]*W_shape[1]*W_shape[2]))) # stddev=0.1
             W = tf.get_variable('weights', W_shape, initializer=W_initializer)
-            __variable_summaries(W, 'weights')
+            variable_summaries(W, 'weights')
             b = tf.get_variable('biases', b_shape, initializer=tf.constant_initializer(bias_init))
-            __variable_summaries(b, 'biases')
+            variable_summaries(b, 'biases')
             iState = tf.nn.conv2d(layer_input, W, strides, padding)
             if b_shape != [0]:
                 iState += b
@@ -318,7 +318,7 @@ class Network(object):
         assert af_weights_init in ['default','predefined'], 'specified initialization type for W_blend unknown.'
         assert AF_blend_mode in ['unrestricted','normalized','posnormed','absnormed','softmaxed'], 'specified blend mode unknown.'
 
-        __variable_summaries(preact, 'preact')
+        variable_summaries(preact, 'preact')
 
         if batch_norm:
             preact = tf.layers.batch_normalization(preact, name='batchnorm', training=True)
@@ -333,7 +333,7 @@ class Network(object):
             except Exception:
                 raise IOError('\n[ERROR] Couldn\'t restore predefined blend weights, stopping run.\n')
         blend_weights_raw = tf.get_variable("blend_weights_raw", trainable=W_blend_trainable, initializer=af_weights_initializer)
-        __variable_summaries(blend_weights_raw, 'blend_weights')
+        variable_summaries(blend_weights_raw, 'blend_weights')
         if AF_blend_mode == 'unrestricted':
             blend_weights = blend_weights_raw
         elif AF_blend_mode == 'normalized':
@@ -357,7 +357,7 @@ class Network(object):
                 except Exception:
                     raise IOError('\n[ERROR] Couldn\'t restore predefined swish beta, stopping run.\n')
             swish_beta = tf.get_variable("swish_beta", trainable=swish_beta_trainable, initializer=swish_init)
-            __variable_summaries(swish_beta, 'swish_beta')
+            variable_summaries(swish_beta, 'swish_beta')
 
         # AF SETS
         if AF_set.startswith('1_'):
@@ -404,7 +404,7 @@ class Network(object):
                                    blend_weights[3] * act_swish,
                                    blend_weights[4] * act_linu])
 
-        __variable_summaries(activation, 'activation')
+        variable_summaries(activation, 'activation')
         return activation
 
     def __get_predefined_af_weights(self, layer_name, w_type='blend'):
@@ -445,8 +445,24 @@ class Network(object):
             print('[MESSAGE] (predefined) swish beta for layer',layer_name,':',af_weights_dict[layer_name+'/swish_beta:0'])
             return tf.convert_to_tensor(af_weights_dict[layer_name+'/swish_beta:0'])
 
+    def get_af_weights_dict(self, sess):
+        """Returns all current AF weights (scaling/ blending, Swish beta) as
+        dict.
+        """
+        af_weights_dict = {}
+        # if trainable blend weights available put in list
+        if len([v for v in tf.trainable_variables() if 'blend_weights' in v.name]) > 0:
+            for name in [v.name for v in tf.trainable_variables() if 'blend_weights' in v.name]:
+                af_weights_dict[name] = list(sess.run(name))
+        # if trainable swish betas available put in list
+        if len([v for v in tf.trainable_variables() if 'swish_beta' in v.name]) > 0:
+            for name in [v.name for v in tf.trainable_variables() if 'swish_beta' in v.name]:
+                af_weights_dict[name] = list(sess.run(name))
+        return af_weights_dict
+
     def save_af_weights(self, sess, mb_count, print_messages=False):
-        """Saves current AF weights (scaling / blending weights) as pickle dict.
+        """Saves current AF weights (scaling / blending weights, Swish beta)
+        as pickle dict.
         """
         af_weights_dict_pkl = {}
         af_weights_dict_json = {}
@@ -474,8 +490,8 @@ class Network(object):
                 print('[WARNING] no trainable variables "blend_weights" or "swish_beta" found - no af weights saved.')
 
     def save_all_weights(self, sess, mb_count, print_messages=False):
-        """Saves all current weights (conv, dense, scaling/ blending) as
-        pickle dict.
+        """Saves all current weights (conv, dense, scaling/ blending, Swish
+        beta) as pickle dict.
         """
         if len([v for v in tf.trainable_variables()]) > 0:
             # create dict of all trainable variables in network
@@ -495,18 +511,6 @@ class Network(object):
 
     # ========================= NOT IN USE / DEBUGGING =========================
 
-    def __get_af_weights_dict(self, sess):
-        af_weights_dict = {}
-        # if trainable blend weights available put in list
-        if len([v for v in tf.trainable_variables() if 'blend_weights' in v.name]) > 0:
-            for name in [v.name for v in tf.trainable_variables() if 'blend_weights' in v.name]:
-                af_weights_dict[name] = list(sess.run(name))
-        # if trainable swish betas available put in list
-        if len([v for v in tf.trainable_variables() if 'swish_beta' in v.name]) > 0:
-            for name in [v.name for v in tf.trainable_variables() if 'swish_beta' in v.name]:
-                af_weights_dict[name] = list(sess.run(name))
-        return af_weights_dict
-
     def __getLayerShape(self, state, print_shape=False):
         N = int(state.get_shape()[1]) # feature map X
         M = int(state.get_shape()[2]) # feature map Y
@@ -524,7 +528,7 @@ class Network(object):
 # ### CLASS END ################################################################
 # ##############################################################################
 
-def __variable_summaries(var, label):
+def variable_summaries(var, label):
     """Attaches relevant statistics of variables to tf.summaries
     for TensorBoard visualization.
     """

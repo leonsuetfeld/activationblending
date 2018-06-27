@@ -31,7 +31,6 @@ import subprocess
 from sklearn.utils import shuffle
 import psutil
 from tensorflow import SessionLog
-import deepnet_aux_cifar as aux
 
 # ##############################################################################
 # ### TASK SETTINGS ############################################################
@@ -158,14 +157,14 @@ class Paths(object):
 
         self.relative = TaskSettings.path_relative # path from scheduler
         # data locations
-        self.train_batches = self.relative+'1_data_'+TaskSettings.task+'/train_batches/' # original data
-        self.test_batches = self.relative+'1_data_'+TaskSettings.task+'/test_batches/' # original data
-        self.train_set = self.relative+'1_data_'+TaskSettings.task+'/train_set/'
-        self.test_set = self.relative+'1_data_'+TaskSettings.task+'/test_set/'
-        self.train_set_ztrans = self.relative+'1_data_'+TaskSettings.task+'/train_set_ztrans/'
-        self.test_set_ztrans = self.relative+'1_data_'+TaskSettings.task+'/test_set_ztrans/'
-        self.train_set_gcn_zca = self.relative+'1_data_'+TaskSettings.task+'/train_set_gcn_zca/'
-        self.test_set_gcn_zca = self.relative+'1_data_'+TaskSettings.task+'/test_set_gcn_zca/'
+        self.train_batches = self.relative+'1_data_'+TaskSettings.task_name+'/train_batches/' # original data
+        self.test_batches = self.relative+'1_data_'+TaskSettings.task_name+'/test_batches/' # original data
+        self.train_set = self.relative+'1_data_'+TaskSettings.task_name+'/train_set/'
+        self.test_set = self.relative+'1_data_'+TaskSettings.task_name+'/test_set/'
+        self.train_set_ztrans = self.relative+'1_data_'+TaskSettings.task_name+'/train_set_ztrans/'
+        self.test_set_ztrans = self.relative+'1_data_'+TaskSettings.task_name+'/test_set_ztrans/'
+        self.train_set_gcn_zca = self.relative+'1_data_'+TaskSettings.task_name+'/train_set_gcn_zca/'
+        self.test_set_gcn_zca = self.relative+'1_data_'+TaskSettings.task_name+'/test_set_gcn_zca/'
         # save paths (experiment level)
         self.experiment = self.relative+'3_output_cifar/'+str(TaskSettings.experiment_name)+'/'
         self.af_weight_dicts = self.experiment+'0_af_weights/' # corresponds to TaskSettings.save_af_weights
@@ -219,17 +218,17 @@ class TrainingHandler(object):
         """Load (pre-processed) training data set from file defined in "Paths".
         """
         if args['preprocessing'] in ['none', 'tf_ztrans']:
-            path_train_set = self.Paths.train_set+self.TaskSettings.task+'_trainset.pkl'
+            path_train_set = self.Paths.train_set+self.TaskSettings.task_name+'_trainset.pkl'
             data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
             self.dataset_images = data_dict['images']
             self.dataset_labels = data_dict['labels']
         if args['preprocessing'] == 'ztrans':
-            path_train_set = self.Paths.train_set_ztrans+self.TaskSettings.task+'_trainset.pkl'
+            path_train_set = self.Paths.train_set_ztrans+self.TaskSettings.task_name+'_trainset.pkl'
             data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
             self.dataset_images = data_dict['images']
             self.dataset_labels = data_dict['labels']
         elif args['preprocessing'] == 'gcn_zca':
-            path_train_set = self.Paths.train_set_gcn_zca+self.TaskSettings.task+'_trainset.pkl'
+            path_train_set = self.Paths.train_set_gcn_zca+self.TaskSettings.task_name+'_trainset.pkl'
             data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
             self.dataset_images = data_dict['images']
             self.dataset_labels = data_dict['labels']
@@ -375,17 +374,17 @@ class TestHandler(object):
         """Load (pre-processed) test data set from file defined in "Paths".
         """
         if args['preprocessing'] in ['none', 'tf_ztrans']:
-            path_test_set = self.Paths.test_set+self.TaskSettings.task+'_testset.pkl'
+            path_test_set = self.Paths.test_set+self.TaskSettings.task_name+'_testset.pkl'
             data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
             self.test_images = data_dict['images']
             self.test_labels = data_dict['labels']
         elif args['preprocessing'] == 'ztrans':
-            path_test_set = self.Paths.test_set_ztrans+self.TaskSettings.task+'_testset.pkl'
+            path_test_set = self.Paths.test_set_ztrans+self.TaskSettings.task_name+'_testset.pkl'
             data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
             self.test_images = data_dict['images']
             self.test_labels = data_dict['labels']
         elif args['preprocessing'] == 'gcn_zca':
-            path_test_set = self.Paths.test_set_gcn_zca+self.TaskSettings.task+'_testset.pkl'
+            path_test_set = self.Paths.test_set_gcn_zca+self.TaskSettings.task_name+'_testset.pkl'
             data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
             self.test_images = data_dict['images']
             self.test_labels = data_dict['labels']
@@ -1128,9 +1127,9 @@ def validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec, print_val
     # MINIBATCH HANDLING
     loss_store = []
     top1_store = []
-    if TaskSettings.task == 'cifar10'
+    if TaskSettings.task_name == 'cifar10':
         n_classes_in_task = 10
-    elif TaskSettings.task == 'cifar100':
+    elif TaskSettings.task_name == 'cifar100':
         n_classes_in_task = 100
     val_confusion_matrix = np.zeros((n_classes_in_task,n_classes_in_task))
     val_count_vector = np.zeros((n_classes_in_task,1))
@@ -1151,7 +1150,7 @@ def validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec, print_val
     val_apc = np.zeros((n_classes_in_task,))
     for i in range(n_classes_in_task):
         val_apc[i] = np.array(val_confusion_matrix[i,i]/val_count_vector[i])[0]
-    if print_val_apc and TaskSettings.task == 'cifar10':
+    if print_val_apc and TaskSettings.task_name == 'cifar10':
         print('[MESSAGE] accuracy per class (v): {1: %.3f |' %val_apc[0] + ' 2: %.3f |' %val_apc[1] + ' 3: %.3f |' %val_apc[2] + ' 4: %.3f |' %val_apc[3] + ' 5: %.3f |' %val_apc[4] +
                                                 ' 6: %.3f |' %val_apc[5] + ' 7: %.3f |' %val_apc[6] + ' 8: %.3f |' %val_apc[7] + ' 9: %.3f |' %val_apc[8] + ' 10: %.3f}' %val_apc[9])
     # GET AF WEIGHTS
@@ -1169,9 +1168,9 @@ def __test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_
     # MINIBATCH HANDLING
     loss_store = []
     top1_store = []
-    if TaskSettings.task == 'cifar10'
+    if TaskSettings.task_name == 'cifar10':
         n_classes_in_task = 10
-    elif TaskSettings.task == 'cifar100':
+    elif TaskSettings.task_name == 'cifar100':
         n_classes_in_task = 100
     test_confusion_matrix = np.zeros((n_classes_in_task,n_classes_in_task))
     test_count_vector = np.zeros((n_classes_in_task,1))
@@ -1192,7 +1191,7 @@ def __test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_
     test_apc = np.zeros((n_classes_in_task,))
     for i in range(n_classes_in_task):
         test_apc[i] = np.array(test_confusion_matrix[i,i]/test_count_vector[i])[0]
-    if print_test_apc and TaskSettings.task == 'cifar10':
+    if print_test_apc and TaskSettings.task_name == 'cifar10':
         print('[MESSAGE] accuracy per class (test): {1: %.3f |' %test_apc[0] + ' 2: %.3f |' %test_apc[1] + ' 3: %.3f |' %test_apc[2] + ' 4: %.3f |' %test_apc[3] + ' 5: %.3f |' %test_apc[4] +
                                                    ' 6: %.3f |' %test_apc[5] + ' 7: %.3f |' %test_apc[6] + ' 8: %.3f |' %test_apc[7] + ' 9: %.3f |' %test_apc[8] + ' 10: %.3f}' %test_apc[9])
     # STORE RESULTS
@@ -1251,9 +1250,9 @@ def test(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1, print_resu
         # create stores for multi-batch processing
         loss_store = []
         top1_store = []
-        if TaskSettings.task == 'cifar10'
+        if TaskSettings.task_name == 'cifar10':
             n_classes_in_task = 10
-        elif TaskSettings.task == 'cifar100':
+        elif TaskSettings.task_name == 'cifar100':
             n_classes_in_task = 100
         test_confusion_matrix = np.zeros((n_classes_in_task,n_classes_in_task))
         test_count_vector = np.zeros((n_classes_in_task,1))
@@ -1276,7 +1275,7 @@ def test(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1, print_resu
         for i in range(n_classes_in_task):
             test_apc[i] = np.array(test_confusion_matrix[i,i] / test_count_vector[i])[0]
         # STORE RESULTS AND PRINT TEST OVERVIEW
-        if print_results and TaskSettings.task == 'cifar10':
+        if print_results and TaskSettings.task_name == 'cifar10':
             print('================================================================================================================================================================================================================')
             print('['+str(TaskSettings.spec_name)+'] test' +
                   ' | l(t): %.3f' %test_loss +
