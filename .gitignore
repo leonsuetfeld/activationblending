@@ -50,3 +50,5 @@ venvtf*
 # Exclude files #
 #################
 core*
+aux*
+cheatsheet*
