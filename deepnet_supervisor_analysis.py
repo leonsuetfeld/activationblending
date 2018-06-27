@@ -1,6 +1,6 @@
 """
 Script to manage the schedule / experiments. Controls repetitive script calls
-and paricular parameter settings.
+and particular parameter settings.
 
 @authors: Leon Sütfeld, Flemming Brieger
 """
