@@ -1,5 +1,5 @@
 """
-Script to manage the schedule / experiments. Controls repetitive script calls
+Script to manage schedule / experiments. Controls repetitive script calls
 and particular parameter settings.
 
 @authors: Leon Sütfeld, Flemming Brieger
