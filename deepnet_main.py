@@ -96,4 +96,4 @@ if __name__ == '__main__':
         TestHandler = task.TestHandler(TaskSettings, Paths)
         Timer = task.SessionTimer(Paths)
         Network = net.Network(NetSettings, Paths, namescope='Network')
-        task.test_saved_model(TaskSettings, Paths, Network, TestHandler)
+        task.test(TaskSettings, Paths, Network, TestHandler)

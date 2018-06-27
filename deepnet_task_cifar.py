@@ -37,7 +37,10 @@ import deepnet_aux_cifar as aux
 # ### TASK SETTINGS ############################################################
 # ##############################################################################
 
+
 class TaskSettings(object):
+
+
     """Class/ object containing all settings/ options relevant to the task.
     """
 
@@ -102,7 +105,7 @@ class TaskSettings(object):
                 # === FILE WRITING OPTIONS =====================================
                 self.create_checkpoints = args['create_checkpoints']
                 self.epochs_between_checkpoints = args['epochs_between_checkpoints']
-                self.checkpoints = self.get_checkpoints(50000, args['val_set_fraction'], args['minibatch_size'], args['n_minibatches'], args['epochs_between_checkpoints'])
+                self.checkpoints = self.__get_checkpoints(50000, args['val_set_fraction'], args['minibatch_size'], args['n_minibatches'], args['epochs_between_checkpoints'])
                 self.save_af_weights_at_minibatch = np.around(np.linspace(1, args['n_minibatches'], num=args['safe_af_ws_n'], endpoint=True)).tolist()
                 self.save_all_weights_at_minibatch = np.around(np.linspace(1, args['n_minibatches'], num=args['safe_all_ws_n'], endpoint=True)).tolist()
                 self.save_af_weights_at_test_mb = args['save_af_weights_at_test_mb']
@@ -112,9 +115,9 @@ class TaskSettings(object):
                 self.write_summary = True
                 self.run_tracer = False # recommended: False (use for efficiency optimization)
                 self.keep_saved_datasets_after_run_complete = False # recommended: False (disables auto-deletion of train / val set save files)
-        self.print_overview()
+        self.__print_overview()
 
-    def get_checkpoints(self, dataset_size, val_set_fraction, mb_size, training_duration_in_mbs, epochs_between_checkpoints):
+    def __get_checkpoints(self, dataset_size, val_set_fraction, mb_size, training_duration_in_mbs, epochs_between_checkpoints):
         """Calculates the checkpoints = global time steps during training
         where the model is saved (in mb). Returns list of ints containing
         mini-batch counts.
@@ -128,7 +131,7 @@ class TaskSettings(object):
         checkpoints[-1] = training_duration_in_mbs
         return checkpoints
 
-    def print_overview(self):
+    def __print_overview(self):
         print('')
         print('###########################################')
         print('### TASK SETTINGS OVERVIEW ################')
@@ -144,11 +147,15 @@ class TaskSettings(object):
                 print(' - # of minibatches per run: %i' %(self.n_minibatches))
                 print(' - minibatch size: %i' %(self.minibatch_size))
 
+
 class Paths(object):
+
+
     """Class/ object containing all paths to read from or save to.
     """
 
     def __init__(self, TaskSettings):
+
         self.relative = TaskSettings.path_relative # path from scheduler
         # data locations
         self.train_batches = self.relative+'1_data_'+TaskSettings.task+'/train_batches/' # original data
@@ -197,18 +204,20 @@ class TrainingHandler(object):
         self.Paths = Paths
         self.val_mb_counter = 0
         self.train_mb_counter = 0
-        self.load_dataset(args)
-        self.split_training_validation()
-        self.shuffle_training_data_idcs()
+        self.__load_dataset(args)
+        self.__split_training_validation()
+        self.__shuffle_training_data_idcs()
         self.n_train_minibatches_per_epoch = int(np.floor((self.n_training_samples / TaskSettings.minibatch_size)))
         self.n_val_minibatches = int(self.n_validation_samples / TaskSettings.minibatch_size)
 
-        self.print_overview()
+        self.__print_overview()
 
     def reset_val(self):
         self.val_mb_counter = 0
 
-    def load_dataset(self, args):
+    def __load_dataset(self, args):
+        """Load (pre-processed) training data set from file defined in "Paths".
+        """
         if args['preprocessing'] in ['none', 'tf_ztrans']:
             path_train_set = self.Paths.train_set+self.TaskSettings.task+'_trainset.pkl'
             data_dict = pickle.load(open( path_train_set, 'rb'), encoding='bytes')
@@ -227,7 +236,7 @@ class TrainingHandler(object):
         else:
             print('[ERROR] requested preprocessing type unknown (%s)' %(args['preprocessing']))
 
-    def split_training_validation(self):
+    def __split_training_validation(self):
         """Splits data set into training and validation set. Only call once at
         the beginning of a runself.
         """
@@ -254,14 +263,14 @@ class TrainingHandler(object):
             self.training_images = self.dataset_images[self.n_validation_samples:]
             self.training_labels = self.dataset_labels[self.n_validation_samples:]
 
-    def shuffle_training_data_idcs(self):
+    def __shuffle_training_data_idcs(self):
         self.training_data_idcs = shuffle(list(range(self.n_training_samples)))
 
     def get_next_train_minibatch(self):
         """Returns the next mini-batch from the training set.
         """
         if self.train_mb_counter % self.n_train_minibatches_per_epoch == 0:
-            self.shuffle_training_data_idcs()
+            self.__shuffle_training_data_idcs()
         start_idx = int(self.TaskSettings.minibatch_size*(self.train_mb_counter % self.n_train_minibatches_per_epoch))
         end_idx = int(self.TaskSettings.minibatch_size*((self.train_mb_counter % self.n_train_minibatches_per_epoch)+1))
         mb_idcs = self.training_data_idcs[start_idx:end_idx]
@@ -330,7 +339,7 @@ class TrainingHandler(object):
         else:
             print('[MESSAGE] call to delete spec/run dataset had no effect: no dataset file found or TaskSettings.keep_saved_datasets_after_run_complete==True')
 
-    def print_overview(self):
+    def __print_overview(self):
         print('')
         print('###########################################')
         print('### TRAINING & VALIDATION SET OVERVIEW ####')
@@ -353,15 +362,18 @@ class TestHandler(object):
     """
 
     def __init__(self, TaskSettings, Paths, args):
+
         self.TaskSettings = TaskSettings
         self.Paths = Paths
-        self.load_test_data(args)
+        self.__load_test_data(args)
         self.n_test_samples = int(len(self.test_images))
         self.n_test_minibatches = int(np.floor(self.n_test_samples/TaskSettings.minibatch_size))
         self.test_mb_counter = 0
-        self.print_overview()
+        self.__print_overview()
 
-    def load_test_data(self, args):
+    def __load_test_data(self, args):
+        """Load (pre-processed) test data set from file defined in "Paths".
+        """
         if args['preprocessing'] in ['none', 'tf_ztrans']:
             path_test_set = self.Paths.test_set+self.TaskSettings.task+'_testset.pkl'
             data_dict = pickle.load(open( path_test_set, 'rb'), encoding='bytes')
@@ -380,7 +392,7 @@ class TestHandler(object):
         else:
             print('[ERROR] requested preprocessing type unknown (%s)' %(args['preprocessing']))
 
-    def create_next_test_minibatch(self):
+    def get_next_test_minibatch(self):
         """Returns the next mini-batch from the test set.
         """
         start_idx = int(self.TaskSettings.minibatch_size*self.test_mb_counter)
@@ -394,7 +406,7 @@ class TestHandler(object):
     def reset_test(self):
         self.test_mb_counter = 0
 
-    def print_overview(self):
+    def __print_overview(self):
         print('')
         print('###########################################')
         print('############ TEST SET OVERVIEW ############')
@@ -416,6 +428,7 @@ class Recorder(object):
     """
 
     def __init__(self, TaskSettings, TrainingHandler, Paths):
+
         self.TaskSettings = TaskSettings
         self.Paths = Paths
         # train
@@ -446,11 +459,17 @@ class Recorder(object):
         self.test_completed = False
 
     def feed_train_performance(self, loss, top1):
+        """Accessible from the script, to feed the recorder a new set of
+        training performance data.
+        """
         self.train_loss_hist.append(loss)
         self.train_top1_hist.append(top1)
         self.train_mb_n_hist.append(self.mb_count_total)
 
     def feed_val_performance(self, loss, top1, apc, af_weights_dict={}):
+        """Accessible from the script, to feed the recorder a new set of
+        training performance data, and current AF weigths.
+        """
         self.val_loss_hist.append(loss)
         self.val_top1_hist.append(top1)
         self.val_apc_hist.append(apc)
@@ -458,6 +477,9 @@ class Recorder(object):
         self.val_mb_n_hist.append(self.mb_count_total)
 
     def feed_test_performance(self, loss, top1, apc, mb=-1):
+        """Accessible from the script, to feed the recorder a new set of
+        test performance data.
+        """
         self.test_loss_hist.append(loss)
         self.test_top1_hist.append(top1)
         self.test_apc_hist.append(apc)
@@ -467,21 +489,14 @@ class Recorder(object):
         self.test_completed = True
 
     def mb_plus_one(self):
+        """Count global step in recorder. Call once per training step.
+        """
         self.mb_count_total += 1
         self.ep_count_total = 1 + (self.mb_count_total-1) // self.mbs_per_epoch
 
-    def mark_checkpoint(self):
-        if len(self.completed_ckpt_mbs) > 0:
-            assert self.completed_ckpt_mbs[-1] != self.mb_count_total, '[ERROR] tried to mark checkpoint twice in same minibatch.'
-        assert self.mb_count_total in self.checkpoints, '[ERROR] tried to mark checkpoint outside of defined checkpoints.'
-        if len(self.completed_ckpt_list) == 0:
-            self.completed_ckpt_list.append(1)
-        else:
-            self.completed_ckpt_list.append(self.completed_ckpt_list[-1]+1)
-        self.completed_ckpt_mbs.append(self.mb_count_total)
-        self.completed_ckpt_epochs.append(self.ep_count_total)
-
-    def mark_end_of_session(self): # to iterrupt runs
+    def mark_end_of_session(self):
+        """Marks end of session, because of walltime or because run finished.
+        """
         if self.mb_count_total == self.TaskSettings.n_minibatches:
             self.training_completed = True
         else:
@@ -489,7 +504,9 @@ class Recorder(object):
                 print('run stopped incomplete. currently stopped after minibatch '+str(self.mb_count_total), file=text_file)
             print('[MESSAGE] incomplete run file written.')
 
-    def get_running_average(self, measure='t-loss', window_length=50):
+    def get_running_average(self, measure, window_length=50):
+        """Returns running average (sliding window) of performance values.
+        """
         assert measure in ['t-loss','t-acc','v-loss','v-acc'], 'requested performance measure unknown.'
         if measure == 't-loss':
             p_measure = self.train_loss_hist
@@ -504,6 +521,8 @@ class Recorder(object):
         return np.mean(np.array(p_measure)[-window_length:])
 
     def save_as_dict(self, print_messages=True):
+        """Saves the whole recorder in a dict/ pickle file.
+        """
         # create dict
         recorder_dict = {}
         # names
@@ -549,6 +568,8 @@ class Recorder(object):
             print('[MESSAGE] recorder dict saved after minibatch %i: %s'%(self.mb_count_total, savepath+filename))
 
     def restore_from_dict(self, Timer, mb_to_restore):
+        """Overwrites the values in the recorder with values from a save file.
+        """
         # restore dict
         restore_dict_filename = self.Paths.recorder_files+'record_'+str(self.TaskSettings.spec_name)+'_run_'+str(self.TaskSettings.run)+'.pkl'
         if os.path.exists(restore_dict_filename):
@@ -588,7 +609,7 @@ class Recorder(object):
             self.mbs_per_epoch = recorder_dict['mbs_per_epoch']
             self.training_completed = recorder_dict['training_completed']
             self.test_completed = recorder_dict['test_completed']
-            self.set_record_back_to_mb(mb_to_restore)
+            self.__set_record_back_to_mb(mb_to_restore)
             # set Timer
             Timer.set_ep_count_at_session_start(self.ep_count_total)
             # return
@@ -597,7 +618,9 @@ class Recorder(object):
             return True
         return False
 
-    def set_record_back_to_mb(self, mb_to_restore):
+    def __set_record_back_to_mb(self, mb_to_restore):
+        """Deletes all entries to the recorder made after the requested mb.
+        """
         if len(self.train_mb_n_hist) > 0:
             idx_train_hist = np.argmin(np.abs(np.array(self.train_mb_n_hist) - mb_to_restore))+1
             self.train_mb_n_hist = self.train_mb_n_hist[:idx_train_hist]
@@ -638,6 +661,7 @@ class SessionTimer(object):
     """
 
     def __init__(self, Paths):
+
         self.session_start_time = 0
         self.session_end_time = 0
         self.session_duration = 0
@@ -657,13 +681,22 @@ class SessionTimer(object):
                 os.remove(Paths.incomplete_run_info+fname)
 
     def set_ep_count_at_session_start(self, ep_count):
+        """Called when recorder is reloaded. Needed for remaining time
+        predictions.
+        """
         self.ep_count_at_session_start = ep_count
 
     def feed_mb_duration(self, mb, mb_duration):
+        """Pushes the duration of the last mini batch to the Timer object.
+        Pushed values are stored in the corresponding lists.
+        """
         self.mb_list.append(mb)
         self.mb_duration_list.append(mb_duration)
 
     def feed_val_duration(self, val_duration):
+        """Pushes the duration of the last validation to the Timer object.
+        Pushed values are stored in the corresponding lists.
+        """
         self.val_duration_list.append(val_duration)
 
     def set_session_start_time(self):
@@ -691,8 +724,8 @@ class SessionTimer(object):
             return np.mean(np.array(self.val_duration_list)[-window_length:])
 
     def laptime(self):
-        # keeps 'laptimes', i.e. times between calls of this function.
-        # can be used to report printout-to-printout times
+        """Keeps and returns times between calls of this function.
+        """
         now = time.time()
         latest_laptime = now-self.laptime_start
         self.laptime_start = now
@@ -700,6 +733,9 @@ class SessionTimer(object):
         return latest_laptime
 
     def set_checkpoint_time(self):
+        """Called when checkpoint is saved. Used to estimate if next
+        checkpoint can be finished in time before wall time hits.
+        """
         self.last_checkpoint_time = time.time()
 
     def end_session(self):
@@ -782,12 +818,12 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
         print('================================================================================================================================================================================================================')
 
         # save overview of the run as a txt file
-        args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+        __args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 
         if Rec.mb_count_total == 0:
             if TaskSettings.create_val_set:
                 validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec)
-            save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, recorder=True, tf_model=True, dataset=True, print_messsages=True)
+            __save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, recorder=True, tf_model=True, dataset=True, print_messsages=True)
 
         while n_minibatches_remaining > 0 and Timer.session_shut_down == False:
 
@@ -797,7 +833,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
             imageBatch, labelBatch = TrainingHandler.get_next_train_minibatch()
 
             # SESSION RUN
-            current_lr = lr_scheduler(TaskSettings, Rec.mb_count_total)
+            current_lr = __lr_scheduler(TaskSettings, Rec.mb_count_total)
             input_dict = {Network.X: imageBatch, Network.Y: labelBatch, Network.lr: current_lr, Network.dropout_keep_prob: TaskSettings.dropout_keep_probs}
             run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
             run_metadata = tf.RunMetadata()
@@ -876,7 +912,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 
             # SAVE MODEL & DATASETS AT CHECKPOINTS
             if Rec.mb_count_total in TaskSettings.checkpoints or Rec.mb_count_total == TaskSettings.n_minibatches:
-                save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, recorder=True, tf_model=True, dataset=True, print_messsages=True)
+                __save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, recorder=True, tf_model=True, dataset=True, print_messsages=True)
                 if TaskSettings.create_lc_on_the_fly:
                     visualize_performance(TaskSettings, Paths)
 
@@ -905,7 +941,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
             if Rec.mb_count_total == TaskSettings.n_minibatches or end_session_now:
                 Rec.mark_end_of_session() # created incomplete_run file or sets Rec.training_completed to True
                 Rec.save_as_dict()
-                args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+                __args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
                 Timer.set_session_end_time()
                 Timer.end_session()
 
@@ -913,7 +949,7 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
         if Rec.mb_count_total == TaskSettings.n_minibatches:
             Rec.mark_end_of_session() # sets Rec.training_completed to True if applicable
             Rec.save_as_dict()
-            args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+            __args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
 
     # AFTER TRAINING COMPLETION: SAVE MODEL WEIGHTS AND PERFORMANCE DICT
     if Rec.training_completed and not Rec.test_completed:
@@ -926,15 +962,15 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
         # (2) perform test with model from this minibatch number & save results
         # (3) delete saved datasets and all models but the tested one
         if len(Rec.val_top1_hist) > 1:
-            early_stopping_mb = early_stopping_minibatch(Rec.val_top1_hist, Rec.val_mb_n_hist, Rec.checkpoints, Paths)
-            test_top1, test_loss = test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=early_stopping_mb)
-            delete_all_models_but_one(Paths, early_stopping_mb)
+            early_stopping_mb = __early_stopping_minibatch(Rec.val_top1_hist, Rec.val_mb_n_hist, Rec.checkpoints, Paths)
+            test_top1, test_loss = test(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=early_stopping_mb)
+            __delete_all_models_but_one(Paths, early_stopping_mb)
         else:
             print('[WARNING] no validation performance record available, performing test with model after %i minibatches (full run).' %(TaskSettings.n_minibatches))
-            test_top1, test_loss = test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=TaskSettings.n_minibatches)
-            delete_all_models_but_one(Paths, TaskSettings.n_minibatches)
+            test_top1, test_loss = test(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=TaskSettings.n_minibatches)
+            __delete_all_models_but_one(Paths, TaskSettings.n_minibatches)
         Rec.save_as_dict()
-        args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
+        __args_to_txt(args, Paths, training_complete_info=str(Rec.training_completed), test_complete_info=str(Rec.test_completed))
         TrainingHandler.delete_run_datasets()
 
         print('================================================================================================================================================================================================================')
@@ -943,7 +979,12 @@ def train(TaskSettings, Paths, Network, TrainingHandler, TestHandler, Timer, Rec
 
     print('')
 
-def delete_all_models_but_one(Paths, keep_model_mb):
+def __delete_all_models_but_one(Paths, keep_model_mb):
+    """Deletes saved TF models, except for one (keep_model_mb).
+    Called only after training is completed. Keeps best model (according to
+    post-hoc early stopping), or last model (if no post-hoc early stopping
+    is performed).
+    """
     # list all files in dir and delete files that don't contain keep_model_mb
     files_in_dir = [f for f in os.listdir(Paths.models) if ('model' in f or 'checkpoint' in f)]
     kill_list = []
@@ -954,13 +995,17 @@ def delete_all_models_but_one(Paths, keep_model_mb):
             if not str(keep_model_mb) in filename.split('.')[0]:
                 os.remove(Paths.models+filename)
 
-def early_stopping_minibatch(val_data, val_mb, checkpoints, Paths, save_plot=True):
+def __early_stopping_minibatch(val_data, val_mb, checkpoints, Paths, save_plot=True):
+    """Smoothes vector of validation accuracies (val_data) and evaluates
+    it at the checkpoints. Returns mb of checkpoint with highest smoothed
+    validation accuracy.
+    """
     # calculate size of smoothing window & smoothe data
     val_steps_total = len(val_data)
     mb_per_val = val_mb[-1] // val_steps_total
     smoothing_window_mb = np.minimum(2000, np.maximum(val_mb[-1]//10, 500))
     smoothing_window = smoothing_window_mb // mb_per_val
-    smooth_val_data = smooth(val_data, smoothing_window, 3)
+    smooth_val_data = __smooth(val_data, smoothing_window, 3)
     # get intercepts of checkpoints and smooth_val_data
     available_val_data = []
     for i in range(len(checkpoints)):
@@ -990,7 +1035,10 @@ def early_stopping_minibatch(val_data, val_mb, checkpoints, Paths, save_plot=Tru
     early_stopping_mb = minibatch_max_available_val_data
     return early_stopping_mb
 
-def smooth(y, smoothing_window, times):
+def __smooth(y, smoothing_window, times):
+    """Smoothes a vector y with a sliding window extending to both sides
+    of the current value.
+    """
     for t in range(times):
         smooth = []
         for i in range(len(y)):
@@ -1000,7 +1048,10 @@ def smooth(y, smoothing_window, times):
         y = smooth
     return smooth
 
-def save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, all_weights_dict=False, af_weights_dict=False, recorder=False, tf_model=False, dataset=False, delete_previous=False, print_messsages=False):
+def __save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, saver, Rec, all_weights_dict=False, af_weights_dict=False, recorder=False, tf_model=False, dataset=False, delete_previous=False, print_messsages=False):
+    """Takes care of all saves performed at a checkpoint, i.e., TF model,
+    dataset (train & val sets), recorder, manually saved weight dicts.
+    """
     # model
     if tf_model:
         if not os.path.exists(Paths.models):
@@ -1023,9 +1074,12 @@ def save_model_checkpoint(TaskSettings, TrainingHandler, Paths, Network, sess, s
         Network.save_af_weights(sess, Rec.mb_count_total)
     # delete previous
     if delete_previous:
-        delete_previous_savefiles(TaskSettings, Paths, Rec, ['all_weights','af_weights','models'])
+        __delete_previous_savefiles(TaskSettings, Paths, Rec, ['all_weights','af_weights','models'])
 
-def delete_previous_savefiles(TaskSettings, Paths, Rec, which_files, print_messsages=False):
+def __delete_previous_savefiles(TaskSettings, Paths, Rec, which_files, print_messsages=False):
+    """Deletes all but the newest savefiles of models and manually saved
+    weights.
+    """
     # filenames must be manually defined to match the saved filenames
     current_mb = Rec.mb_count_total
     current_run = TaskSettings.run
@@ -1065,7 +1119,7 @@ def delete_previous_savefiles(TaskSettings, Paths, Rec, which_files, print_messs
             print('[MESSAGE] file deleted: %s'%(del_file))
 
 def validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec, print_val_apc=False):
-    """Contains the complete validation procedure. Requires running session,
+    """Contains the complete validation procedure. Requires a running session,
     call from train().
     """
     # VALIDATION START
@@ -1106,8 +1160,8 @@ def validate(TaskSettings, sess, Network, TrainingHandler, Timer, Rec, print_val
     Rec.feed_val_performance(val_loss, val_top1, val_apc, af_weights_dict)
     Timer.feed_val_duration(time.time()-time_val_start)
 
-def test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_apc=False):
-    """Contains the complete test procedure. Requires running session,
+def __test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_apc=False):
+    """Contains the complete test procedure. Requires a running session,
     call from train().
     """
     # TEST START
@@ -1123,7 +1177,7 @@ def test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_ap
     test_count_vector = np.zeros((n_classes_in_task,1))
     while TestHandler.test_mb_counter < TestHandler.n_test_minibatches:
         # LOAD VARIABLES & RUN SESSION
-        test_imageBatch, test_labelBatch = TestHandler.create_next_test_minibatch()
+        test_imageBatch, test_labelBatch = TestHandler.get_next_test_minibatch()
         loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: test_imageBatch, Network.Y: test_labelBatch, Network.lr: 0., Network.dropout_keep_prob: TaskSettings.dropout_keep_probs_inference})
         # STORE PERFORMANCE
         loss_store.append(loss)
@@ -1146,7 +1200,7 @@ def test_in_session(TaskSettings, sess, Network, TestHandler, Rec, print_test_ap
     # RETURN
     return test_top1, test_loss
 
-def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1, print_results=False, print_messages=False):
+def test(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1, print_results=False, print_messages=False):
     """Contains the complete test procedure. Creates its own session,
     do not call from train().
     """
@@ -1205,7 +1259,7 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
         test_count_vector = np.zeros((n_classes_in_task,1))
         while TestHandler.test_mb_counter < TestHandler.n_test_minibatches:
             # LOAD DATA & RUN SESSION
-            test_imageBatch, test_labelBatch = TestHandler.create_next_test_minibatch()
+            test_imageBatch, test_labelBatch = TestHandler.get_next_test_minibatch()
             loss, top1, logits = sess.run([Network.loss, Network.top1, Network.logits], feed_dict = { Network.X: test_imageBatch, Network.Y: test_labelBatch, Network.dropout_keep_prob: TaskSettings.dropout_keep_probs_inference}) # why was this set to 0.5?
             # STORE PERFORMANCE
             loss_store.append(loss)
@@ -1251,10 +1305,13 @@ def test_saved_model(TaskSettings, Paths, Network, TestHandler, Rec, model_mb=-1
 # ##############################################################################
 
 def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
+    """Main analysis function. Analyzes the whole experiment (all specs).
+    Call separately from all training and testing procedures.
+    """
     experiment_name = Paths.experiment.split('/')[-2]
     # get spec spec names from their respective folder names
     spec_list = [f for f in os.listdir(Paths.experiment) if (os.path.isdir(os.path.join(Paths.experiment,f)) and not f.startswith('0_'))]
-    # put the pieces together and call spec_analysis() for each spec of the experiment
+    # put the pieces together and call __spec_analysis() for each spec of the experiment
     spec_name_list, n_runs_list, mb_list, test_earlys_mb_mean, test_earlys_mb_std = [], [], [], [], []
     median_run_per_spec, best_run_per_spec, mean_run_per_spec, worst_run_per_spec, std_per_spec = [], [], [], [], []
     t_min_per_spec, t_max_per_spec, t_median_per_spec, t_mean_per_spec, t_var_per_spec, t_std_per_spec = [], [], [], [], [], []
@@ -1265,7 +1322,7 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
     spec_list_filtered = [] # will only contain specs that actually have completed runs
     for spec_name in spec_list:
         spec_path = Paths.experiment+spec_name+'/'
-        spec_perf_dict = spec_analysis(TaskSettings, Paths, spec_name, spec_path, make_plot=True)
+        spec_perf_dict = __spec_analysis(TaskSettings, Paths, spec_name, spec_path, make_plot=True)
         # general info about spec
         if spec_perf_dict:
             spec_list_filtered.append(spec_name)
@@ -1355,7 +1412,9 @@ def analysis(TaskSettings, Paths, make_plot=True, make_hrtf=True):
                                 test_median_per_spec[spec], test_mean_per_spec[spec], test_var_per_spec[spec], test_std_per_spec[spec], test_max_per_spec[spec], test_min_per_spec[spec]])
         print('[MESSAGE] file saved: %s (performance analysis csv for experiment "%s")' %(savepath+hrtf_filename, experiment_name))
 
-def spec_analysis(TaskSettings, Paths, spec_name, spec_path, axis_2='af_weights', make_plot=False, return_loss=False):
+def __spec_analysis(TaskSettings, Paths, spec_name, spec_path, axis_2='af_weights', make_plot=False, return_loss=False):
+    """Performes analysis of one spec. Call only from analysis().
+    """
     assert (axis_2 in ['af_weights', 'loss']) or axis_2 is None, 'axis_2 needs to be defined as None, \'af_weights\', or \'loss\'.'
     analysis_savepath = Paths.analysis
     # get list of all performance files (pickle dicts) within a spec
@@ -1422,7 +1481,7 @@ def spec_analysis(TaskSettings, Paths, spec_name, spec_path, axis_2='af_weights'
             vmb_hist = rec_dict['val_mb_n_hist']
             vt1_hist = rec_dict['val_top1_hist']
             vlo_hist = rec_dict['val_loss_hist']
-            vmb_hist, vt1_hist, vlo_hist = remove_double_logs(vmb_hist, vt1_hist, vlo_hist)
+            vmb_hist, vt1_hist, vlo_hist = __remove_double_logs(vmb_hist, vt1_hist, vlo_hist)
             val_mb_n_hist_store.append(np.array(vmb_hist))
             val_top1_hist_store.append(np.array(vt1_hist))
             val_loss_hist_store.append(np.array(vlo_hist))
@@ -1438,16 +1497,16 @@ def spec_analysis(TaskSettings, Paths, spec_name, spec_path, axis_2='af_weights'
         train_top1 = np.array(train_top1_hist_store)
         train_loss = np.array(train_loss_hist_store)
         t_mb = train_mb_n[0,:]
-        t_median_run, t_himax_run, t_lomax_run, _, _, t_mean_run, t_std_run, t_var_run, t_run_max_list, _ = get_statistics(train_top1)
-        t_loss_median_run, _, _, t_loss_himin_run, t_loss_lomin_run, t_loss_mean_run, t_loss_std_run, t_loss_var_run, _, t_loss_run_min_list = get_statistics(train_loss)
+        t_median_run, t_himax_run, t_lomax_run, _, _, t_mean_run, t_std_run, t_var_run, t_run_max_list, _ = __get_statistics(train_top1)
+        t_loss_median_run, _, _, t_loss_himin_run, t_loss_lomin_run, t_loss_mean_run, t_loss_std_run, t_loss_var_run, _, t_loss_run_min_list = __get_statistics(train_loss)
 
         # get val statistics
         val_mb_n = np.array(val_mb_n_hist_store)
         val_top1 = np.array(val_top1_hist_store)
         val_loss = np.array(val_loss_hist_store)
         v_mb = val_mb_n[0,:]
-        v_median_run, v_himax_run, v_lomax_run, _, _, v_mean_run, v_std_run, v_var_run, v_run_max_list, _ = get_statistics(val_top1)
-        v_loss_median_run, _, _, v_loss_himin_run, v_loss_lomin_run, v_loss_mean_run, v_loss_std_run, v_loss_var_run, _, v_loss_run_min_list = get_statistics(val_loss)
+        v_median_run, v_himax_run, v_lomax_run, _, _, v_mean_run, v_std_run, v_var_run, v_run_max_list, _ = __get_statistics(val_top1)
+        v_loss_median_run, _, _, v_loss_himin_run, v_loss_lomin_run, v_loss_mean_run, v_loss_std_run, v_loss_var_run, _, v_loss_run_min_list = __get_statistics(val_loss)
 
         # put data into dict
         spec_perf_dict = { 'spec_name': spec_name,
@@ -1625,7 +1684,10 @@ def spec_analysis(TaskSettings, Paths, spec_name, spec_path, axis_2='af_weights'
     # return spec_perf_dict
     return spec_perf_dict
 
-def remove_double_logs(vmb_hist, vt1_hist, vlo_hist):
+def __remove_double_logs(vmb_hist, vt1_hist, vlo_hist):
+    """Removes doubles from list of validation performance values (cleanup
+    after mishaps in data storage). Called only from __spec_analysis().
+    """
     vmb_new, vt1_new, vlo_new = [], [], []
     for i in range(len(vmb_hist)):
         if not vmb_hist[i] in vmb_new:
@@ -1634,8 +1696,10 @@ def remove_double_logs(vmb_hist, vt1_hist, vlo_hist):
             vlo_new.append(vlo_hist[i])
     return vmb_new, vt1_new, vlo_new
 
-def get_statistics(data_array):
-    # function gets a all full runs of a spec (train / val) and returns stats. do not use this for single values as in test.
+def __get_statistics(data_array):
+    """Gets a all full runs of a spec (train / val) and returns stats.
+    Do not use this for single values as in test().
+    """
     assert len(data_array.shape) == 2, 'data_array must be 2-dimensional: number of runs * number of performance measurement per run'
     if data_array.shape[1] > 0:
         # find himax and lomax run's indices
@@ -1664,18 +1728,10 @@ def get_statistics(data_array):
     else:
         return 0, 0, 0, 0, 0, 0, 0, 0, [0], [0]
 
-def smooth_history(hist, n):
-    smooth_hist = []
-    for i in range(len(hist)):
-        smooth_hist.append(sliding_window(hist[:i], n))
-    return smooth_hist
-
-def sliding_window(l, n):
-    if len(l) < n:
-        n = len(l)
-    return np.mean(l[-n:])
-
 def visualize_performance(TaskSettings, Paths):
+    """Creates learning curves plot from performance recorder files. Can be
+    called whenever there's an existing recorder save file.
+    """
     # load
     filename = Paths.recorder_files+'record_'+str(TaskSettings.spec_name)+'_run_'+str(TaskSettings.run)+'.pkl'
     performance_dict = pickle.load( open( filename, "rb" ) )
@@ -1710,7 +1766,10 @@ def visualize_performance(TaskSettings, Paths):
     print('[MESSAGE] performance figure saved: %s' %(savepath+filename))
     print('================================================================================================================================================================================================================')
 
-def lr_scheduler(TaskSettings, current_mb): # new variablse: TaskSettings.lr_schedule_type (constant, step, continuous), TaskSettings.lr_decay (e.g., 1e-6)
+def __lr_scheduler(TaskSettings, current_mb):
+    """Returns the current learning rate depending on lr schedule, lr settings,
+    and current mini batch (training progress).
+    """
     if TaskSettings.lr_schedule_type == 'constant':
         return TaskSettings.lr
     if TaskSettings.lr_schedule_type == 'decay':
@@ -1731,7 +1790,10 @@ def lr_scheduler(TaskSettings, current_mb): # new variablse: TaskSettings.lr_sch
                 else: return TaskSettings.lr * TaskSettings.lr_step_multi[i-1]
         return TaskSettings.lr * TaskSettings.lr_step_multi[-1]
 
-def args_to_txt(args, Paths, training_complete_info='', test_complete_info=''):
+def __args_to_txt(args, Paths, training_complete_info='', test_complete_info=''):
+    """Writes human-readable text file containing run info (settings) and
+    info if the training and testing have been completed for this run.
+    """
     # prepare
     experiment_name = args['experiment_name']
     spec_name = args['spec_name']
