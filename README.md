@@ -12,7 +12,7 @@ Launches deepnet_main.py, contains all externally available settings, passes the
 Creates all relevant object instances, launches training, testing or analysis.
 
 ### deepnet_network.py
-Contains the network including all available options.
+Contains the network class (and support classes) including all available options.
 
 ### deepnet_task_cifar.py
 Contains everything task-related. Most importantly, train(), test(), and analyze().
