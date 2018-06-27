@@ -93,10 +93,6 @@ class TaskSettings(object):
                 self.lr_lin_steps = args['lr_lin_steps']
                 self.lr_step_ep = args['lr_step_ep']
                 self.lr_step_multi = args['lr_step_multi']
-                if args['blend_trainable'] or args['swish_beta_trainable']:
-                    self.af_weights_exist = True
-                else:
-                    self.af_weights_exist = False
                 # === FILE WRITING OPTIONS =====================================
                 self.create_checkpoints = args['create_checkpoints']
                 self.epochs_between_checkpoints = args['epochs_between_checkpoints']

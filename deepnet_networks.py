@@ -53,21 +53,24 @@ class NetSettings(object):
         self.spec_name = args['spec_name']
         self.run = args['run']
         self.minibatch_size = args['minibatch_size']
-        self.image_x = 32
-        self.image_y = 32
-        self.image_z = 3
         if self.task == 'cifar10':
             self.logit_dims = 10
+            self.image_x = 32
+            self.image_y = 32
+            self.image_z = 3
         elif self.task == 'cifar100':
             self.logit_dims = 100
+            self.image_x = 32
+            self.image_y = 32
+            self.image_z = 3
         self.pre_processing = args['preprocessing']
         self.network_spec = args['network']
         self.optimizer_choice = args['optimizer']
         self.lr = args['lr']
-        self.lr_schedule_type = args['lr_schedule_type']                 # (constant, linear, step, decay)
-        self.lr_decay = args['lr_decay']                                # (e.g., 1e-6)
-        self.lr_lin_min = args['lr_lin_min']                            # (e.g., 4*1e-5)
-        self.lr_lin_steps = args['lr_lin_steps']                        # (e.g., 60000)
+        self.lr_schedule_type = args['lr_schedule_type']
+        self.lr_decay = args['lr_decay']
+        self.lr_lin_min = args['lr_lin_min']
+        self.lr_lin_steps = args['lr_lin_steps']
         self.lr_step_ep = args['lr_step_ep']
         self.lr_step_multi = args['lr_step_multi']
         self.use_wd = args['use_wd']
