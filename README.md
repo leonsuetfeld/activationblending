@@ -23,19 +23,19 @@ Also contains Paths class, containing all read and write paths used in the scrip
 
 ## Requirements
 ### data sets
-CIFAR
+* CIFAR10 & CIFAR100
 ### libraries used
-os
-time
-csv
-argparse
-json
-pickle
-random
-python 3.5.2
-psutil 5.4.3
-numpy 1.14.2
-scipy 1.0.0
-tensorflow 1.4.0
-sklearn 0.19.1
-matplotlib 1.5.1
+* os
+* time
+* csv
+* argparse
+* json
+* pickle
+* random
+* python 3.5.2
+* psutil 5.4.3
+* numpy 1.14.2
+* scipy 1.0.0
+* tensorflow 1.4.0
+* sklearn 0.19.1
+* matplotlib 1.5.1
