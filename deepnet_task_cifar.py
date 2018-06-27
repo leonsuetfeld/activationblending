@@ -17,7 +17,6 @@ import scipy.ndimage
 import scipy.stats as st
 import random
 from random import sample
-import itertools
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -25,9 +24,6 @@ from matplotlib import cm
 import matplotlib.mlab as mlab
 import json
 import csv
-import sys
-import argparse
-import subprocess
 from sklearn.utils import shuffle
 import psutil
 from tensorflow import SessionLog

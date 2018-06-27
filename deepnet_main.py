@@ -5,7 +5,6 @@ the tasks passed on by the supervisor.
 @authors: Leon Sütfeld, Flemming Brieger
 """
 
-import tensorflow as tf
 import argparse
 import matplotlib
 matplotlib.use('Agg')
